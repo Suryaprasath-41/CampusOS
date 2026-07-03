@@ -12,8 +12,11 @@ import AcademicSection from '@/components/campus/AcademicSection';
 import HostelSection from '@/components/campus/HostelSection';
 import FinanceSection from '@/components/campus/FinanceSection';
 import EventsSection from '@/components/campus/EventsSection';
+import WorkflowSection from '@/components/campus/WorkflowSection';
+import FacultySection from '@/components/campus/FacultySection';
 import AdminSection from '@/components/campus/AdminSection';
 import ChatPanel from '@/components/campus/ChatPanel';
+import VoiceAssistant from '@/components/campus/VoiceAssistant';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const sections: Record<string, React.ComponentType> = {
@@ -25,6 +28,8 @@ const sections: Record<string, React.ComponentType> = {
   hostel: HostelSection,
   finance: FinanceSection,
   events: EventsSection,
+  workflow: WorkflowSection,
+  faculty: FacultySection,
   admin: AdminSection,
 };
 
@@ -54,6 +59,7 @@ export default function Home() {
         </main>
       </div>
       <ChatPanel />
+      <VoiceAssistant />
     </div>
   );
 }

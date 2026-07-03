@@ -7,6 +7,8 @@ interface CampusStore {
   setSidebarOpen: (open: boolean) => void;
   chatOpen: boolean;
   setChatOpen: (open: boolean) => void;
+  voiceOpen: boolean;
+  setVoiceOpen: (open: boolean) => void;
   dashboardData: any;
   setDashboardData: (data: any) => void;
   chatMessages: { role: string; content: string; agentType?: string }[];
@@ -24,6 +26,8 @@ export const useCampusStore = create<CampusStore>((set) => ({
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   chatOpen: false,
   setChatOpen: (open) => set({ chatOpen: open }),
+  voiceOpen: false,
+  setVoiceOpen: (open) => set({ voiceOpen: open }),
   dashboardData: null,
   setDashboardData: (data) => set({ dashboardData: data }),
   chatMessages: [],

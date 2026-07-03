@@ -65,7 +65,7 @@ export default function AdminSection() {
           </div>
           <div>
             <div className="text-xs text-gray-500">Placed</div>
-            <div className="text-xl font-bold text-white">{placements.get('interview', 0) + placements.get('applied', 0)}</div>
+            <div className="text-xl font-bold text-white">{(placements.interview || 0) + (placements.applied || 0) + (placements.placed || 0)}</div>
           </div>
         </GlassCard>
       </div>

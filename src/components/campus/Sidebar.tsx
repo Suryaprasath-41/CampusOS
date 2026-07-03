@@ -4,7 +4,7 @@ import { useCampusStore } from '@/lib/store';
 import {
   LayoutDashboard, TrendingUp, Target, BookOpen, GraduationCap,
   Home, Wallet, CalendarDays, Shield, ChevronLeft, ChevronRight,
-  Bot, Sparkles
+  Bot, Sparkles, Workflow, Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,8 @@ const navItems = [
   { id: 'hostel', label: 'Hostel', icon: Home },
   { id: 'finance', label: 'Finance', icon: Wallet },
   { id: 'events', label: 'Events', icon: CalendarDays },
+  { id: 'workflow', label: 'Workflows', icon: Workflow },
+  { id: 'faculty', label: 'Faculty AI', icon: Brain },
   { id: 'admin', label: 'Admin', icon: Shield },
 ];
 
