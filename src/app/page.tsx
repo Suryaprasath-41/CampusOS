@@ -9,14 +9,17 @@ import AttendanceSection from '@/components/campus/AttendanceSection';
 import PlacementSection from '@/components/campus/PlacementSection';
 import LibrarySection from '@/components/campus/LibrarySection';
 import AcademicSection from '@/components/campus/AcademicSection';
+import ExamsSection from '@/components/campus/ExamsSection';
 import HostelSection from '@/components/campus/HostelSection';
 import FinanceSection from '@/components/campus/FinanceSection';
 import EventsSection from '@/components/campus/EventsSection';
 import WorkflowSection from '@/components/campus/WorkflowSection';
 import FacultySection from '@/components/campus/FacultySection';
+import ProfileSection from '@/components/campus/ProfileSection';
 import AdminSection from '@/components/campus/AdminSection';
 import ChatPanel from '@/components/campus/ChatPanel';
 import VoiceAssistant from '@/components/campus/VoiceAssistant';
+import CommandPalette from '@/components/campus/CommandPalette';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const sections: Record<string, React.ComponentType> = {
@@ -25,11 +28,13 @@ const sections: Record<string, React.ComponentType> = {
   placement: PlacementSection,
   library: LibrarySection,
   academic: AcademicSection,
+  exams: ExamsSection,
   hostel: HostelSection,
   finance: FinanceSection,
   events: EventsSection,
   workflow: WorkflowSection,
   faculty: FacultySection,
+  profile: ProfileSection,
   admin: AdminSection,
 };
 
@@ -60,6 +65,7 @@ export default function Home() {
       </div>
       <ChatPanel />
       <VoiceAssistant />
+      <CommandPalette />
     </div>
   );
 }

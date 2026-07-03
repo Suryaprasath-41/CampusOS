@@ -25,3 +25,32 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, markAllRead } = await request.json();
+    const student = await db.student.findFirst();
+    if (!student) return NextResponse.json({ error: 'No students' }, { status: 404 });
+    const user = await db.user.findUnique({ where: { id: student.userId } });
+
+    if (markAllRead) {
+      await db.notification.updateMany({
+        where: { userId: user!.id, read: false },
+        data: { read: true },
+      });
+      return NextResponse.json({ success: true, updated: 'all' });
+    }
+
+    if (id) {
+      await db.notification.update({
+        where: { id },
+        data: { read: true },
+      });
+      return NextResponse.json({ success: true, updated: id });
+    }
+
+    return NextResponse.json({ error: 'No action specified' }, { status: 400 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

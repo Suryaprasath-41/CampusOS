@@ -1,16 +1,17 @@
 'use client';
 
 import { Bell, Search, Sparkles, Mic, X, CheckCircle2, AlertTriangle, Info, CheckCheck } from 'lucide-react';
-import { useCampusStore, fetchAPI } from '@/lib/store';
+import { useCampusStore, fetchAPI, patchAPI } from '@/lib/store';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header() {
-  const { dashboardData, setChatOpen, setVoiceOpen } = useCampusStore();
+  const { dashboardData, setChatOpen, setVoiceOpen, setDashboardData, bumpNotifVersion } = useCampusStore();
   const [searchFocused, setSearchFocused] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
+  const [markingRead, setMarkingRead] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   const greeting = useMemo(() => {
@@ -29,6 +30,37 @@ export default function Header() {
       setNotifications(data.notifications || []);
     } catch (e) { /* ignore */ }
     setLoadingNotifs(false);
+  };
+
+  const markAllRead = async () => {
+    setMarkingRead(true);
+    try {
+      await patchAPI('/notifications', { markAllRead: true });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      if (dashboardData) {
+        setDashboardData({
+          ...dashboardData,
+          notifications: { unread: 0 },
+        });
+      }
+      bumpNotifVersion();
+    } catch (e) { /* ignore */ }
+    setMarkingRead(false);
+  };
+
+  const markOneRead = async (id: string) => {
+    try {
+      await patchAPI('/notifications', { id });
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      const newUnread = Math.max(0, (dashboardData?.notifications?.unread || 0) - 1);
+      if (dashboardData) {
+        setDashboardData({
+          ...dashboardData,
+          notifications: { unread: newUnread },
+        });
+      }
+      bumpNotifVersion();
+    } catch (e) { /* ignore */ }
   };
 
   const handleNotifToggle = () => {
@@ -148,8 +180,12 @@ export default function Header() {
                       </span>
                     )}
                   </div>
-                  <button className="text-[10px] text-gray-500 hover:text-purple-400 flex items-center gap-1">
-                    <CheckCheck className="w-3 h-3" /> Mark all read
+                  <button
+                    onClick={markAllRead}
+                    disabled={markingRead || unread === 0}
+                    className="text-[10px] text-gray-500 hover:text-purple-400 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <CheckCheck className={`w-3 h-3 ${markingRead ? 'animate-pulse' : ''}`} /> {markingRead ? 'Marking...' : 'Mark all read'}
                   </button>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
@@ -171,7 +207,8 @@ export default function Header() {
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className={`flex items-start gap-3 p-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] ${!n.read ? 'bg-purple-500/[0.02]' : ''}`}
+                        onClick={() => !n.read && markOneRead(n.id)}
+                        className={`flex items-start gap-3 p-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] ${!n.read ? 'bg-purple-500/[0.02] cursor-pointer' : ''}`}
                       >
                         <div className="p-1.5 rounded-lg bg-white/[0.04] shrink-0 mt-0.5">
                           {getNotifIcon(n.type)}
@@ -183,7 +220,7 @@ export default function Header() {
                             {new Date(n.createdAt).toLocaleString()}
                           </div>
                         </div>
-                        {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-2 shrink-0" />}
+                        {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-2 shrink-0 animate-pulse" />}
                       </motion.div>
                     ))
                   )}

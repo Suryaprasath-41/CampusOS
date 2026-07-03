@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useCampusStore, fetchAPI } from '@/lib/store';
-import WidgetCard, { PredictionBar, GlassCard } from './WidgetCard';
-import { TrendingUp, BookOpen, AlertTriangle, Calendar, Library, Trophy, Clock, Zap, Sparkles, Target, Flame, ChevronRight, Mic, Bot } from 'lucide-react';
+import WidgetCard, { GlassCard } from './WidgetCard';
+import AnimatedCounter from './AnimatedCounter';
+import { TrendingUp, BookOpen, AlertTriangle, Calendar, Library, Trophy, Clock, Zap, Sparkles, Target, Flame, ChevronRight, Mic, Bot, ArrowUpRight, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Dashboard() {
@@ -17,11 +18,15 @@ export default function Dashboard() {
   if (loading || !dashboardData) {
     return (
       <div className="p-6 space-y-4">
-        <div className="h-10 w-64 bg-white/[0.03] rounded-xl animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="h-28 w-full bg-white/[0.03] rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 bg-white/[0.03] rounded-2xl animate-pulse" />
+            <div key={i} className="h-32 bg-white/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
           ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -119,6 +124,39 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Live Activity Ticker */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden"
+      >
+        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+          </span>
+          <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <motion.div
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            className="flex gap-8 whitespace-nowrap text-xs text-gray-400"
+          >
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> AI Agent processed 6 conversations today</span>
+            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-400" /> Google interview scheduled for next week</span>
+            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-400" /> 3 new books added to library</span>
+            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-400" /> Tech Fest registration opens Friday</span>
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> AI Agent processed 6 conversations today</span>
+            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-400" /> Google interview scheduled for next week</span>
+            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-400" /> 3 new books added to library</span>
+            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-400" /> Tech Fest registration opens Friday</span>
+          </motion.div>
+        </div>
+      </motion.div>
+
       {/* AI Predictions */}
       <GlassCard className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
@@ -137,9 +175,33 @@ export default function Dashboard() {
             <span className="text-xs text-gray-500">Updated 2 min ago</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <PredictionBar label="Attendance Prediction" value={att.predicted} color="purple" />
-            <PredictionBar label="Placement Readiness" value={d.readiness} color="cyan" />
-            <PredictionBar label="Stress Level" value={d.stressLevel} color={d.stressLevel > 60 ? 'red' : d.stressLevel > 40 ? 'yellow' : 'green'} />
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-gray-400 text-sm">Attendance Prediction</span>
+                <span className="text-white text-sm font-semibold"><AnimatedCounter value={att.predicted} decimals={1} suffix="%" /></span>
+              </div>
+              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, att.predicted)}%` }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-gray-400 text-sm">Placement Readiness</span>
+                <span className="text-white text-sm font-semibold"><AnimatedCounter value={d.readiness} suffix="%" /></span>
+              </div>
+              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${d.readiness}%` }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(34,211,238,0.4)]" />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-gray-400 text-sm">Stress Level</span>
+                <span className="text-white text-sm font-semibold"><AnimatedCounter value={d.stressLevel} suffix="%" /></span>
+              </div>
+              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${d.stressLevel}%` }} transition={{ duration: 1, ease: 'easeOut' }} className={`h-full rounded-full bg-gradient-to-r shadow-[0_0_10px_rgba(239,68,68,0.4)] ${d.stressLevel > 60 ? 'from-red-500 to-rose-600' : d.stressLevel > 40 ? 'from-yellow-500 to-amber-600' : 'from-green-500 to-emerald-600'}`} />
+              </div>
+            </div>
           </div>
         </div>
       </GlassCard>

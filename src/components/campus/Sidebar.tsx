@@ -4,7 +4,7 @@ import { useCampusStore } from '@/lib/store';
 import {
   LayoutDashboard, TrendingUp, Target, BookOpen, GraduationCap,
   Home, Wallet, CalendarDays, Shield, ChevronLeft, ChevronRight,
-  Bot, Sparkles, Workflow, Brain
+  Bot, Sparkles, Workflow, Brain, User, FileText, Command
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -15,16 +15,18 @@ const navItems = [
   { id: 'placement', label: 'Placement', icon: Target },
   { id: 'library', label: 'Library', icon: BookOpen },
   { id: 'academic', label: 'Academic', icon: GraduationCap },
+  { id: 'exams', label: 'Exams', icon: FileText },
   { id: 'hostel', label: 'Hostel', icon: Home },
   { id: 'finance', label: 'Finance', icon: Wallet },
   { id: 'events', label: 'Events', icon: CalendarDays },
   { id: 'workflow', label: 'Workflows', icon: Workflow },
   { id: 'faculty', label: 'Faculty AI', icon: Brain },
+  { id: 'profile', label: 'Profile', icon: User },
   { id: 'admin', label: 'Admin', icon: Shield },
 ];
 
 export default function Sidebar() {
-  const { activeSection, setActiveSection, sidebarOpen, setSidebarOpen } = useCampusStore();
+  const { activeSection, setActiveSection, sidebarOpen, setSidebarOpen, setCommandPaletteOpen } = useCampusStore();
 
   return (
     <motion.aside
@@ -100,24 +102,48 @@ export default function Sidebar() {
       </button>
 
       {/* Bottom */}
-      <div className="p-3 border-t border-white/[0.06]">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-            S
-          </div>
+      <div className="p-3 border-t border-white/[0.06] space-y-2">
+        <button
+          onClick={() => setCommandPaletteOpen(true)}
+          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-colors group"
+        >
+          <Command className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors shrink-0" />
           <AnimatePresence>
             {sidebarOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="overflow-hidden whitespace-nowrap"
+                className="flex-1 flex items-center justify-between overflow-hidden whitespace-nowrap"
               >
-                <div className="text-xs font-medium text-white">Sam Kumar</div>
-                <div className="text-[10px] text-gray-500">CS2022001</div>
+                <span className="text-xs text-gray-500 group-hover:text-gray-300">Quick Search</span>
+                <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.1] text-gray-400 font-mono">⌘K</kbd>
               </motion.div>
             )}
           </AnimatePresence>
+        </button>
+        <div className="flex items-center gap-2 px-2">
+          <button
+            onClick={() => setActiveSection('profile')}
+            className="flex items-center gap-2 w-full hover:opacity-80 transition-opacity"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-[0_0_12px_rgba(139,92,246,0.4)]">
+              S
+            </div>
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="overflow-hidden whitespace-nowrap text-left"
+                >
+                  <div className="text-xs font-medium text-white">Sam Kumar</div>
+                  <div className="text-[10px] text-gray-500">CS2022001</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </button>
         </div>
       </div>
     </motion.aside>
