@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  role       String   @default("student")
+  avatar     String?
+  department String?
+  phone      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  student      Student?
+  faculty      Faculty?
+  notifications Notification[]
+}
+
+model Student {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  rollNumber      String   @unique
+  department      String
+  semester        Int      @default(1)
+  section         String   @default("A")
+  cgpa            Float    @default(0)
+  hostelRoom      String?
+  guardianName    String?
+  guardianPhone   String?
+  skills          String?
+  placementStatus String   @default("seeking")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  attendance     Attendance[]
+  enrollments    SubjectEnrollment[]
+  placements     Placement[]
+  complaints     Complaint[]
+  leaveRequests  LeaveRequest[]
+  eventParticipations EventParticipant[]
+  assignmentSubmissions AssignmentSubmission[]
+  fees           Fee[]
+  aiMemories     AiMemory[]
+  conversations  Conversation[]
+  bookTransactions BookTransaction[]
+  internalMarks  InternalMark[]
+}
+
+model Faculty {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  department     String
+  designation    String   @default("Assistant Professor")
+  cabinLocation  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subjects Subject[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  department  String
+  semester    Int
+  credits     Int      @default(3)
+  facultyId   String
+  faculty     Faculty  @relation(fields: [facultyId], references: [id])
+  schedule    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments    SubjectEnrollment[]
+  assignments    Assignment[]
+  attendance     Attendance[]
+  internalMarks  InternalMark[]
+}
+
+model SubjectEnrollment {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  semester  Int
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, subjectId])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  date      DateTime
+  status    String   @default("present")
+  createdAt DateTime @default(now())
+}
+
+model InternalMark {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  test1       Float?
+  test2       Float?
+  assignment1 Float?
+  assignment2 Float?
+  total       Float?
+  maxMarks    Float    @default(50)
+  semester    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  title       String
+  description String?
+  dueDate     DateTime
+  maxMarks    Float    @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String    @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  studentId    String
+  student      Student   @relation(fields: [studentId], references: [id])
+  submittedAt  DateTime?
+  marks        Float?
+  feedback     String?
+  status       String    @default("pending")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Book {
+  id              String   @id @default(cuid())
+  title           String
+  author          String
+  isbn            String?
+  category        String
+  shelfLocation   String
+  totalCopies     Int      @default(1)
+  availableCopies Int      @default(1)
+  description     String?
+  coverUrl        String?
+  digitalUrl      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  transactions BookTransaction[]
+}
+
+model BookTransaction {
+  id          String    @id @default(cuid())
+  bookId      String
+  book        Book      @relation(fields: [bookId], references: [id])
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id])
+  borrowDate  DateTime
+  dueDate     DateTime
+  returnDate  DateTime?
+  fine        Float     @default(0)
+  status      String    @default("borrowed")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Placement {
+  id              String    @id @default(cuid())
+  studentId       String
+  student         Student   @relation(fields: [studentId], references: [id])
+  companyName     String
+  role            String
+  package         Float?
+  status          String    @default("applied")
+  interviewDate   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Event {
+  id               String    @id @default(cuid())
+  title            String
+  description      String?
+  type             String
+  organizer        String?
+  startDate        DateTime
+  endDate          DateTime?
+  venue            String?
+  registrationOpen Boolean   @default(true)
+  maxParticipants  Int?
+  imageUrl         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  participants EventParticipant[]
+}
+
+model EventParticipant {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id])
+  registeredAt  DateTime @default(now())
+  attended      Boolean  @default(false)
+  certificateUrl String?
+
+  @@unique([eventId, studentId])
+}
+
+model Complaint {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  type        String
+  description String
+  status      String   @default("open")
+  priority    String   @default("medium")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LeaveRequest {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  type       String
+  startDate  DateTime
+  endDate    DateTime
+  reason     String
+  status     String   @default("pending")
+  approvedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Fee {
+  id        String    @id @default(cuid())
+  studentId String
+  student   Student   @relation(fields: [studentId], references: [id])
+  type      String
+  amount    Float
+  paid      Boolean   @default(false)
+  dueDate   DateTime
+  paidDate  DateTime?
+  semester  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model AiMemory {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  category  String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  role      String
+  content   String
+  agentType String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  actionUrl String?
+  createdAt DateTime @default(now())
+}
