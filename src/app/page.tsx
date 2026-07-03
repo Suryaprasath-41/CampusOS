@@ -17,6 +17,8 @@ import WorkflowSection from '@/components/campus/WorkflowSection';
 import FacultySection from '@/components/campus/FacultySection';
 import ProfileSection from '@/components/campus/ProfileSection';
 import AdminSection from '@/components/campus/AdminSection';
+import AiMemorySection from '@/components/campus/AiMemorySection';
+import SettingsSection from '@/components/campus/SettingsSection';
 import ChatPanel from '@/components/campus/ChatPanel';
 import VoiceAssistant from '@/components/campus/VoiceAssistant';
 import CommandPalette from '@/components/campus/CommandPalette';
@@ -36,6 +38,8 @@ const sections: Record<string, React.ComponentType> = {
   faculty: FacultySection,
   profile: ProfileSection,
   admin: AdminSection,
+  'ai-memory': AiMemorySection,
+  settings: SettingsSection,
 };
 
 export default function Home() {

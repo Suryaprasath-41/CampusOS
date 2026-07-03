@@ -137,6 +137,10 @@ export default function Dashboard() {
           </span>
           <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
         </div>
+        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
+          <span className="text-[10px] text-gray-600">Backend:</span>
+          <span className="text-[10px] text-green-400 font-medium">{d._backend === 'python-fastapi' ? '🐍 Python FastAPI' : '⚡ Next.js + Prisma'}</span>
+        </div>
         <div className="flex-1 overflow-hidden">
           <motion.div
             animate={{ x: ['0%', '-50%'] }}

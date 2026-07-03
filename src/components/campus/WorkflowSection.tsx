@@ -85,7 +85,12 @@ export default function WorkflowSection() {
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
       <div className="flex items-center justify-between">
-        <SectionTitle>AI Workflow Automation</SectionTitle>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+            <Workflow className="w-5 h-5 text-white" />
+          </div>
+          <SectionTitle>AI Workflow Automation</SectionTitle>
+        </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

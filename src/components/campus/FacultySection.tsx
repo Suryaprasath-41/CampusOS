@@ -23,7 +23,12 @@ export default function FacultySection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>Faculty AI</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+          <Brain className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>Faculty AI</SectionTitle>
+      </div>
 
       {/* AI Tools Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

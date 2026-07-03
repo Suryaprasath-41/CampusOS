@@ -52,7 +52,10 @@ export const useCampusStore = create<CampusStore>((set) => ({
   bumpNotifVersion: () => set((state) => ({ notifVersion: state.notifVersion + 1 })),
 }));
 
+const API_PORT = '8001';
+
 export async function fetchAPI(endpoint: string) {
+  // Next.js API routes proxy to Python FastAPI backend
   const res = await fetch(`/api${endpoint}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();

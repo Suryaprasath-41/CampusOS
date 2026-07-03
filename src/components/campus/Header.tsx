@@ -94,9 +94,15 @@ export default function Header() {
           <h1 className="text-lg font-bold text-white">
             {greeting}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{dashboardData?.student?.name || 'Student'}</span>
           </h1>
-          <p className="text-xs text-gray-500">
-            {dashboardData?.student?.department} • Semester {dashboardData?.student?.semester}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-gray-500">
+              {dashboardData?.student?.department} • Semester {dashboardData?.student?.semester}
+            </p>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              {dashboardData?._backend === 'python-fastapi' ? '🐍 Python' : '⚡ Next.js'}
+            </span>
+          </div>
         </div>
       </div>
 

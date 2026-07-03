@@ -82,6 +82,8 @@ export async function GET() {
       placements: placementSummary,
       notifications: { unread: unreadNotifs },
       readiness, stressLevel,
+      _backend: 'nextjs-prisma',
+      _pythonBackend: 'http://127.0.0.1:8001',
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

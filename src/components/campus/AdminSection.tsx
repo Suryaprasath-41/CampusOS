@@ -28,7 +28,12 @@ export default function AdminSection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>Admin Dashboard</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-500 to-slate-600 flex items-center justify-center shadow-[0_0_20px_rgba(107,114,128,0.3)]">
+          <Shield className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>Admin Dashboard</SectionTitle>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

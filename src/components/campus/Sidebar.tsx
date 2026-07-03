@@ -4,7 +4,7 @@ import { useCampusStore } from '@/lib/store';
 import {
   LayoutDashboard, TrendingUp, Target, BookOpen, GraduationCap,
   Home, Wallet, CalendarDays, Shield, ChevronLeft, ChevronRight,
-  Bot, Sparkles, Workflow, Brain, User, FileText, Command
+  Bot, Sparkles, Workflow, Brain, User, FileText, Command, Settings, Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,8 @@ const navItems = [
   { id: 'faculty', label: 'Faculty AI', icon: Brain },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'admin', label: 'Admin', icon: Shield },
+  { id: 'ai-memory', label: 'AI Memory', icon: Database },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {

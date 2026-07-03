@@ -6,6 +6,7 @@ import {
   Search, LayoutDashboard, TrendingUp, Target, BookOpen, GraduationCap,
   Home, Wallet, CalendarDays, Workflow, Brain, Shield, User, FileText,
   Sparkles, Mic, Bell, CornerDownLeft, ArrowUp, ArrowDown, X,
+  Settings, Database,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -56,6 +57,8 @@ export default function CommandPalette() {
       { id: 'nav-admin', type: 'navigation', title: 'Admin', subtitle: 'Navigation', icon: Shield, keywords: 'administration panel', run: () => { setActiveSection('admin'); close(); } },
       { id: 'nav-profile', type: 'navigation', title: 'Profile', subtitle: 'Navigation', icon: User, keywords: 'account me settings', run: () => { setActiveSection('profile'); close(); } },
       { id: 'nav-exams', type: 'navigation', title: 'Exams', subtitle: 'Navigation', icon: FileText, keywords: 'tests schedule results', run: () => { setActiveSection('exams'); close(); } },
+      { id: 'nav-ai-memory', type: 'navigation', title: 'AI Memory', subtitle: 'Navigation', icon: Database, keywords: 'brain memory recall context', run: () => { setActiveSection('ai-memory'); close(); } },
+      { id: 'nav-settings', type: 'navigation', title: 'Settings', subtitle: 'Navigation', icon: Settings, keywords: 'preferences config theme', run: () => { setActiveSection('settings'); close(); } },
       // ── Actions ─────────────────────────────────────────────────
       { id: 'act-ai', type: 'action', title: 'Ask AI Assistant', subtitle: 'Quick Action', icon: Sparkles, shortcut: '↵', keywords: 'chat bot help question', run: () => { setChatOpen(true); close(); } },
       { id: 'act-voice', type: 'action', title: 'Open Voice Assistant', subtitle: 'Quick Action', icon: Mic, shortcut: '↵', keywords: 'speak mic speech', run: () => { setVoiceOpen(true); close(); } },

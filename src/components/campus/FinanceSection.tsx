@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchAPI } from '@/lib/store';
 import { GlassCard, SectionTitle, StatusBadge } from './WidgetCard';
-import { Wallet, TrendingUp, Calendar, CheckCircle, AlertTriangle, Award } from 'lucide-react';
+import { Wallet, TrendingUp, Calendar, CheckCircle, AlertTriangle, Award, IndianRupee, Receipt, PiggyBank } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -27,7 +27,12 @@ export default function FinanceSection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>Finance Agent</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+          <Wallet className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>Finance Agent</SectionTitle>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

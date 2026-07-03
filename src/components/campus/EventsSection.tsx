@@ -30,7 +30,12 @@ export default function EventsSection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>Event Manager</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+          <CalendarDays className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>Event Manager</SectionTitle>
+      </div>
 
       {/* Category Filters */}
       <div className="flex gap-2 flex-wrap">

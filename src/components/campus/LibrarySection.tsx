@@ -28,7 +28,12 @@ export default function LibrarySection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>AI Library</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+          <Library className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>AI Library</SectionTitle>
+      </div>
 
       {/* Search */}
       <div className="relative">

@@ -1,0 +1,825 @@
+     1→     1→import json
+     2→     2→import subprocess
+     3→     3→from datetime import datetime, timedelta
+     4→     4→from typing import Optional
+     5→     5→from fastapi import FastAPI, Query, HTTPException
+     6→     6→from fastapi.middleware.cors import CORSMiddleware
+     7→     7→from pydantic import BaseModel
+     8→     8→from database import query, query_one, execute
+     9→     9→
+    10→    10→app = FastAPI(title="CampusOS AI API", version="2.0")
+    11→    11→
+    12→    12→app.add_middleware(
+    13→    13→    CORSMiddleware,
+    14→    14→    allow_origins=["*"],
+    15→    15→    allow_credentials=True,
+    16→    16→    allow_methods=["*"],
+    17→    17→    allow_headers=["*"],
+    18→    18→)
+    19→    19→
+    20→    20→@app.exception_handler(Exception)
+    21→    21→async def global_exception_handler(request, exc):
+    22→    22→    import traceback
+    23→    23→    traceback.print_exc()
+    24→    24→    from fastapi.responses import JSONResponse
+    25→    25→    return JSONResponse(status_code=500, content={"error": str(exc)})
+    26→    26→
+    27→    27→
+    28→    28→# ─── Helpers ────────────────────────────────────────────────────────────
+    29→    29→
+    30→    30→def get_student(student_id: Optional[str] = None) -> dict:
+    31→    31→    if student_id:
+    32→    32→        student = query_one("SELECT * FROM Student WHERE id = ?", (student_id,))
+    33→    33→        if student:
+    34→    34→            return student
+    35→    35→    student = query_one("SELECT * FROM Student LIMIT 1")
+    36→    36→    if not student:
+    37→    37→        raise HTTPException(status_code=404, detail="No students found")
+    38→    38→    return student
+    39→    39→
+    40→    40→
+    41→    41→def get_user(user_id: str) -> dict:
+    42→    42→    return query_one("SELECT * FROM User WHERE id = ?", (user_id,))
+    43→    43→
+    44→    44→
+    45→    45→def dt(dt_str):
+    46→    46→    """Safely parse datetime string"""
+    47→    47→    if not dt_str:
+    48→    48→        return None
+    49→    49→    if isinstance(dt_str, datetime):
+    50→    50→        return dt_str.isoformat()
+    51→    51→    return str(dt_str)
+    52→    52→
+    53→    53→
+    54→    54→# ─── Dashboard API ──────────────────────────────────────────────────────
+    55→    55→
+    56→    56→@app.get("/api/dashboard")
+    57→    57→def get_dashboard(studentId: Optional[str] = None):
+    58→    58→    student = get_student(studentId)
+    59→    59→    user = get_user(student["userId"])
+    60→    60→
+    61→    61→    # Attendance
+    62→    62→    att = query_one("""
+    63→    63→        SELECT 
+    64→    64→            COUNT(*) as total,
+    65→    65→            SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+    66→    66→        FROM Attendance WHERE studentId = ?
+    67→    67→    """, (student["id"],))
+    68→    68→
+    69→    69→    total_att = att["total"] or 0
+    70→    70→    present_att = att["present"] or 0
+    71→    71→    attendance_pct = round((present_att / total_att * 100), 1) if total_att > 0 else 0
+    72→    72→
+    73→    73→    # Prediction
+    74→    74→    remaining_classes = 45
+    75→    75→    predicted_pct = round(((present_att + remaining_classes * 0.85) / (total_att + remaining_classes)) * 100, 1)
+    76→    76→    risk = "HIGH" if predicted_pct < 75 else "MEDIUM" if predicted_pct < 80 else "LOW"
+    77→    77→    safe_leaves = max(0, int((total_att + remaining_classes) * 0.75 - present_att))
+    78→    78→
+    79→    79→    # Assignments
+    80→    80→    pending_assignments = query_one("""
+    81→    81→        SELECT COUNT(*) as cnt FROM Assignment 
+    82→    82→        WHERE dueDate > datetime('now') 
+    83→    83→        AND id NOT IN (
+    84→    84→            SELECT assignmentId FROM AssignmentSubmission 
+    85→    85→            WHERE studentId = ? AND status = 'submitted'
+    86→    86→        )
+    87→    87→    """, (student["id"],))["cnt"]
+    88→    88→
+    89→    89→    # Events
+    90→    90→    upcoming_events = query_one("SELECT COUNT(*) as cnt FROM Event WHERE startDate > datetime('now')")["cnt"]
+    91→    91→    registered_events = query_one("SELECT COUNT(*) as cnt FROM EventParticipant WHERE studentId = ?", (student["id"],))["cnt"]
+    92→    92→
+    93→    93→    # Fees
+    94→    94→    pending_fees = query_one("SELECT COUNT(*) as cnt FROM Fee WHERE studentId = ? AND paid = 0", (student["id"],))["cnt"]
+    95→    95→
+    96→    96→    # Library
+    97→    97→    borrowed = query_one("SELECT COUNT(*) as cnt FROM BookTransaction WHERE studentId = ? AND status = 'borrowed'", (student["id"],))["cnt"]
+    98→    98→    overdue = query_one("SELECT COUNT(*) as cnt FROM BookTransaction WHERE studentId = ? AND status = 'borrowed' AND dueDate < datetime('now')", (student["id"],))["cnt"]
+    99→    99→
+   100→   100→    # Placements
+   101→   101→    placements = query("SELECT status, COUNT(*) as cnt FROM Placement WHERE studentId = ? GROUP BY status", (student["id"],))
+   102→   102→    placement_summary = {p["status"]: p["cnt"] for p in placements}
+   103→   103→
+   104→   104→    # Notifications
+   105→   105→    unread = query_one("SELECT COUNT(*) as cnt FROM Notification WHERE userId = ? AND read = 0", (user["id"],))["cnt"]
+   106→   106→
+   107→   107→    # Skills
+   108→   108→    skills = json.loads(student["skills"]) if student.get("skills") else []
+   109→   109→
+   110→   110→    # Placement readiness
+   111→   111→    readiness = min(100, round(
+   112→   112→        student["cgpa"] * 10 * 0.3 +
+   113→   113→        min(len(skills) * 8, 30) + 20 + 10
+   114→   114→    ))
+   115→   115→
+   116→   116→    # Stress level
+   117→   117→    stress = min(100, max(20, 100 - attendance_pct + pending_assignments * 5 - readiness // 3))
+   118→   118→
+   119→   119→    return {
+   120→   120→        "student": {
+   121→   121→            "id": student["id"],
+   122→   122→            "name": user["name"],
+   123→   123→            "email": user["email"],
+   124→   124→            "rollNumber": student["rollNumber"],
+   125→   125→            "department": student["department"],
+   126→   126→            "semester": student["semester"],
+   127→   127→            "section": student["section"],
+   128→   128→            "cgpa": student["cgpa"],
+   129→   129→            "hostelRoom": student.get("hostelRoom"),
+   130→   130→            "skills": skills,
+   131→   131→            "placementStatus": student.get("placementStatus", "seeking"),
+   132→   132→        },
+   133→   133→        "attendance": {
+   134→   134→            "percentage": attendance_pct,
+   135→   135→            "totalClasses": total_att,
+   136→   136→            "presentClasses": present_att,
+   137→   137→            "predicted": predicted_pct,
+   138→   138→            "risk": risk,
+   139→   139→            "safeLeaves": safe_leaves,
+   140→   140→        },
+   141→   141→        "assignments": {"pending": pending_assignments},
+   142→   142→        "events": {"upcoming": upcoming_events, "registered": registered_events},
+   143→   143→        "fees": {"pending": pending_fees},
+   144→   144→        "library": {"borrowed": borrowed, "overdue": overdue},
+   145→   145→        "placements": placement_summary,
+   146→   146→        "notifications": {"unread": unread},
+   147→   147→        "readiness": readiness,
+   148→   148→        "stressLevel": stress,
+   149→   149→    }
+   150→   150→
+   151→   151→
+   152→   152→# ─── Attendance API ─────────────────────────────────────────────────────
+   153→   153→
+   154→   154→@app.get("/api/attendance")
+   155→   155→def get_attendance(studentId: Optional[str] = None):
+   156→   156→    student = get_student(studentId)
+   157→   157→
+   158→   158→    # Overall
+   159→   159→    att = query_one("""
+   160→   160→        SELECT 
+   161→   161→            COUNT(*) as total,
+   162→   162→            SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present,
+   163→   163→            SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent,
+   164→   164→            SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late
+   165→   165→        FROM Attendance WHERE studentId = ?
+   166→   166→    """, (student["id"],))
+   167→   167→
+   168→   168→    total = att["total"] or 0
+   169→   169→    present = att["present"] or 0
+   170→   170→    absent = att["absent"] or 0
+   171→   171→    late = att["late"] or 0
+   172→   172→    overall_pct = round((present / total * 100), 1) if total > 0 else 0
+   173→   173→
+   174→   174→    # Subject-wise
+   175→   175→    subjects_data = query("""
+   176→   176→        SELECT s.id, s.code, s.name,
+   177→   177→            COUNT(a.id) as total,
+   178→   178→            SUM(CASE WHEN a.status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+   179→   179→        FROM SubjectEnrollment se
+   180→   180→        JOIN Subject s ON s.id = se.subjectId
+   181→   181→        LEFT JOIN Attendance a ON a.subjectId = s.id AND a.studentId = ?
+   182→   182→        WHERE se.studentId = ?
+   183→   183→        GROUP BY s.id
+   184→   184→    """, (student["id"], student["id"]))
+   185→   185→
+   186→   186→    subject_wise = []
+   187→   187→    for s in subjects_data:
+   188→   188→        s_total = s["total"] or 0
+   189→   189→        s_present = s["present"] or 0
+   190→   190→        s_pct = round((s_present / s_total * 100), 1) if s_total > 0 else 0
+   191→   191→        s_risk = "HIGH" if s_pct < 70 else "MEDIUM" if s_pct < 80 else "LOW"
+   192→   192→        subject_wise.append({
+   193→   193→            "subjectId": s["id"],
+   194→   194→            "code": s["code"],
+   195→   195→            "name": s["name"],
+   196→   196→            "total": s_total,
+   197→   197→            "present": s_present,
+   198→   198→            "absent": s_total - s_present,
+   199→   199→            "percentage": s_pct,
+   200→   200→            "risk": s_risk,
+   201→   201→        })
+   202→   202→
+   203→   203→    # Prediction
+   204→   204→    remaining = 45
+   205→   205→    predicted = round(((present + remaining * 0.85) / (total + remaining)) * 100, 1)
+   206→   206→    risk = "HIGH" if predicted < 75 else "MEDIUM" if predicted < 80 else "LOW"
+   207→   207→    safe_leaves = max(0, int((total + remaining) * 0.75 - present))
+   208→   208→    required_to_attend = max(0, int((total + remaining) * 0.75) - present) if present / total < 0.75 else 0
+   209→   209→
+   210→   210→    # Trend (last 30 days)
+   211→   211→    trend_rows = query("""
+   212→   212→        SELECT DATE(date) as d, 
+   213→   213→            COUNT(*) as total,
+   214→   214→            SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+   215→   215→        FROM Attendance 
+   216→   216→        WHERE studentId = ? AND date >= date('now', '-30 days')
+   217→   217→        GROUP BY DATE(date)
+   218→   218→        ORDER BY d
+   219→   219→    """, (student["id"],))
+   220→   220→
+   221→   221→    trend = []
+   222→   222→    for r in trend_rows:
+   223→   223→        if r["total"] and r["total"] > 0:
+   224→   224→            trend.append({
+   225→   225→                "date": r["d"],
+   226→   226→                "percentage": round((r["present"] / r["total"] * 100), 1),
+   227→   227→                "total": r["total"],
+   228→   228→                "present": r["present"],
+   229→   229→            })
+   230→   230→
+   231→   231→    # Recent records
+   232→   232→    recent_rows = query("""
+   233→   233→        SELECT a.date, a.status, s.name as subject_name
+   234→   234→        FROM Attendance a
+   235→   235→        JOIN Subject s ON s.id = a.subjectId
+   236→   236→        WHERE a.studentId = ?
+   237→   237→        ORDER BY a.date DESC
+   238→   238→        LIMIT 14
+   239→   239→    """, (student["id"],))
+   240→   240→
+   241→   241→    recent = [{"date": dt(r["date"]), "subject": r["subject_name"], "status": r["status"]} for r in recent_rows]
+   242→   242→
+   243→   243→    return {
+   244→   244→        "overall": {
+   245→   245→            "percentage": overall_pct,
+   246→   246→            "totalClasses": total,
+   247→   247→            "present": present,
+   248→   248→            "absent": absent,
+   249→   249→            "late": late,
+   250→   250→        },
+   251→   251→        "subjects": subject_wise,
+   252→   252→        "prediction": {
+   253→   253→            "current": overall_pct,
+   254→   254→            "predicted": predicted,
+   255→   255→            "risk": risk,
+   256→   256→            "safeLeaves": safe_leaves,
+   257→   257→            "requiredToAttend": required_to_attend,
+   258→   258→            "remainingClasses": remaining,
+   259→   259→        },
+   260→   260→        "trend": trend,
+   261→   261→        "recent": recent,
+   262→   262→    }
+   263→   263→
+   264→   264→
+   265→   265→# ─── Placement API ──────────────────────────────────────────────────────
+   266→   266→
+   267→   267→@app.get("/api/placement")
+   268→   268→def get_placement(studentId: Optional[str] = None):
+   269→   269→    student = get_student(studentId)
+   270→   270→    skills = json.loads(student.get("skills", "[]")) if student.get("skills") else []
+   271→   271→
+   272→   272→    # Applications
+   273→   273→    applications = query("SELECT * FROM Placement WHERE studentId = ?", (student["id"],))
+   274→   274→    apps_list = [{
+   275→   275→        "id": a["id"],
+   276→   276→        "company": a["companyName"],
+   277→   277→        "role": a["role"],
+   278→   278→        "package": a.get("package"),
+   279→   279→        "status": a["status"],
+   280→   280→        "interviewDate": dt(a.get("interviewDate")),
+   281→   281→    } for a in applications]
+   282→   282→
+   283→   283→    # Readiness
+   284→   284→    cgpa_score = min(30, student["cgpa"] * 3.4)
+   285→   285→    skills_score = min(30, len(skills) * 3.5)
+   286→   286→    projects_score = 18
+   287→   287→    communication_score = 15
+   288→   288→    total_readiness = round(cgpa_score + skills_score + projects_score + communication_score)
+   289→   289→
+   290→   290→    # Skill gaps
+   291→   291→    target_skills = ["System Design", "DSA", "Cloud Computing", "Kubernetes", "CI/CD", "Microservices"]
+   292→   292→    current_lower = [s.lower() for s in skills]
+   293→   293→    skill_gaps = [s for s in target_skills if s.lower() not in current_lower]
+   294→   294→
+   295→   295→    actions = [
+   296→   296→        {"priority": "high", "action": "Learn System Design and DSA patterns", "category": "skills"},
+   297→   297→        {"priority": "high", "action": "Build 2-3 portfolio projects on GitHub", "category": "projects"},
+   298→   298→        {"priority": "medium", "action": "Practice mock interviews weekly", "category": "interview"},
+   299→   299→        {"priority": "medium", "action": "Get AWS/Azure cloud certification", "category": "certification"},
+   300→   300→        {"priority": "low", "action": "Contribute to open-source projects", "category": "projects"},
+   301→   301→    ]
+   302→   302→    if student["cgpa"] < 9.0:
+   303→   303→        actions.insert(0, {"priority": "high", "action": "Focus on improving CGPA - aim for 9.0+", "category": "academic"})
+   304→   304→
+   305→   305→    return {
+   306→   306→        "readiness": {
+   307→   307→            "total": total_readiness,
+   308→   308→            "breakdown": {
+   309→   309→                "cgpa": round(cgpa_score, 1),
+   310→   310→                "skills": round(skills_score, 1),
+   311→   311→                "projects": projects_score,
+   312→   312→                "communication": communication_score,
+   313→   313→            }
+   314→   314→        },
+   315→   315→        "skills": skills,
+   316→   316→        "applications": apps_list,
+   317→   317→        "skillGaps": skill_gaps,
+   318→   318→        "actions": actions,
+   319→   319→        "companies": [
+   320→   320→            {"name": "Google", "role": "SDE-1", "match": 85, "skills": ["Python", "DSA", "System Design"]},
+   321→   321→            {"name": "Microsoft", "role": "Software Engineer", "match": 78, "skills": ["React", "Azure", "C++"]},
+   322→   322→            {"name": "Amazon", "role": "SDE-1", "match": 72, "skills": ["Java", "DSA", "System Design"]},
+   323→   323→            {"name": "Flipkart", "role": "Backend Engineer", "match": 80, "skills": ["Node.js", "Java", "System Design"]},
+   324→   324→        ],
+   325→   325→    }
+   326→   326→
+   327→   327→
+   328→   328→# ─── Library API ────────────────────────────────────────────────────────
+   329→   329→
+   330→   330→@app.get("/api/library")
+   331→   331→def get_library(studentId: Optional[str] = None):
+   332→   332→    student = get_student(studentId)
+   333→   333→
+   334→   334→    books = query("SELECT * FROM Book")
+   335→   335→    books_list = [{
+   336→   336→        "id": b["id"],
+   337→   337→        "title": b["title"],
+   338→   338→        "author": b["author"],
+   339→   339→        "category": b["category"],
+   340→   340→        "shelfLocation": b["shelfLocation"],
+   341→   341→        "totalCopies": b["totalCopies"],
+   342→   342→        "availableCopies": b["availableCopies"],
+   343→   343→        "description": b.get("description"),
+   344→   344→    } for b in books]
+   345→   345→
+   346→   346→    transactions = query("""
+   347→   347→        SELECT bt.*, b.title, b.author FROM BookTransaction bt
+   348→   348→        JOIN Book b ON b.id = bt.bookId
+   349→   349→        WHERE bt.studentId = ? AND bt.status = 'borrowed'
+   350→   350→    """, (student["id"],))
+   351→   351→
+   352→   352→    borrowed = []
+   353→   353→    for t in transactions:
+   354→   354→        try:
+   355→   355→            due = datetime.fromisoformat(t["dueDate"].replace("Z", "+00:00")) if t.get("dueDate") else datetime.now()
+   356→   356→            days_until_due = (due - datetime.now(tz=due.tzinfo)).days
+   357→   357→        except:
+   358→   358→            days_until_due = 0
+   359→   359→        fine = max(0, -days_until_due * 5) if days_until_due < 0 else 0
+   360→   360→        borrowed.append({
+   361→   361→            "id": t["id"],
+   362→   362→            "title": t["title"],
+   363→   363→            "author": t["author"],
+   364→   364→            "borrowDate": dt(t.get("borrowDate")),
+   365→   365→            "dueDate": dt(t.get("dueDate")),
+   366→   366→            "daysUntilDue": days_until_due,
+   367→   367→            "fine": fine,
+   368→   368→            "overdue": days_until_due < 0,
+   369→   369→        })
+   370→   370→
+   371→   371→    categories = {}
+   372→   372→    for b in books:
+   373→   373→        categories[b["category"]] = categories.get(b["category"], 0) + 1
+   374→   374→
+   375→   375→    return {
+   376→   376→        "books": books_list,
+   377→   377→        "borrowed": borrowed,
+   378→   378→        "categories": categories,
+   379→   379→        "totalBooks": len(books),
+   380→   380→        "availableBooks": sum(1 for b in books if b["availableCopies"] > 0),
+   381→   381→    }
+   382→   382→
+   383→   383→
+   384→   384→# ─── Academic API ───────────────────────────────────────────────────────
+   385→   385→
+   386→   386→@app.get("/api/academic")
+   387→   387→def get_academic(studentId: Optional[str] = None):
+   388→   388→    student = get_student(studentId)
+   389→   389→
+   390→   390→    enrollments = query("""
+   391→   391→        SELECT se.*, s.code, s.name, s.credits, s.schedule, s.facultyId
+   392→   392→        FROM SubjectEnrollment se
+   393→   393→        JOIN Subject s ON s.id = se.subjectId
+   394→   394→        WHERE se.studentId = ?
+   395→   395→    """, (student["id"],))
+   396→   396→
+   397→   397→    subjects_data = []
+   398→   398→    schedule = []
+   399→   399→    for e in enrollments:
+   400→   400→        # Get faculty name
+   401→   401→        faculty = query_one("""
+   402→   402→            SELECT f.*, u.name as faculty_name FROM Faculty f
+   403→   403→            JOIN User u ON u.id = f.userId
+   404→   404→            WHERE f.id = ?
+   405→   405→        """, (e["facultyId"],))
+   406→   406→
+   407→   407→        # Get marks
+   408→   408→        marks = query_one("""
+   409→   409→            SELECT * FROM InternalMark
+   410→   410→            WHERE studentId = ? AND subjectId = ?
+   411→   411→        """, (student["id"], e["subjectId"]))
+   412→   412→
+   413→   413→        marks_data = None
+   414→   414→        if marks:
+   415→   415→            marks_data = {
+   416→   416→                "test1": marks.get("test1"),
+   417→   417→                "test2": marks.get("test2"),
+   418→   418→                "assignment1": marks.get("assignment1"),
+   419→   419→                "assignment2": marks.get("assignment2"),
+   420→   420→                "total": marks.get("total"),
+   421→   421→                "maxMarks": marks.get("maxMarks", 50),
+   422→   422→            }
+   423→   423→
+   424→   424→        subjects_data.append({
+   425→   425→            "code": e["code"],
+   426→   426→            "name": e["name"],
+   427→   427→            "credits": e["credits"],
+   428→   428→            "faculty": faculty["faculty_name"] if faculty else "TBA",
+   429→   429→            "marks": marks_data,
+   430→   430→        })
+   431→   431→
+   432→   432→        try:
+   433→   433→            sched = json.loads(e["schedule"]) if e.get("schedule") else {}
+   434→   434→            schedule.append({
+   435→   435→                "subject": e["name"],
+   436→   436→                "code": e["code"],
+   437→   437→                "days": sched.get("days", []),
+   438→   438→                "time": sched.get("time", "TBA"),
+   439→   439→                "room": sched.get("room", "TBA"),
+   440→   440→                "faculty": faculty["faculty_name"] if faculty else "TBA",
+   441→   441→            })
+   442→   442→        except:
+   443→   443→            pass
+   444→   444→
+   445→   445→    # Assignments
+   446→   446→    pending_rows = query("""
+   447→   447→        SELECT a.*, s.name as subject_name FROM Assignment a
+   448→   448→        JOIN Subject s ON s.id = a.subjectId
+   449→   449→        WHERE a.dueDate > datetime('now')
+   450→   450→        AND a.id NOT IN (
+   451→   451→            SELECT assignmentId FROM AssignmentSubmission
+   452→   452→            WHERE studentId = ? AND status = 'submitted'
+   453→   453→        )
+   454→   454→    """, (student["id"],))
+   455→   455→
+   456→   456→    submitted_rows = query("""
+   457→   457→        SELECT a.*, s.name as subject_name, sub.status as sub_status FROM Assignment a
+   458→   458→        JOIN Subject s ON s.id = a.subjectId
+   459→   459→        JOIN AssignmentSubmission sub ON sub.assignmentId = a.id
+   460→   460→        WHERE sub.studentId = ? AND sub.status = 'submitted'
+   461→   461→    """, (student["id"],))
+   462→   462→
+   463→   463→    pending = [{
+   464→   464→        "id": a["id"],
+   465→   465→        "title": a["title"],
+   466→   466→        "description": a.get("description"),
+   467→   467→        "subject": a["subject_name"],
+   468→   468→        "dueDate": dt(a.get("dueDate")),
+   469→   469→        "maxMarks": a.get("maxMarks", 10),
+   470→   470→        "status": "pending",
+   471→   471→    } for a in pending_rows]
+   472→   472→
+   473→   473→    submitted = [{
+   474→   474→        "id": a["id"],
+   475→   475→        "title": a["title"],
+   476→   476→        "description": a.get("description"),
+   477→   477→        "subject": a["subject_name"],
+   478→   478→        "dueDate": dt(a.get("dueDate")),
+   479→   479→        "maxMarks": a.get("maxMarks", 10),
+   480→   480→        "status": "submitted",
+   481→   481→    } for a in submitted_rows]
+   482→   482→
+   483→   483→    return {
+   484→   484→        "subjects": subjects_data,
+   485→   485→        "schedule": schedule,
+   486→   486→        "assignments": {"pending": pending, "submitted": submitted},
+   487→   487→        "semester": student["semester"],
+   488→   488→    }
+   489→   489→
+   490→   490→
+   491→   491→# ─── Hostel API ─────────────────────────────────────────────────────────
+   492→   492→
+   493→   493→@app.get("/api/hostel")
+   494→   494→def get_hostel(studentId: Optional[str] = None):
+   495→   495→    student = get_student(studentId)
+   496→   496→
+   497→   497→    complaints = query("SELECT * FROM Complaint WHERE studentId = ?", (student["id"],))
+   498→   498→    leaves = query("SELECT * FROM LeaveRequest WHERE studentId = ?", (student["id"],))
+   499→   499→
+   500→   500→    mess_menu = {
+   501→   501→        "Monday": {"breakfast": "Poha + Toast + Tea", "lunch": "Rice + Dal + Sabzi + Salad", "dinner": "Chapati + Paneer + Rice"},
+   502→   502→        "Tuesday": {"breakfast": "Idli + Sambar + Tea", "lunch": "Rice + Sambar + Chicken + Salad", "dinner": "Chapati + Dal + Sabzi"},
+   503→   503→        "Wednesday": {"breakfast": "Upma + Toast + Tea", "lunch": "Rice + Dal + Fish + Salad", "dinner": "Chapati + Chole + Rice"},
+   504→   504→        "Thursday": {"breakfast": "Dosa + Chutney + Tea", "lunch": "Rice + Dal + Paneer + Salad", "dinner": "Chapati + Chicken + Rice"},
+   505→   505→        "Friday": {"breakfast": "Bread + Butter + Tea", "lunch": "Biryani + Raita + Salad", "dinner": "Chapati + Dal + Sabzi"},
+   506→   506→        "Saturday": {"breakfast": "Paratha + Curd + Tea", "lunch": "Rice + Dal + Egg Curry + Salad", "dinner": "Chapati + Paneer + Rice"},
+   507→   507→        "Sunday": {"breakfast": "Chole Bhature + Tea", "lunch": "Special Thali", "dinner": "Chapati + Chicken + Rice + Dessert"},
+   508→   508→    }
+   509→   509→
+   510→   510→    return {
+   511→   511→        "room": {
+   512→   512→            "number": student.get("hostelRoom", "N/A"),
+   513→   513→            "block": "H4",
+   514→   514→            "type": "Double Sharing",
+   515→   515→            "status": "Occupied",
+   516→   516→        },
+   517→   517→        "complaints": [{
+   518→   518→            "id": c["id"],
+   519→   519→            "type": c["type"],
+   520→   520→            "description": c["description"],
+   521→   521→            "status": c["status"],
+   522→   522→            "priority": c["priority"],
+   523→   523→            "createdAt": dt(c.get("createdAt")),
+   524→   524→        } for c in complaints],
+   525→   525→        "leaves": [{
+   526→   526→            "id": l["id"],
+   527→   527→            "type": l["type"],
+   528→   528→            "startDate": dt(l.get("startDate")),
+   529→   529→            "endDate": dt(l.get("endDate")),
+   530→   530→            "reason": l["reason"],
+   531→   531→            "status": l["status"],
+   532→   532→            "approvedBy": l.get("approvedBy"),
+   533→   533→        } for l in leaves],
+   534→   534→        "messMenu": mess_menu,
+   535→   535→    }
+   536→   536→
+   537→   537→
+   538→   538→# ─── Finance API ────────────────────────────────────────────────────────
+   539→   539→
+   540→   540→@app.get("/api/finance")
+   541→   541→def get_finance(studentId: Optional[str] = None):
+   542→   542→    student = get_student(studentId)
+   543→   543→
+   544→   544→    fees = query("SELECT * FROM Fee WHERE studentId = ?", (student["id"],))
+   545→   545→    total_paid = sum(f["amount"] for f in fees if f["paid"])
+   546→   546→    total_pending = sum(f["amount"] for f in fees if not f["paid"])
+   547→   547→
+   548→   548→    fees_list = []
+   549→   549→    upcoming_due = None
+   550→   550→    for f in fees:
+   551→   551→        fees_list.append({
+   552→   552→            "id": f["id"],
+   553→   553→            "type": f["type"],
+   554→   554→            "amount": f["amount"],
+   555→   555→            "paid": bool(f["paid"]),
+   556→   556→            "dueDate": dt(f.get("dueDate")),
+   557→   557→            "paidDate": dt(f.get("paidDate")),
+   558→   558→            "semester": f["semester"],
+   559→   559→        })
+   560→   560→
+   561→   561→    return {
+   562→   562→        "summary": {
+   563→   563→            "totalPaid": total_paid,
+   564→   564→            "totalPending": total_pending,
+   565→   565→            "totalFees": total_paid + total_pending,
+   566→   566→        },
+   567→   567→        "fees": fees_list,
+   568→   568→        "scholarships": [
+   569→   569→            {"name": "Merit Scholarship", "amount": 25000, "status": "eligible", "deadline": "2025-08-15"},
+   570→   570→            {"name": "Sports Quota", "amount": 15000, "status": "not_eligible", "deadline": "2025-07-30"},
+   571→   571→        ],
+   572→   572→    }
+   573→   573→
+   574→   574→
+   575→   575→# ─── Events API ─────────────────────────────────────────────────────────
+   576→   576→
+   577→   577→@app.get("/api/events")
+   578→   578→def get_events(studentId: Optional[str] = None):
+   579→   579→    student = get_student(studentId)
+   580→   580→
+   581→   581→    events = query("SELECT * FROM Event WHERE startDate > datetime('now') ORDER BY startDate")
+   582→   582→    registered_ids = [p["eventId"] for p in query(
+   583→   583→        "SELECT eventId FROM EventParticipant WHERE studentId = ?", (student["id"],)
+   584→   584→    )]
+   585→   585→
+   586→   586→    events_list = []
+   587→   587→    for e in events:
+   588→   588→        p_count = query_one("SELECT COUNT(*) as cnt FROM EventParticipant WHERE eventId = ?", (e["id"],))["cnt"]
+   589→   589→        events_list.append({
+   590→   590→            "id": e["id"],
+   591→   591→            "title": e["title"],
+   592→   592→            "description": e.get("description"),
+   593→   593→            "type": e["type"],
+   594→   594→            "organizer": e.get("organizer"),
+   595→   595→            "startDate": dt(e.get("startDate")),
+   596→   596→            "endDate": dt(e.get("endDate")),
+   597→   597→            "venue": e.get("venue"),
+   598→   598→            "registrationOpen": bool(e.get("registrationOpen", 1)),
+   599→   599→            "maxParticipants": e.get("maxParticipants"),
+   600→   600→            "currentParticipants": p_count,
+   601→   601→            "registered": e["id"] in registered_ids,
+   602→   602→        })
+   603→   603→
+   604→   604→    return {
+   605→   605→        "events": events_list,
+   606→   606→        "registered": [e for e in events_list if e["registered"]],
+   607→   607→        "categories": list(set(e["type"] for e in events_list)) if events_list else [],
+   608→   608→    }
+   609→   609→
+   610→   610→
+   611→   611→# ─── Admin API ──────────────────────────────────────────────────────────
+   612→   612→
+   613→   613→@app.get("/api/admin")
+   614→   614→def get_admin():
+   615→   615→    total_students = query_one("SELECT COUNT(*) as cnt FROM Student")["cnt"]
+   616→   616→    total_faculty = query_one("SELECT COUNT(*) as cnt FROM Faculty")["cnt"]
+   617→   617→
+   618→   618→    avg_cgpa = query_one("SELECT AVG(cgpa) as avg FROM Student")["avg"] or 0
+   619→   619→
+   620→   620→    att = query_one("""
+   621→   621→        SELECT COUNT(*) as total,
+   622→   622→            SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+   623→   623→        FROM Attendance
+   624→   624→    """)
+   625→   625→    avg_attendance = round((att["present"] / att["total"] * 100), 1) if att["total"] else 0
+   626→   626→
+   627→   627→    fees = query_one("SELECT SUM(amount) as total FROM Fee")
+   628→   628→    paid = query_one("SELECT SUM(amount) as total FROM Fee WHERE paid = 1")
+   629→   629→
+   630→   630→    total_fees = fees["total"] or 0
+   631→   631→    paid_fees = paid["total"] or 0
+   632→   632→
+   633→   633→    depts = query("SELECT department, COUNT(*) as cnt FROM Student GROUP BY department")
+   634→   634→    dept_distribution = [{"department": d["department"], "count": d["cnt"]} for d in depts]
+   635→   635→
+   636→   636→    placements = query("SELECT status, COUNT(*) as cnt FROM Placement GROUP BY status")
+   637→   637→    placement_stats = {p["status"]: p["cnt"] for p in placements}
+   638→   638→
+   639→   639→    return {
+   640→   640→        "stats": {
+   641→   641→            "totalStudents": total_students,
+   642→   642→            "totalFaculty": total_faculty,
+   643→   643→            "avgCGPA": round(avg_cgpa, 2),
+   644→   644→            "avgAttendance": avg_attendance,
+   645→   645→            "totalFees": total_fees,
+   646→   646→            "paidFees": paid_fees,
+   647→   647→            "pendingFees": total_fees - paid_fees,
+   648→   648→        },
+   649→   649→        "departments": dept_distribution,
+   650→   650→        "placements": placement_stats,
+   651→   651→        "recentActivity": [
+   652→   652→            {"type": "enrollment", "message": "New student enrolled in Computer Science", "time": "2 hours ago"},
+   653→   653→            {"type": "fee", "message": "Fee payment of ₹75,000 received", "time": "3 hours ago"},
+   654→   654→            {"type": "placement", "message": "Google campus drive scheduled", "time": "5 hours ago"},
+   655→   655→            {"type": "event", "message": "CodeStorm Hackathon registration opened", "time": "1 day ago"},
+   656→   656→            {"type": "complaint", "message": "3 new hostel complaints received", "time": "1 day ago"},
+   657→   657→        ],
+   658→   658→    }
+   659→   659→
+   660→   660→
+   661→   661→# ─── Notifications API ──────────────────────────────────────────────────
+   662→   662→
+   663→   663→@app.get("/api/notifications")
+   664→   664→def get_notifications(studentId: Optional[str] = None):
+   665→   665→    student = get_student(studentId)
+   666→   666→    user = get_user(student["userId"])
+   667→   667→
+   668→   668→    notifs = query("""
+   669→   669→        SELECT * FROM Notification WHERE userId = ?
+   670→   670→        ORDER BY createdAt DESC LIMIT 20
+   671→   671→    """, (user["id"],))
+   672→   672→
+   673→   673→    return {
+   674→   674→        "notifications": [{
+   675→   675→            "id": n["id"],
+   676→   676→            "title": n["title"],
+   677→   677→            "message": n["message"],
+   678→   678→            "type": n["type"],
+   679→   679→            "read": bool(n["read"]),
+   680→   680→            "actionUrl": n.get("actionUrl"),
+   681→   681→            "createdAt": dt(n.get("createdAt")),
+   682→   682→        } for n in notifs],
+   683→   683→        "unreadCount": sum(1 for n in notifs if not n["read"]),
+   684→   684→    }
+   685→   685→
+   686→   686→
+   687→   687→# ─── AI Chat API ────────────────────────────────────────────────────────
+   688→   688→
+   689→   689→AGENT_PROMPTS = {
+   690→   690→    "master": "You are CampusOS AI, the Master Agent of an intelligent campus operating system. You help students with anything related to their college life - attendance, academics, placements, library, hostel, finance, and events. Be concise, helpful, and friendly. Use emojis sparingly. Provide specific data-driven answers when possible. If you don't know something, give general helpful advice.",
+   691→   691→
+   692→   692→    "attendance": "You are the Attendance Intelligence Agent of CampusOS AI. You specialize in attendance analysis, predictions, and advice. Tell students their attendance status, predict future attendance, calculate safe leaves, and suggest strategies to maintain minimum attendance. Always mention risk levels. Be data-driven and specific.",
+   693→   693→
+   694→   694→    "placement": "You are the Placement Agent of CampusOS AI. You help students prepare for placements. Analyze their skills, suggest improvements, recommend companies, create study roadmaps, and provide interview tips. Be motivating but realistic. Focus on actionable advice.",
+   695→   695→
+   696→   696→    "library": "You are the Library AI Agent of CampusOS AI. You help students find books, check availability, recommend reading materials, and manage their library account. Suggest books based on courses and interests. Be knowledgeable about academic resources.",
+   697→   697→
+   698→   698→    "academic": "You are the Academic Planner Agent of CampusOS AI. You help students with schedules, assignments, exam preparation, study plans, and subject-related queries. Be organized and provide structured advice. Help prioritize tasks.",
+   699→   699→
+   700→   700→    "hostel": "You are the Hostel Assistant Agent of CampusOS AI. You help with room issues, mess menu, complaints, leave requests, and any hostel-related queries. Be practical and solution-oriented.",
+   701→   701→
+   702→   702→    "finance": "You are the Finance Agent of CampusOS AI. You help students with fee payments, scholarships, financial planning, and payment reminders. Be clear about amounts and deadlines.",
+   703→   703→}
+   704→   704→
+   705→   705→
+   706→   706→class ChatRequest(BaseModel):
+   707→   707→    message: str
+   708→   708→    studentId: Optional[str] = None
+   709→   709→    agentType: Optional[str] = "master"
+   710→   710→
+   711→   711→
+   712→   712→def call_llm(system_prompt: str, user_message: str, context: str = "") -> str:
+   713→   713→    full_system = system_prompt
+   714→   714→    if context:
+   715→   715→        full_system += f"\n\nStudent Context:\n{context}"
+   716→   716→
+   717→   717→    try:
+   718→   718→        result = subprocess.run(
+   719→   719→            ["z-ai", "chat", "--prompt", user_message, "--system", full_system],
+   720→   720→            capture_output=True,
+   721→   721→            text=True,
+   722→   722→            timeout=45,
+   723→   723→        )
+   724→   724→        if result.returncode == 0 and result.stdout.strip():
+   725→   725→            output = result.stdout.strip()
+   726→   726→            try:
+   727→   727→                data = json.loads(output)
+   728→   728→                if isinstance(data, dict) and "choices" in data:
+   729→   729→                    return data["choices"][0].get("message", {}).get("content", "I couldn't process that. Please try again.")
+   730→   730→                elif isinstance(data, dict) and "content" in data:
+   731→   731→                    return data["content"]
+   732→   732→            except json.JSONDecodeError:
+   733→   733→                pass
+   734→   734→            # If it's just plain text
+   735→   735→            if len(output) > 10:
+   736→   736→                return output
+   737→   737→        return "I'm having trouble connecting right now. Please try again."
+   738→   738→    except subprocess.TimeoutExpired:
+   739→   739→        return "The request timed out. Please try again."
+   740→   740→    except Exception as e:
+   741→   741→        return f"An error occurred. Please try again."
+   742→   742→
+   743→   743→
+   744→   744→@app.post("/api/chat")
+   745→   745→async def chat(request: ChatRequest):
+   746→   746→    message = request.message
+   747→   747→    student_id = request.studentId
+   748→   748→    agent_type = request.agentType or "master"
+   749→   749→
+   750→   750→    if not message:
+   751→   751→        return {"response": "Please ask me something!", "agentType": agent_type}
+   752→   752→
+   753→   753→    try:
+   754→   754→        student = get_student(student_id)
+   755→   755→        user = get_user(student["userId"])
+   756→   756→
+   757→   757→        # Build context
+   758→   758→        att = query_one("""
+   759→   759→            SELECT COUNT(*) as total,
+   760→   760→                SUM(CASE WHEN status IN ('present', 'late') THEN 1 ELSE 0 END) as present
+   761→   761→            FROM Attendance WHERE studentId = ?
+   762→   762→        """, (student["id"],))
+   763→   763→
+   764→   764→        total_att = att["total"] or 0
+   765→   765→        present_att = att["present"] or 0
+   766→   766→        att_pct = round((present_att / total_att * 100), 1) if total_att > 0 else 0
+   767→   767→
+   768→   768→        pending_fees = query_one("SELECT COUNT(*) as cnt FROM Fee WHERE studentId = ? AND paid = 0", (student["id"],))["cnt"]
+   769→   769→
+   770→   770→        context = f"""Name: {user['name']}
+   771→   771→Roll Number: {student['rollNumber']}
+   772→   772→Department: {student['department']}
+   773→   773→Semester: {student['semester']}
+   774→   774→CGPA: {student['cgpa']}
+   775→   775→Attendance: {att_pct}% ({present_att}/{total_att})
+   776→   776→Skills: {student.get('skills', '[]')}
+   777→   777→Hostel Room: {student.get('hostelRoom', 'N/A')}
+   778→   778→Pending Fees: {pending_fees}
+   779→   779→Placement Status: {student.get('placementStatus', 'seeking')}"""
+   780→   780→
+   781→   781→        # Save user message
+   782→   782→        execute(
+   783→   783→            "INSERT INTO Conversation (id, studentId, role, content, agentType, createdAt) VALUES (lower(hex(randomblob(8))), ?, 'user', ?, ?, datetime('now'))",
+   784→   784→            (student["id"], message, agent_type)
+   785→   785→        )
+   786→   786→
+   787→   787→        # Get recent history
+   788→   788→        recent = query("""
+   789→   789→            SELECT role, content FROM Conversation
+   790→   790→            WHERE studentId = ?
+   791→   791→            ORDER BY createdAt DESC LIMIT 6
+   792→   792→        """, (student["id"],))
+   793→   793→        recent.reverse()
+   794→   794→
+   795→   795→        history_text = "\n".join([f"{r['role']}: {r['content']}" for r in recent[:-1]]) if len(recent) > 1 else ""
+   796→   796→
+   797→   797→        full_message = message
+   798→   798→        if history_text:
+   799→   799→            full_message = f"Previous conversation:\n{history_text}\n\nCurrent message: {message}"
+   800→   800→
+   801→   801→        system_prompt = AGENT_PROMPTS.get(agent_type, AGENT_PROMPTS["master"])
+   802→   802→        response = call_llm(system_prompt, full_message, context)
+   803→   803→
+   804→   804→        # Save response
+   805→   805→        execute(
+   806→   806→            "INSERT INTO Conversation (id, studentId, role, content, agentType, createdAt) VALUES (lower(hex(randomblob(8))), ?, 'assistant', ?, ?, datetime('now'))",
+   807→   807→            (student["id"], response, agent_type)
+   808→   808→        )
+   809→   809→
+   810→   810→        return {"response": response, "agentType": agent_type}
+   811→   811→    except Exception as e:
+   812→   812→        return {"response": f"I encountered an error. Please try again.", "agentType": agent_type}
+   813→   813→
+   814→   814→
+   815→   815→# ─── Health ─────────────────────────────────────────────────────────────
+   816→   816→
+   817→   817→@app.get("/")
+   818→   818→def health():
+   819→   819→    return {"status": "CampusOS AI Python Backend is Operational", "version": "2.0"}
+   820→   820→
+   821→   821→
+   822→   822→@app.get("/health")
+   823→   823→def health_check():
+   824→   824→    return {"status": "ok"}
+   825→   825→

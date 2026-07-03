@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchAPI } from '@/lib/store';
 import { GlassCard, SectionTitle, PredictionBar, StatusBadge } from './WidgetCard';
-import { TrendingUp, AlertTriangle, Shield, Clock, ChevronRight } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Shield, Clock, ChevronRight, CalendarDays, Flame, CheckCircle2, XCircle, Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -24,37 +24,72 @@ export default function AttendanceSection() {
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <SectionTitle>Attendance Intelligence</SectionTitle>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+          <TrendingUp className="w-5 h-5 text-white" />
+        </div>
+        <SectionTitle>Attendance Intelligence</SectionTitle>
+      </div>
 
       {/* Top Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Overall Attendance Circle */}
-        <GlassCard className="flex flex-col items-center justify-center py-8">
-          <div className="relative w-40 h-40 mb-4">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-              <circle
-                cx="50" cy="50" r="42" fill="none"
-                stroke="url(#grad)" strokeWidth="8"
-                strokeDasharray={`${overall.percentage * 2.64} 264`}
-                strokeLinecap="round"
-              />
-              <defs>
-                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#8b5cf6" />
-                  <stop offset="100%" stopColor="#06b6d4" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-bold text-white">{overall.percentage}%</span>
-              <span className="text-xs text-gray-400">Overall</span>
+        <GlassCard className="flex flex-col items-center justify-center py-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.08),transparent_70%)]" />
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="relative w-40 h-40 mb-4">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                <motion.circle
+                  initial={{ strokeDasharray: '0 264' }}
+                  animate={{ strokeDasharray: `${overall.percentage * 2.64} 264` }}
+                  transition={{ duration: 1.5, ease: 'easeOut' }}
+                  cx="50" cy="50" r="42" fill="none"
+                  stroke="url(#attGrad)" strokeWidth="8"
+                  strokeLinecap="round"
+                />
+                <defs>
+                  <linearGradient id="attGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#06b6d4" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, type: 'spring' }}
+                  className="text-4xl font-bold text-white"
+                >
+                  {overall.percentage}%
+                </motion.span>
+                <span className="text-xs text-gray-400">Overall</span>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-6 text-center">
-            <div><div className="text-lg font-bold text-green-400">{overall.present}</div><div className="text-xs text-gray-500">Present</div></div>
-            <div><div className="text-lg font-bold text-red-400">{overall.absent}</div><div className="text-xs text-gray-500">Absent</div></div>
-            <div><div className="text-lg font-bold text-yellow-400">{overall.late}</div><div className="text-xs text-gray-500">Late</div></div>
+            <div className="flex gap-6 text-center">
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                </div>
+                <div className="text-lg font-bold text-green-400">{overall.present}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Present</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center mb-1">
+                  <XCircle className="w-4 h-4 text-red-400" />
+                </div>
+                <div className="text-lg font-bold text-red-400">{overall.absent}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Absent</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-1">
+                  <Timer className="w-4 h-4 text-yellow-400" />
+                </div>
+                <div className="text-lg font-bold text-yellow-400">{overall.late}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Late</div>
+              </div>
+            </div>
           </div>
         </GlassCard>
 
