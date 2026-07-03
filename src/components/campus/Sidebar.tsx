@@ -9,23 +9,57 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'attendance', label: 'Attendance', icon: TrendingUp },
-  { id: 'placement', label: 'Placement', icon: Target },
-  { id: 'library', label: 'Library', icon: BookOpen },
-  { id: 'academic', label: 'Academic', icon: GraduationCap },
-  { id: 'exams', label: 'Exams', icon: FileText },
-  { id: 'hostel', label: 'Hostel', icon: Home },
-  { id: 'finance', label: 'Finance', icon: Wallet },
-  { id: 'events', label: 'Events', icon: CalendarDays },
-  { id: 'workflow', label: 'Workflows', icon: Workflow },
-  { id: 'faculty', label: 'Faculty AI', icon: Brain },
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'admin', label: 'Admin', icon: Shield },
-  { id: 'ai-memory', label: 'AI Memory', icon: Database },
-  { id: 'settings', label: 'Settings', icon: Settings },
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: 'MAIN',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'ACADEMIC',
+    items: [
+      { id: 'attendance', label: 'Attendance', icon: TrendingUp },
+      { id: 'placement', label: 'Placement', icon: Target },
+      { id: 'library', label: 'Library', icon: BookOpen },
+      { id: 'academic', label: 'Academic', icon: GraduationCap },
+      { id: 'exams', label: 'Exams', icon: FileText },
+    ],
+  },
+  {
+    label: 'CAMPUS',
+    items: [
+      { id: 'hostel', label: 'Hostel', icon: Home },
+      { id: 'finance', label: 'Finance', icon: Wallet },
+      { id: 'events', label: 'Events', icon: CalendarDays },
+    ],
+  },
+  {
+    label: 'SYSTEM',
+    items: [
+      { id: 'workflow', label: 'Workflows', icon: Workflow },
+      { id: 'faculty', label: 'Faculty AI', icon: Brain },
+      { id: 'admin', label: 'Admin', icon: Shield, badge: 'ADMIN' },
+      { id: 'ai-memory', label: 'AI Memory', icon: Database },
+      { id: 'settings', label: 'Settings', icon: Settings },
+    ],
+  },
 ];
+
+// Keep profile out of groups, it's at the bottom
+const profileItem = { id: 'profile', label: 'Profile', icon: User };
 
 export default function Sidebar() {
   const { activeSection, setActiveSection, sidebarOpen, setSidebarOpen, setCommandPaletteOpen } = useCampusStore();
@@ -57,42 +91,114 @@ export default function Sidebar() {
         </AnimatePresence>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = activeSection === item.id;
-          return (
-            <motion.button
-              key={item.id}
-              onClick={() => setActiveSection(item.id)}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.97 }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium",
-                isActive
-                  ? "bg-purple-500/15 text-purple-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]"
-                  : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+      {/* Navigation with Groups */}
+      <nav className="flex-1 py-2 px-2 overflow-y-auto">
+        {navGroups.map((group, gi) => (
+          <div key={group.label} className={cn(gi > 0 && "mt-2")}>
+            {/* Gradient Divider between groups */}
+            {gi > 0 && (
+              <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+            )}
+            {/* Group Label */}
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="px-3 mb-1"
+                >
+                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-[0.15em]">
+                    {group.label}
+                  </span>
+                </motion.div>
               )}
-            >
-              <item.icon className={cn("w-5 h-5 shrink-0", isActive && "text-purple-400")} />
-              <AnimatePresence>
-                {sidebarOpen && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="whitespace-nowrap overflow-hidden"
+            </AnimatePresence>
+            {/* Group Items */}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium relative group/item",
+                      isActive
+                        ? "bg-purple-500/15 text-purple-400 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                        : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+                    )}
                   >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {isActive && sidebarOpen && (
-                <Sparkles className="w-3 h-3 text-purple-400 ml-auto" />
+                    {/* Hover trail effect */}
+                    <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-white/[0.04] via-transparent to-transparent" />
+                    <item.icon className={cn("w-5 h-5 shrink-0 relative z-10", isActive && "text-purple-400")} />
+                    <AnimatePresence>
+                      {sidebarOpen && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="whitespace-nowrap overflow-hidden relative z-10"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    {/* ADMIN badge */}
+                    {item.badge && sidebarOpen && (
+                      <span className="ml-auto relative z-10 text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-wider">
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && sidebarOpen && !item.badge && (
+                      <Sparkles className="w-3 h-3 text-purple-400 ml-auto relative z-10" />
+                    )}
+                    {/* Active item glow indicator */}
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-purple-400 shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Profile item - standalone */}
+        <div className="mt-2">
+          <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+          <motion.button
+            onClick={() => setActiveSection(profileItem.id)}
+            whileHover={{ x: 4 }}
+            whileTap={{ scale: 0.97 }}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium relative group/item",
+              activeSection === profileItem.id
+                ? "bg-purple-500/15 text-purple-400 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+            )}
+          >
+            <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-white/[0.04] via-transparent to-transparent" />
+            <profileItem.icon className={cn("w-5 h-5 shrink-0 relative z-10", activeSection === profileItem.id && "text-purple-400")} />
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="whitespace-nowrap overflow-hidden relative z-10"
+                >
+                  {profileItem.label}
+                </motion.span>
               )}
-            </motion.button>
-          );
-        })}
+            </AnimatePresence>
+            {activeSection === profileItem.id && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-purple-400 shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
+            )}
+          </motion.button>
+        </div>
       </nav>
 
       {/* Toggle Button */}

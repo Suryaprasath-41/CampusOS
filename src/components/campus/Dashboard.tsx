@@ -17,18 +17,28 @@ export default function Dashboard() {
 
   if (loading || !dashboardData) {
     return (
-      <div className="p-6 space-y-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-6 space-y-4"
+      >
         <div className="h-28 w-full bg-white/[0.03] rounded-3xl animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 bg-white/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="h-32 bg-white/[0.03] rounded-2xl animate-pulse"
+            />
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
           <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -36,13 +46,22 @@ export default function Dashboard() {
   const att = d.attendance;
 
   return (
-    <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto"
+    >
       {/* Hero Banner with Quick Stats */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-white/[0.08] p-6"
       >
+        {/* Shimmer/shine animation */}
+        <span className="absolute inset-0 overflow-hidden rounded-3xl">
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-[shimmer_4s_ease-in-out_infinite]" style={{ transform: 'translateX(-100%)' }} />
+        </span>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.15),transparent_50%)]" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
@@ -81,47 +100,59 @@ export default function Dashboard() {
 
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <WidgetCard
-          title="Attendance"
-          value={`${att.percentage}%`}
-          icon={<TrendingUp className="w-5 h-5 text-purple-400" />}
-          risk={att.risk}
-          onClick={() => setActiveSection('attendance')}
-        />
-        <WidgetCard
-          title="CGPA"
-          value={d.student.cgpa}
-          icon={<BookOpen className="w-5 h-5 text-cyan-400" />}
-          trend="up"
-        />
-        <WidgetCard
-          title="Assignments"
-          value={d.assignments.pending}
-          icon={<AlertTriangle className="w-5 h-5 text-yellow-400" />}
-          subtitle="pending"
-          onClick={() => setActiveSection('academic')}
-        />
-        <WidgetCard
-          title="Upcoming"
-          value={d.events.upcoming}
-          icon={<Calendar className="w-5 h-5 text-blue-400" />}
-          subtitle="events"
-          onClick={() => setActiveSection('events')}
-        />
-        <WidgetCard
-          title="Library Due"
-          value={d.library.overdue}
-          icon={<Library className="w-5 h-5 text-orange-400" />}
-          subtitle="overdue"
-          onClick={() => setActiveSection('library')}
-        />
-        <WidgetCard
-          title="Placement"
-          value={`${d.readiness}%`}
-          icon={<Trophy className="w-5 h-5 text-green-400" />}
-          subtitle="readiness"
-          onClick={() => setActiveSection('placement')}
-        />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-purple-500/40 hover:via-cyan-500/20 hover:to-purple-500/40 transition-all duration-500">
+          <WidgetCard
+            title="Attendance"
+            value={`${att.percentage}%`}
+            icon={<TrendingUp className="w-5 h-5 text-purple-400" />}
+            risk={att.risk}
+            onClick={() => setActiveSection('attendance')}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-cyan-500/40 hover:via-purple-500/20 hover:to-cyan-500/40 transition-all duration-500">
+          <WidgetCard
+            title="CGPA"
+            value={d.student.cgpa}
+            icon={<BookOpen className="w-5 h-5 text-cyan-400" />}
+            trend="up"
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-yellow-500/40 hover:via-orange-500/20 hover:to-yellow-500/40 transition-all duration-500">
+          <WidgetCard
+            title="Assignments"
+            value={d.assignments.pending}
+            icon={<AlertTriangle className="w-5 h-5 text-yellow-400" />}
+            subtitle="pending"
+            onClick={() => setActiveSection('academic')}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-blue-500/40 hover:via-purple-500/20 hover:to-blue-500/40 transition-all duration-500">
+          <WidgetCard
+            title="Upcoming"
+            value={d.events.upcoming}
+            icon={<Calendar className="w-5 h-5 text-blue-400" />}
+            subtitle="events"
+            onClick={() => setActiveSection('events')}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-orange-500/40 hover:via-yellow-500/20 hover:to-orange-500/40 transition-all duration-500">
+          <WidgetCard
+            title="Library Due"
+            value={d.library.overdue}
+            icon={<Library className="w-5 h-5 text-orange-400" />}
+            subtitle="overdue"
+            onClick={() => setActiveSection('library')}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-green-500/40 hover:via-emerald-500/20 hover:to-green-500/40 transition-all duration-500">
+          <WidgetCard
+            title="Placement"
+            value={`${d.readiness}%`}
+            icon={<Trophy className="w-5 h-5 text-green-400" />}
+            subtitle="readiness"
+            onClick={() => setActiveSection('placement')}
+          />
+        </motion.div>
       </div>
 
       {/* Live Activity Ticker */}
@@ -136,10 +167,21 @@ export default function Dashboard() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
           <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
+          {/* Pulse dot for live data */}
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500" />
+          </span>
         </div>
         <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
           <span className="text-[10px] text-gray-600">Backend:</span>
-          <span className="text-[10px] text-green-400 font-medium">{d._backend === 'python-fastapi' ? '🐍 Python FastAPI' : '⚡ Next.js + Prisma'}</span>
+          <span className="text-[10px] text-green-400 font-medium flex items-center gap-1">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+            </span>
+            {d._backend === 'python-fastapi' ? '🐍 Python FastAPI' : '⚡ Next.js + Prisma'}
+          </span>
         </div>
         <div className="flex-1 overflow-hidden">
           <motion.div
@@ -306,7 +348,10 @@ export default function Dashboard() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className={`flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer border-l-2 ${
+                  n.type === 'warning' ? 'border-l-yellow-500/60' :
+                  n.type === 'success' ? 'border-l-green-500/60' : 'border-l-blue-500/60'
+                }`}
               >
                 <span className="text-base shrink-0">{n.icon}</span>
                 <div className="flex-1 min-w-0">
@@ -368,6 +413,6 @@ export default function Dashboard() {
           </div>
         </GlassCard>
       </div>
-    </div>
+    </motion.div>
   );
 }

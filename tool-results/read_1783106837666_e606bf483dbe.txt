@@ -1,0 +1,883 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  GraduationCap, Search, Plus, Pencil, Trash2, LayoutGrid, List,
+     7→  ChevronLeft, ChevronRight, X, AlertTriangle, Mail, Phone,
+     8→  MapPin, BookOpen, UserCircle, CheckCircle2, Briefcase, Users
+     9→} from 'lucide-react';
+    10→import { cn } from '@/lib/utils';
+    11→import { fetchAPI, postAPI, patchAPI, deleteAPI } from '@/lib/store';
+    12→import {
+    13→  Dialog, DialogContent, DialogHeader, DialogTitle,
+    14→  DialogDescription, DialogFooter,
+    15→} from '@/components/ui/dialog';
+    16→import { Badge } from '@/components/ui/badge';
+    17→
+    18→// ─── Types ────────────────────────────────────────────────────────────────
+    19→interface FacultyUser {
+    20→  id: string;
+    21→  name: string;
+    22→  email: string;
+    23→  phone: string | null;
+    24→  avatar: string | null;
+    25→  department: string;
+    26→}
+    27→
+    28→interface FacultySubject {
+    29→  id: string;
+    30→  name: string;
+    31→  code: string;
+    32→  semester: number;
+    33→  credits: number;
+    34→}
+    35→
+    36→interface Faculty {
+    37→  id: string;
+    38→  department: string;
+    39→  designation: string;
+    40→  cabinLocation: string | null;
+    41→  createdAt: string;
+    42→  user: FacultyUser;
+    43→  subjects: FacultySubject[];
+    44→  subjectCount: number;
+    45→}
+    46→
+    47→interface FacultyResponse {
+    48→  faculty: Faculty[];
+    49→  total: number;
+    50→  page: number;
+    51→  limit: number;
+    52→}
+    53→
+    54→// ─── Constants ────────────────────────────────────────────────────────────
+    55→const DEPARTMENTS = ['CS', 'IT', 'ECE', 'EEE', 'ME', 'CE'];
+    56→const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer'];
+    57→const PAGE_SIZES = [10, 20, 50];
+    58→
+    59→const DEPT_COLORS: Record<string, string> = {
+    60→  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    61→  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    62→  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    63→  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+    64→  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
+    65→  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    66→};
+    67→
+    68→const DESIGNATION_COLORS: Record<string, string> = {
+    69→  'Professor': 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    70→  'Associate Professor': 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    71→  'Assistant Professor': 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    72→  'Lecturer': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    73→};
+    74→
+    75→const SUBJECT_COLORS = [
+    76→  'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    77→  'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    78→  'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    79→  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    80→  'bg-orange-500/10 text-orange-400 border-orange-500/20',
+    81→  'bg-pink-500/10 text-pink-400 border-pink-500/20',
+    82→];
+    83→
+    84→// ─── Form State ───────────────────────────────────────────────────────────
+    85→interface FacultyForm {
+    86→  name: string;
+    87→  email: string;
+    88→  department: string;
+    89→  designation: string;
+    90→  phone: string;
+    91→  cabinLocation: string;
+    92→}
+    93→
+    94→const emptyForm: FacultyForm = {
+    95→  name: '', email: '', department: 'CS',
+    96→  designation: 'Assistant Professor', phone: '', cabinLocation: '',
+    97→};
+    98→
+    99→// ═══════════════════════════════════════════════════════════════════════════
+   100→// Main Component
+   101→// ═══════════════════════════════════════════════════════════════════════════
+   102→export default function AdminFacultyManager() {
+   103→  // ─── State ────────────────────────────────────────────────────────────
+   104→  const [faculty, setFaculty] = useState<Faculty[]>([]);
+   105→  const [total, setTotal] = useState(0);
+   106→  const [page, setPage] = useState(1);
+   107→  const [limit, setLimit] = useState(10);
+   108→  const [loading, setLoading] = useState(true);
+   109→  const [search, setSearch] = useState('');
+   110→  const [debouncedSearch, setDebouncedSearch] = useState('');
+   111→  const [filterDept, setFilterDept] = useState('');
+   112→  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+   113→  const [form, setForm] = useState<FacultyForm>(emptyForm);
+   114→  const [dialogOpen, setDialogOpen] = useState(false);
+   115→  const [editId, setEditId] = useState<string | null>(null);
+   116→  const [deleteId, setDeleteId] = useState<string | null>(null);
+   117→  const [subjectsDialogId, setSubjectsDialogId] = useState<string | null>(null);
+   118→  const [submitting, setSubmitting] = useState(false);
+   119→  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+   120→
+   121→  // ─── Debounced search ─────────────────────────────────────────────────
+   122→  useEffect(() => {
+   123→    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+   124→    return () => clearTimeout(timer);
+   125→  }, [search]);
+   126→
+   127→  // ─── Fetch faculty ────────────────────────────────────────────────────
+   128→  const loadFaculty = useCallback(async () => {
+   129→    setLoading(true);
+   130→    try {
+   131→      const params = new URLSearchParams();
+   132→      params.set('page', String(page));
+   133→      params.set('limit', String(limit));
+   134→      if (debouncedSearch) params.set('search', debouncedSearch);
+   135→      if (filterDept) params.set('department', filterDept);
+   136→      const data = await fetchAPI(`/admin/faculty?${params.toString()}`);
+   137→      setFaculty(data.faculty || []);
+   138→      setTotal(data.total || 0);
+   139→    } catch (err) {
+   140→      console.error('Failed to load faculty:', err);
+   141→      showToast('Failed to load faculty', 'error');
+   142→    } finally {
+   143→      setLoading(false);
+   144→    }
+   145→  }, [page, limit, debouncedSearch, filterDept]);
+   146→
+   147→  useEffect(() => { loadFaculty(); }, [loadFaculty]);
+   148→
+   149→  // ─── Toast ────────────────────────────────────────────────────────────
+   150→  const showToast = (msg: string, type: 'success' | 'error') => {
+   151→    setToast({ msg, type });
+   152→    setTimeout(() => setToast(null), 3500);
+   153→  };
+   154→
+   155→  // ─── Form handlers ────────────────────────────────────────────────────
+   156→  const openAdd = () => {
+   157→    setForm(emptyForm);
+   158→    setEditId(null);
+   159→    setDialogOpen(true);
+   160→  };
+   161→
+   162→  const openEdit = (f: Faculty) => {
+   163→    setForm({
+   164→      name: f.user.name,
+   165→      email: f.user.email,
+   166→      department: f.department,
+   167→      designation: f.designation,
+   168→      phone: f.user.phone || '',
+   169→      cabinLocation: f.cabinLocation || '',
+   170→    });
+   171→    setEditId(f.id);
+   172→    setDialogOpen(true);
+   173→  };
+   174→
+   175→  const handleSubmit = async () => {
+   176→    if (!form.name || !form.email || !form.department) {
+   177→      showToast('Please fill all required fields', 'error');
+   178→      return;
+   179→    }
+   180→    setSubmitting(true);
+   181→    try {
+   182→      const payload = {
+   183→        name: form.name,
+   184→        email: form.email,
+   185→        department: form.department,
+   186→        designation: form.designation,
+   187→        phone: form.phone || null,
+   188→        cabinLocation: form.cabinLocation || null,
+   189→      };
+   190→      if (editId) {
+   191→        await patchAPI(`/admin/faculty/${editId}`, payload);
+   192→        showToast('Faculty updated successfully', 'success');
+   193→      } else {
+   194→        await postAPI('/admin/faculty', payload);
+   195→        showToast('Faculty added successfully', 'success');
+   196→      }
+   197→      setDialogOpen(false);
+   198→      loadFaculty();
+   199→    } catch (err: any) {
+   200→      showToast(err.message || 'Operation failed', 'error');
+   201→    } finally {
+   202→      setSubmitting(false);
+   203→    }
+   204→  };
+   205→
+   206→  const handleDelete = async () => {
+   207→    if (!deleteId) return;
+   208→    try {
+   209→      await deleteAPI(`/admin/faculty/${deleteId}`);
+   210→      showToast('Faculty deleted', 'success');
+   211→      setDeleteId(null);
+   212→      loadFaculty();
+   213→    } catch (err: any) {
+   214→      const msg = err?.message || 'Delete failed';
+   215→      if (msg.includes('409')) {
+   216→        showToast('Cannot delete faculty with assigned subjects. Reassign first.', 'error');
+   217→      } else {
+   218→        showToast(msg, 'error');
+   219→      }
+   220→      setDeleteId(null);
+   221→    }
+   222→  };
+   223→
+   224→  // ─── Pagination ───────────────────────────────────────────────────────
+   225→  const totalPages = Math.ceil(total / limit);
+   226→  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+   227→    const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+   228→    return start + i;
+   229→  }).filter(p => p >= 1 && p <= totalPages);
+   230→
+   231→  // ─── Avatar helpers ───────────────────────────────────────────────────
+   232→  const getInitial = (name: string) => name?.charAt(0)?.toUpperCase() || '?';
+   233→  const avatarColors = [
+   234→    'from-purple-500 to-violet-600',
+   235→    'from-cyan-500 to-blue-600',
+   236→    'from-emerald-500 to-teal-600',
+   237→    'from-orange-500 to-amber-600',
+   238→    'from-pink-500 to-rose-600',
+   239→    'from-blue-500 to-indigo-600',
+   240→  ];
+   241→  const getAvatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+   242→
+   243→  // Get the faculty member for the subjects dialog
+   244→  const selectedFaculty = faculty.find(f => f.id === subjectsDialogId);
+   245→
+   246→  // ═════════════════════════════════════════════════════════════════════
+   247→  // Render
+   248→  // ═════════════════════════════════════════════════════════════════════
+   249→  return (
+   250→    <div className="space-y-4 pt-2">
+   251→      {/* ─── Toast ──────────────────────────────────────────────────── */}
+   252→      <AnimatePresence>
+   253→        {toast && (
+   254→          <motion.div
+   255→            initial={{ opacity: 0, y: -20 }}
+   256→            animate={{ opacity: 1, y: 0 }}
+   257→            exit={{ opacity: 0, y: -20 }}
+   258→            className={cn(
+   259→              "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
+   260→              toast.type === 'success'
+   261→                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+   262→                : "bg-red-500/10 border-red-500/30 text-red-400"
+   263→            )}
+   264→          >
+   265→            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+   266→            <span className="text-sm font-medium">{toast.msg}</span>
+   267→          </motion.div>
+   268→        )}
+   269→      </AnimatePresence>
+   270→
+   271→      {/* ─── Header ──────────────────────────────────────────────────── */}
+   272→      <motion.div
+   273→        initial={{ opacity: 0, y: 20 }}
+   274→        animate={{ opacity: 1, y: 0 }}
+   275→        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+   276→      >
+   277→        <div className="flex items-center gap-3">
+   278→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+   279→            <GraduationCap className="w-5 h-5 text-white" />
+   280→          </div>
+   281→          <div>
+   282→            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+   283→              Faculty Management
+   284→              <Badge className="bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 text-[10px] px-2">
+   285→                {total} total
+   286→              </Badge>
+   287→            </h2>
+   288→            <p className="text-xs text-gray-500">Manage faculty profiles, assignments & departments</p>
+   289→          </div>
+   290→        </div>
+   291→
+   292→        <div className="flex items-center gap-2">
+   293→          {/* View Toggle */}
+   294→          <div className="flex items-center rounded-xl bg-white/[0.03] border border-white/[0.08] p-0.5">
+   295→            <button
+   296→              onClick={() => setViewMode('table')}
+   297→              className={cn(
+   298→                "p-1.5 rounded-lg transition-all duration-200",
+   299→                viewMode === 'table' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+   300→              )}
+   301→            >
+   302→              <List className="w-4 h-4" />
+   303→            </button>
+   304→            <button
+   305→              onClick={() => setViewMode('card')}
+   306→              className={cn(
+   307→                "p-1.5 rounded-lg transition-all duration-200",
+   308→                viewMode === 'card' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+   309→              )}
+   310→            >
+   311→              <LayoutGrid className="w-4 h-4" />
+   312→            </button>
+   313→          </div>
+   314→
+   315→          <motion.button
+   316→            whileHover={{ scale: 1.03 }}
+   317→            whileTap={{ scale: 0.97 }}
+   318→            onClick={openAdd}
+   319→            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all duration-300"
+   320→          >
+   321→            <Plus className="w-4 h-4" />
+   322→            Add Faculty
+   323→          </motion.button>
+   324→        </div>
+   325→      </motion.div>
+   326→
+   327→      {/* ─── Search & Filters ────────────────────────────────────────── */}
+   328→      <motion.div
+   329→        initial={{ opacity: 0, y: 15 }}
+   330→        animate={{ opacity: 1, y: 0 }}
+   331→        transition={{ delay: 0.1 }}
+   332→        className="flex flex-col sm:flex-row gap-3"
+   333→      >
+   334→        <div className="relative flex-1">
+   335→          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+   336→          <input
+   337→            type="text"
+   338→            placeholder="Search by name or designation..."
+   339→            value={search}
+   340→            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+   341→            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
+   342→          />
+   343→          {search && (
+   344→            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+   345→              <X className="w-4 h-4" />
+   346→            </button>
+   347→          )}
+   348→        </div>
+   349→
+   350→        <div className="relative">
+   351→          <select
+   352→            value={filterDept}
+   353→            onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
+   354→            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 cursor-pointer"
+   355→          >
+   356→            <option value="" className="bg-[#0a0a1a]">All Departments</option>
+   357→            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   358→          </select>
+   359→          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+   360→        </div>
+   361→      </motion.div>
+   362→
+   363→      {/* ─── Content ─────────────────────────────────────────────────── */}
+   364→      <AnimatePresence mode="wait">
+   365→        {viewMode === 'table' ? (
+   366→          <motion.div
+   367→            key="table"
+   368→            initial={{ opacity: 0, y: 15 }}
+   369→            animate={{ opacity: 1, y: 0 }}
+   370→            exit={{ opacity: 0, y: -15 }}
+   371→            transition={{ delay: 0.15 }}
+   372→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+   373→          >
+   374→            {/* Table View */}
+   375→            <div className="overflow-x-auto">
+   376→              <table className="w-full">
+   377→                <thead>
+   378→                  <tr className="border-b border-white/[0.06]">
+   379→                    {['Name', 'Department', 'Designation', 'Subjects', 'Cabin', 'Actions'].map(h => (
+   380→                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+   381→                        {h}
+   382→                      </th>
+   383→                    ))}
+   384→                  </tr>
+   385→                </thead>
+   386→                <tbody>
+   387→                  {loading ? (
+   388→                    Array.from({ length: 5 }).map((_, i) => (
+   389→                      <tr key={i} className="border-b border-white/[0.04]">
+   390→                        {Array.from({ length: 6 }).map((_, j) => (
+   391→                          <td key={j} className="px-4 py-3">
+   392→                            <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+   393→                          </td>
+   394→                        ))}
+   395→                      </tr>
+   396→                    ))
+   397→                  ) : faculty.length === 0 ? (
+   398→                    <tr>
+   399→                      <td colSpan={6} className="px-4 py-12 text-center">
+   400→                        <GraduationCap className="w-10 h-10 text-gray-700 mx-auto mb-3" />
+   401→                        <p className="text-gray-500 text-sm">No faculty found</p>
+   402→                        <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+   403→                      </td>
+   404→                    </tr>
+   405→                  ) : (
+   406→                    faculty.map((f, idx) => (
+   407→                      <motion.tr
+   408→                        key={f.id}
+   409→                        initial={{ opacity: 0, x: -10 }}
+   410→                        animate={{ opacity: 1, x: 0 }}
+   411→                        transition={{ delay: idx * 0.03 }}
+   412→                        className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+   413→                      >
+   414→                        {/* Name */}
+   415→                        <td className="px-4 py-3">
+   416→                          <div className="flex items-center gap-3">
+   417→                            <div className={cn(
+   418→                              "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br shrink-0",
+   419→                              getAvatarColor(f.user.name)
+   420→                            )}>
+   421→                              {getInitial(f.user.name)}
+   422→                            </div>
+   423→                            <div>
+   424→                              <p className="text-sm font-medium text-white">{f.user.name}</p>
+   425→                              <p className="text-[11px] text-gray-600">{f.user.email}</p>
+   426→                            </div>
+   427→                          </div>
+   428→                        </td>
+   429→                        {/* Department */}
+   430→                        <td className="px-4 py-3">
+   431→                          <span className={cn(
+   432→                            "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
+   433→                            DEPT_COLORS[f.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   434→                          )}>
+   435→                            {f.department}
+   436→                          </span>
+   437→                        </td>
+   438→                        {/* Designation */}
+   439→                        <td className="px-4 py-3">
+   440→                          <span className={cn(
+   441→                            "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
+   442→                            DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   443→                          )}>
+   444→                            {f.designation}
+   445→                          </span>
+   446→                        </td>
+   447→                        {/* Subjects */}
+   448→                        <td className="px-4 py-3">
+   449→                          <button
+   450→                            onClick={() => setSubjectsDialogId(f.id)}
+   451→                            className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-cyan-400 transition-colors group/btn"
+   452→                          >
+   453→                            <BookOpen className="w-3.5 h-3.5 text-gray-500 group-hover/btn:text-cyan-400" />
+   454→                            <span className="font-medium">{f.subjectCount}</span>
+   455→                            <span className="text-gray-600 text-xs">subjects</span>
+   456→                          </button>
+   457→                        </td>
+   458→                        {/* Cabin */}
+   459→                        <td className="px-4 py-3">
+   460→                          <div className="flex items-center gap-1.5 text-sm text-gray-400">
+   461→                            <MapPin className="w-3 h-3 text-gray-600" />
+   462→                            {f.cabinLocation || '—'}
+   463→                          </div>
+   464→                        </td>
+   465→                        {/* Actions */}
+   466→                        <td className="px-4 py-3">
+   467→                          <div className="flex items-center gap-1">
+   468→                            <motion.button
+   469→                              whileHover={{ scale: 1.1 }}
+   470→                              whileTap={{ scale: 0.9 }}
+   471→                              onClick={() => openEdit(f)}
+   472→                              className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
+   473→                              title="Edit"
+   474→                            >
+   475→                              <Pencil className="w-3.5 h-3.5" />
+   476→                            </motion.button>
+   477→                            <motion.button
+   478→                              whileHover={{ scale: 1.1 }}
+   479→                              whileTap={{ scale: 0.9 }}
+   480→                              onClick={() => setDeleteId(f.id)}
+   481→                              className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+   482→                              title="Delete"
+   483→                            >
+   484→                              <Trash2 className="w-3.5 h-3.5" />
+   485→                            </motion.button>
+   486→                          </div>
+   487→                        </td>
+   488→                      </motion.tr>
+   489→                    ))
+   490→                  )}
+   491→                </tbody>
+   492→              </table>
+   493→            </div>
+   494→
+   495→            {/* Pagination */}
+   496→            {!loading && total > 0 && (
+   497→              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-white/[0.06]">
+   498→                <div className="flex items-center gap-2 text-xs text-gray-500">
+   499→                  <span>Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}</span>
+   500→                  <span className="text-gray-700">|</span>
+   501→                  <div className="flex items-center gap-1">
+   502→                    <span>Per page:</span>
+   503→                    <select
+   504→                      value={limit}
+   505→                      onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+   506→                      className="appearance-none bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5 text-xs text-white focus:outline-none cursor-pointer"
+   507→                    >
+   508→                      {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">{s}</option>)}
+   509→                    </select>
+   510→                  </div>
+   511→                </div>
+   512→                <div className="flex items-center gap-1">
+   513→                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+   514→                    className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+   515→                    <ChevronLeft className="w-4 h-4" />
+   516→                  </button>
+   517→                  {pageNumbers.map(p => (
+   518→                    <button key={p} onClick={() => setPage(p)}
+   519→                      className={cn("w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
+   520→                        p === page ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+   521→                      )}>
+   522→                      {p}
+   523→                    </button>
+   524→                  ))}
+   525→                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+   526→                    className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+   527→                    <ChevronRight className="w-4 h-4" />
+   528→                  </button>
+   529→                </div>
+   530→              </div>
+   531→            )}
+   532→          </motion.div>
+   533→        ) : (
+   534→          /* ─── Card View ────────────────────────────────────────────── */
+   535→          <motion.div
+   536→            key="cards"
+   537→            initial={{ opacity: 0, y: 15 }}
+   538→            animate={{ opacity: 1, y: 0 }}
+   539→            exit={{ opacity: 0, y: -15 }}
+   540→            transition={{ delay: 0.15 }}
+   541→          >
+   542→            {loading ? (
+   543→              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   544→                {Array.from({ length: 6 }).map((_, i) => (
+   545→                  <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 animate-pulse">
+   546→                    <div className="h-20 bg-white/[0.04] rounded-xl mb-4" />
+   547→                    <div className="h-4 bg-white/[0.04] rounded mb-2" />
+   548→                    <div className="h-3 bg-white/[0.04] rounded w-2/3" />
+   549→                  </div>
+   550→                ))}
+   551→              </div>
+   552→            ) : faculty.length === 0 ? (
+   553→              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-12 text-center">
+   554→                <GraduationCap className="w-10 h-10 text-gray-700 mx-auto mb-3" />
+   555→                <p className="text-gray-500 text-sm">No faculty found</p>
+   556→              </div>
+   557→            ) : (
+   558→              <>
+   559→                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   560→                  {faculty.map((f, idx) => (
+   561→                    <motion.div
+   562→                      key={f.id}
+   563→                      initial={{ opacity: 0, y: 20 }}
+   564→                      animate={{ opacity: 1, y: 0 }}
+   565→                      transition={{ delay: idx * 0.05 }}
+   566→                      whileHover={{ y: -4, scale: 1.01 }}
+   567→                      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300 group"
+   568→                    >
+   569→                      {/* Card Header */}
+   570→                      <div className="flex items-start justify-between mb-4">
+   571→                        <div className="flex items-center gap-3">
+   572→                          <div className={cn(
+   573→                            "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold text-white bg-gradient-to-br shadow-lg",
+   574→                            getAvatarColor(f.user.name)
+   575→                          )} style={{ boxShadow: `0 0 15px ${f.user.name.charCodeAt(0) % 2 === 0 ? 'rgba(139,92,246,0.3)' : 'rgba(6,182,212,0.3)'}` }}>
+   576→                            {getInitial(f.user.name)}
+   577→                          </div>
+   578→                          <div>
+   579→                            <h4 className="text-sm font-semibold text-white group-hover:text-gray-100">{f.user.name}</h4>
+   580→                            <span className={cn(
+   581→                              "inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border font-medium mt-0.5",
+   582→                              DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   583→                            )}>
+   584→                              {f.designation}
+   585→                            </span>
+   586→                          </div>
+   587→                        </div>
+   588→
+   589→                        {/* Quick Actions */}
+   590→                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+   591→                          <button
+   592→                            onClick={() => openEdit(f)}
+   593→                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+   594→                          >
+   595→                            <Pencil className="w-3.5 h-3.5" />
+   596→                          </button>
+   597→                          <button
+   598→                            onClick={() => setDeleteId(f.id)}
+   599→                            className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+   600→                          >
+   601→                            <Trash2 className="w-3.5 h-3.5" />
+   602→                          </button>
+   603→                        </div>
+   604→                      </div>
+   605→
+   606→                      {/* Department Badge */}
+   607→                      <div className="mb-3">
+   608→                        <span className={cn(
+   609→                          "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
+   610→                          DEPT_COLORS[f.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   611→                        )}>
+   612→                          {f.department} Department
+   613→                        </span>
+   614→                      </div>
+   615→
+   616→                      {/* Subjects */}
+   617→                      <div className="mb-3">
+   618→                        <div className="flex items-center justify-between mb-1.5">
+   619→                          <span className="text-[11px] text-gray-500 font-medium">Subjects ({f.subjectCount})</span>
+   620→                          {f.subjectCount > 3 && (
+   621→                            <button
+   622→                              onClick={() => setSubjectsDialogId(f.id)}
+   623→                              className="text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors"
+   624→                            >
+   625→                              View all
+   626→                            </button>
+   627→                          )}
+   628→                        </div>
+   629→                        <div className="flex flex-wrap gap-1.5">
+   630→                          {f.subjects.length > 0 ? (
+   631→                            f.subjects.slice(0, 3).map((s, si) => (
+   632→                              <span key={s.id} className={cn(
+   633→                                "inline-flex items-center text-[10px] px-2 py-0.5 rounded-md border font-medium",
+   634→                                SUBJECT_COLORS[si % SUBJECT_COLORS.length]
+   635→                              )}>
+   636→                                {s.code}
+   637→                              </span>
+   638→                            ))
+   639→                          ) : (
+   640→                            <span className="text-[11px] text-gray-600 italic">No subjects assigned</span>
+   641→                          )}
+   642→                          {f.subjectCount > 3 && (
+   643→                            <span className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-gray-500">
+   644→                              +{f.subjectCount - 3} more
+   645→                            </span>
+   646→                          )}
+   647→                        </div>
+   648→                      </div>
+   649→
+   650→                      {/* Cabin Location */}
+   651→                      {f.cabinLocation && (
+   652→                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+   653→                          <MapPin className="w-3 h-3" />
+   654→                          <span>{f.cabinLocation}</span>
+   655→                        </div>
+   656→                      )}
+   657→
+   658→                      {/* Contact row */}
+   659→                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.06]">
+   660→                        <a href={`mailto:${f.user.email}`} className="text-gray-600 hover:text-cyan-400 transition-colors" title={f.user.email}>
+   661→                          <Mail className="w-3.5 h-3.5" />
+   662→                        </a>
+   663→                        {f.user.phone && (
+   664→                          <a href={`tel:${f.user.phone}`} className="text-gray-600 hover:text-cyan-400 transition-colors" title={f.user.phone}>
+   665→                            <Phone className="w-3.5 h-3.5" />
+   666→                          </a>
+   667→                        )}
+   668→                      </div>
+   669→                    </motion.div>
+   670→                  ))}
+   671→                </div>
+   672→
+   673→                {/* Card View Pagination */}
+   674→                {total > limit && (
+   675→                  <div className="flex items-center justify-center gap-2 mt-6">
+   676→                    <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+   677→                      className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+   678→                      <ChevronLeft className="w-4 h-4" />
+   679→                    </button>
+   680→                    <span className="text-xs text-gray-500">
+   681→                      Page {page} of {totalPages}
+   682→                    </span>
+   683→                    <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+   684→                      className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+   685→                      <ChevronRight className="w-4 h-4" />
+   686→                    </button>
+   687→                  </div>
+   688→                )}
+   689→              </>
+   690→            )}
+   691→          </motion.div>
+   692→        )}
+   693→      </AnimatePresence>
+   694→
+   695→      {/* ─── Add/Edit Dialog ─────────────────────────────────────────── */}
+   696→      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+   697→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+   698→          <DialogHeader>
+   699→            <DialogTitle className="text-white flex items-center gap-2">
+   700→              {editId ? <Pencil className="w-4 h-4 text-cyan-400" /> : <Plus className="w-4 h-4 text-cyan-400" />}
+   701→              {editId ? 'Edit Faculty' : 'Add New Faculty'}
+   702→            </DialogTitle>
+   703→            <DialogDescription className="text-gray-500">
+   704→              {editId ? 'Update faculty information' : 'Fill in the details to add a new faculty member'}
+   705→            </DialogDescription>
+   706→          </DialogHeader>
+   707→
+   708→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+   709→            {/* Name */}
+   710→            <div className="space-y-1.5">
+   711→              <label className="text-gray-400 text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</label>
+   712→              <input
+   713→                value={form.name}
+   714→                onChange={(e) => setForm({ ...form, name: e.target.value })}
+   715→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+   716→                placeholder="Full name"
+   717→              />
+   718→            </div>
+   719→            {/* Email */}
+   720→            <div className="space-y-1.5">
+   721→              <label className="text-gray-400 text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</label>
+   722→              <input
+   723→                type="email"
+   724→                value={form.email}
+   725→                onChange={(e) => setForm({ ...form, email: e.target.value })}
+   726→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+   727→                placeholder="email@university.edu"
+   728→              />
+   729→            </div>
+   730→            {/* Department */}
+   731→            <div className="space-y-1.5">
+   732→              <label className="text-gray-400 text-xs">Department *</label>
+   733→              <select
+   734→                value={form.department}
+   735→                onChange={(e) => setForm({ ...form, department: e.target.value })}
+   736→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
+   737→              >
+   738→                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   739→              </select>
+   740→            </div>
+   741→            {/* Designation */}
+   742→            <div className="space-y-1.5">
+   743→              <label className="text-gray-400 text-xs flex items-center gap-1"><Briefcase className="w-3 h-3" /> Designation</label>
+   744→              <select
+   745→                value={form.designation}
+   746→                onChange={(e) => setForm({ ...form, designation: e.target.value })}
+   747→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
+   748→              >
+   749→                {DESIGNATIONS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   750→              </select>
+   751→            </div>
+   752→            {/* Phone */}
+   753→            <div className="space-y-1.5">
+   754→              <label className="text-gray-400 text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</label>
+   755→              <input
+   756→                value={form.phone}
+   757→                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+   758→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+   759→                placeholder="+91 9876543210"
+   760→              />
+   761→            </div>
+   762→            {/* Cabin Location */}
+   763→            <div className="space-y-1.5">
+   764→              <label className="text-gray-400 text-xs flex items-center gap-1"><MapPin className="w-3 h-3" /> Cabin Location</label>
+   765→              <input
+   766→                value={form.cabinLocation}
+   767→                onChange={(e) => setForm({ ...form, cabinLocation: e.target.value })}
+   768→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+   769→                placeholder="Room 301, Block A"
+   770→              />
+   771→            </div>
+   772→          </div>
+   773→
+   774→          <DialogFooter>
+   775→            <button
+   776→              onClick={() => setDialogOpen(false)}
+   777→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   778→            >
+   779→              Cancel
+   780→            </button>
+   781→            <motion.button
+   782→              whileHover={{ scale: 1.02 }}
+   783→              whileTap={{ scale: 0.98 }}
+   784→              onClick={handleSubmit}
+   785→              disabled={submitting}
+   786→              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+   787→            >
+   788→              {submitting ? 'Saving...' : editId ? 'Update Faculty' : 'Add Faculty'}
+   789→            </motion.button>
+   790→          </DialogFooter>
+   791→        </DialogContent>
+   792→      </Dialog>
+   793→
+   794→      {/* ─── Delete Confirmation Dialog ──────────────────────────────── */}
+   795→      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+   796→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-sm">
+   797→          <DialogHeader>
+   798→            <DialogTitle className="text-white flex items-center gap-2">
+   799→              <AlertTriangle className="w-5 h-5 text-red-400" />
+   800→              Confirm Delete
+   801→            </DialogTitle>
+   802→            <DialogDescription className="text-gray-400">
+   803→              This action cannot be undone. The faculty record and associated user account will be permanently deleted. Faculty with assigned subjects cannot be deleted.
+   804→            </DialogDescription>
+   805→          </DialogHeader>
+   806→          <DialogFooter className="gap-2 sm:gap-0">
+   807→            <button
+   808→              onClick={() => setDeleteId(null)}
+   809→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   810→            >
+   811→              Cancel
+   812→            </button>
+   813→            <motion.button
+   814→              whileHover={{ scale: 1.02 }}
+   815→              whileTap={{ scale: 0.98 }}
+   816→              onClick={handleDelete}
+   817→              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all duration-300"
+   818→            >
+   819→              Delete Faculty
+   820→            </motion.button>
+   821→          </DialogFooter>
+   822→        </DialogContent>
+   823→      </Dialog>
+   824→
+   825→      {/* ─── Subjects Dialog ─────────────────────────────────────────── */}
+   826→      <Dialog open={!!subjectsDialogId} onOpenChange={() => setSubjectsDialogId(null)}>
+   827→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-md">
+   828→          <DialogHeader>
+   829→            <DialogTitle className="text-white flex items-center gap-2">
+   830→              <BookOpen className="w-4 h-4 text-cyan-400" />
+   831→              Subjects — {selectedFaculty?.user.name}
+   832→            </DialogTitle>
+   833→            <DialogDescription className="text-gray-500">
+   834→              {selectedFaculty?.subjectCount || 0} subject{selectedFaculty?.subjectCount !== 1 ? 's' : ''} currently assigned
+   835→            </DialogDescription>
+   836→          </DialogHeader>
+   837→
+   838→          <div className="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+   839→            {selectedFaculty?.subjects && selectedFaculty.subjects.length > 0 ? (
+   840→              selectedFaculty.subjects.map((s, si) => (
+   841→                <motion.div
+   842→                  key={s.id}
+   843→                  initial={{ opacity: 0, x: -10 }}
+   844→                  animate={{ opacity: 1, x: 0 }}
+   845→                  transition={{ delay: si * 0.05 }}
+   846→                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-all"
+   847→                >
+   848→                  <div className="flex items-center gap-3">
+   849→                    <div className={cn(
+   850→                      "w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border",
+   851→                      SUBJECT_COLORS[si % SUBJECT_COLORS.length]
+   852→                    )}>
+   853→                      {s.code.slice(0, 3)}
+   854→                    </div>
+   855→                    <div>
+   856→                      <p className="text-sm text-white font-medium">{s.name}</p>
+   857→                      <p className="text-[11px] text-gray-600">{s.code} · Sem {s.semester} · {s.credits} credits</p>
+   858→                    </div>
+   859→                  </div>
+   860→                </motion.div>
+   861→              ))
+   862→            ) : (
+   863→              <div className="text-center py-8">
+   864→                <BookOpen className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+   865→                <p className="text-sm text-gray-500">No subjects assigned</p>
+   866→              </div>
+   867→            )}
+   868→          </div>
+   869→
+   870→          <DialogFooter>
+   871→            <button
+   872→              onClick={() => setSubjectsDialogId(null)}
+   873→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   874→            >
+   875→              Close
+   876→            </button>
+   877→          </DialogFooter>
+   878→        </DialogContent>
+   879→      </Dialog>
+   880→    </div>
+   881→  );
+   882→}
+   883→

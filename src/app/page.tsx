@@ -16,7 +16,7 @@ import EventsSection from '@/components/campus/EventsSection';
 import WorkflowSection from '@/components/campus/WorkflowSection';
 import FacultySection from '@/components/campus/FacultySection';
 import ProfileSection from '@/components/campus/ProfileSection';
-import AdminSection from '@/components/campus/AdminSection';
+import AdminPortal from '@/components/campus/AdminPortal';
 import AiMemorySection from '@/components/campus/AiMemorySection';
 import SettingsSection from '@/components/campus/SettingsSection';
 import ChatPanel from '@/components/campus/ChatPanel';
@@ -37,7 +37,7 @@ const sections: Record<string, React.ComponentType> = {
   workflow: WorkflowSection,
   faculty: FacultySection,
   profile: ProfileSection,
-  admin: AdminSection,
+  admin: AdminPortal,
   'ai-memory': AiMemorySection,
   settings: SettingsSection,
 };

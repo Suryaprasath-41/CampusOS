@@ -1,0 +1,800 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  Users, Search, Plus, Pencil, Trash2, Upload, ChevronLeft,
+     7→  ChevronRight, Filter, X, AlertTriangle, GraduationCap,
+     8→  Phone, Mail, BookOpen, UserCircle, FileSpreadsheet, CheckCircle2
+     9→} from 'lucide-react';
+    10→import { cn } from '@/lib/utils';
+    11→import { fetchAPI, postAPI, patchAPI, deleteAPI } from '@/lib/store';
+    12→import {
+    13→  Dialog, DialogContent, DialogHeader, DialogTitle,
+    14→  DialogDescription, DialogFooter, DialogClose,
+    15→} from '@/components/ui/dialog';
+    16→import { Button } from '@/components/ui/button';
+    17→import { Input } from '@/components/ui/input';
+    18→import { Label } from '@/components/ui/label';
+    19→import {
+    20→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    21→} from '@/components/ui/select';
+    22→import { Badge } from '@/components/ui/badge';
+    23→
+    24→// ─── Types ────────────────────────────────────────────────────────────────
+    25→interface StudentUser {
+    26→  id: string;
+    27→  name: string;
+    28→  email: string;
+    29→  phone: string | null;
+    30→  avatar: string | null;
+    31→  department: string;
+    32→}
+    33→
+    34→interface Student {
+    35→  id: string;
+    36→  rollNumber: string;
+    37→  department: string;
+    38→  semester: number;
+    39→  section: string;
+    40→  cgpa: number;
+    41→  placementStatus: string;
+    42→  hostelRoom: string | null;
+    43→  skills: string | null;
+    44→  guardianName: string | null;
+    45→  guardianPhone: string | null;
+    46→  createdAt: string;
+    47→  user: StudentUser;
+    48→}
+    49→
+    50→interface StudentsResponse {
+    51→  students: Student[];
+    52→  total: number;
+    53→  page: number;
+    54→  limit: number;
+    55→}
+    56→
+    57→// ─── Constants ────────────────────────────────────────────────────────────
+    58→const DEPARTMENTS = ['CS', 'IT', 'ECE', 'EEE', 'ME', 'CE'];
+    59→const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+    60→const SECTIONS = ['A', 'B', 'C'];
+    61→const PLACEMENT_STATUSES = ['seeking', 'interview', 'placed'];
+    62→const PAGE_SIZES = [10, 20, 50];
+    63→
+    64→const DEPT_COLORS: Record<string, string> = {
+    65→  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    66→  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    67→  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    68→  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+    69→  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
+    70→  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    71→};
+    72→
+    73→const PLACEMENT_COLORS: Record<string, string> = {
+    74→  seeking: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    75→  interview: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    76→  placed: 'bg-green-500/15 text-green-400 border-green-500/30',
+    77→};
+    78→
+    79→// ─── Form State ───────────────────────────────────────────────────────────
+    80→interface StudentForm {
+    81→  name: string;
+    82→  email: string;
+    83→  rollNumber: string;
+    84→  department: string;
+    85→  semester: string;
+    86→  section: string;
+    87→  phone: string;
+    88→  guardianName: string;
+    89→  guardianPhone: string;
+    90→  skills: string;
+    91→}
+    92→
+    93→const emptyForm: StudentForm = {
+    94→  name: '', email: '', rollNumber: '', department: 'CS',
+    95→  semester: '1', section: 'A', phone: '', guardianName: '',
+    96→  guardianPhone: '', skills: '',
+    97→};
+    98→
+    99→// ═══════════════════════════════════════════════════════════════════════════
+   100→// Main Component
+   101→// ═══════════════════════════════════════════════════════════════════════════
+   102→export default function AdminStudentManager() {
+   103→  // ─── State ────────────────────────────────────────────────────────────
+   104→  const [students, setStudents] = useState<Student[]>([]);
+   105→  const [total, setTotal] = useState(0);
+   106→  const [page, setPage] = useState(1);
+   107→  const [limit, setLimit] = useState(10);
+   108→  const [loading, setLoading] = useState(true);
+   109→  const [search, setSearch] = useState('');
+   110→  const [debouncedSearch, setDebouncedSearch] = useState('');
+   111→  const [filterDept, setFilterDept] = useState('');
+   112→  const [filterSem, setFilterSem] = useState('');
+   113→  const [form, setForm] = useState<StudentForm>(emptyForm);
+   114→  const [dialogOpen, setDialogOpen] = useState(false);
+   115→  const [editId, setEditId] = useState<string | null>(null);
+   116→  const [deleteId, setDeleteId] = useState<string | null>(null);
+   117→  const [csvDialogOpen, setCsvDialogOpen] = useState(false);
+   118→  const [submitting, setSubmitting] = useState(false);
+   119→  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+   120→
+   121→  // ─── Debounced search ─────────────────────────────────────────────────
+   122→  useEffect(() => {
+   123→    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+   124→    return () => clearTimeout(timer);
+   125→  }, [search]);
+   126→
+   127→  // ─── Fetch students ───────────────────────────────────────────────────
+   128→  const loadStudents = useCallback(async () => {
+   129→    setLoading(true);
+   130→    try {
+   131→      const params = new URLSearchParams();
+   132→      params.set('page', String(page));
+   133→      params.set('limit', String(limit));
+   134→      if (debouncedSearch) params.set('search', debouncedSearch);
+   135→      if (filterDept) params.set('department', filterDept);
+   136→      if (filterSem) params.set('semester', filterSem);
+   137→      const data = await fetchAPI(`/admin/students?${params.toString()}`);
+   138→      setStudents(data.students || []);
+   139→      setTotal(data.total || 0);
+   140→    } catch (err) {
+   141→      console.error('Failed to load students:', err);
+   142→      showToast('Failed to load students', 'error');
+   143→    } finally {
+   144→      setLoading(false);
+   145→    }
+   146→  }, [page, limit, debouncedSearch, filterDept, filterSem]);
+   147→
+   148→  useEffect(() => { loadStudents(); }, [loadStudents]);
+   149→
+   150→  // ─── Toast ────────────────────────────────────────────────────────────
+   151→  const showToast = (msg: string, type: 'success' | 'error') => {
+   152→    setToast({ msg, type });
+   153→    setTimeout(() => setToast(null), 3500);
+   154→  };
+   155→
+   156→  // ─── Form handlers ────────────────────────────────────────────────────
+   157→  const openAdd = () => {
+   158→    setForm(emptyForm);
+   159→    setEditId(null);
+   160→    setDialogOpen(true);
+   161→  };
+   162→
+   163→  const openEdit = (s: Student) => {
+   164→    setForm({
+   165→      name: s.user.name,
+   166→      email: s.user.email,
+   167→      rollNumber: s.rollNumber,
+   168→      department: s.department,
+   169→      semester: String(s.semester),
+   170→      section: s.section,
+   171→      phone: s.user.phone || '',
+   172→      guardianName: s.guardianName || '',
+   173→      guardianPhone: s.guardianPhone || '',
+   174→      skills: s.skills || '',
+   175→    });
+   176→    setEditId(s.id);
+   177→    setDialogOpen(true);
+   178→  };
+   179→
+   180→  const handleSubmit = async () => {
+   181→    if (!form.name || !form.email || !form.rollNumber || !form.department) {
+   182→      showToast('Please fill all required fields', 'error');
+   183→      return;
+   184→    }
+   185→    setSubmitting(true);
+   186→    try {
+   187→      const payload = {
+   188→        name: form.name,
+   189→        email: form.email,
+   190→        rollNumber: form.rollNumber,
+   191→        department: form.department,
+   192→        semester: parseInt(form.semester),
+   193→        section: form.section,
+   194→        phone: form.phone || null,
+   195→        guardianName: form.guardianName || null,
+   196→        guardianPhone: form.guardianPhone || null,
+   197→        skills: form.skills || null,
+   198→      };
+   199→      if (editId) {
+   200→        await patchAPI(`/admin/students/${editId}`, payload);
+   201→        showToast('Student updated successfully', 'success');
+   202→      } else {
+   203→        await postAPI('/admin/students', payload);
+   204→        showToast('Student added successfully', 'success');
+   205→      }
+   206→      setDialogOpen(false);
+   207→      loadStudents();
+   208→    } catch (err: any) {
+   209→      showToast(err.message || 'Operation failed', 'error');
+   210→    } finally {
+   211→      setSubmitting(false);
+   212→    }
+   213→  };
+   214→
+   215→  const handleDelete = async () => {
+   216→    if (!deleteId) return;
+   217→    try {
+   218→      await deleteAPI(`/admin/students/${deleteId}`);
+   219→      showToast('Student deleted', 'success');
+   220→      setDeleteId(null);
+   221→      loadStudents();
+   222→    } catch (err: any) {
+   223→      showToast(err.message || 'Delete failed', 'error');
+   224→    }
+   225→  };
+   226→
+   227→  // ─── Pagination helpers ───────────────────────────────────────────────
+   228→  const totalPages = Math.ceil(total / limit);
+   229→  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+   230→    const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+   231→    return start + i;
+   232→  }).filter(p => p >= 1 && p <= totalPages);
+   233→
+   234→  // ─── CGPA color ───────────────────────────────────────────────────────
+   235→  const cgpaColor = (cgpa: number) => {
+   236→    if (cgpa >= 8) return 'text-emerald-400';
+   237→    if (cgpa >= 6) return 'text-yellow-400';
+   238→    return 'text-red-400';
+   239→  };
+   240→
+   241→  const cgpaBg = (cgpa: number) => {
+   242→    if (cgpa >= 8) return 'bg-emerald-500/10';
+   243→    if (cgpa >= 6) return 'bg-yellow-500/10';
+   244→    return 'bg-red-500/10';
+   245→  };
+   246→
+   247→  // ─── Avatar initial ───────────────────────────────────────────────────
+   248→  const getInitial = (name: string) => name?.charAt(0)?.toUpperCase() || '?';
+   249→  const avatarColors = [
+   250→    'from-purple-500 to-violet-600',
+   251→    'from-cyan-500 to-blue-600',
+   252→    'from-emerald-500 to-teal-600',
+   253→    'from-orange-500 to-amber-600',
+   254→    'from-pink-500 to-rose-600',
+   255→  ];
+   256→  const getAvatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+   257→
+   258→  // ═════════════════════════════════════════════════════════════════════
+   259→  // Render
+   260→  // ═════════════════════════════════════════════════════════════════════
+   261→  return (
+   262→    <div className="space-y-4 pt-2">
+   263→      {/* ─── Toast ──────────────────────────────────────────────────── */}
+   264→      <AnimatePresence>
+   265→        {toast && (
+   266→          <motion.div
+   267→            initial={{ opacity: 0, y: -20 }}
+   268→            animate={{ opacity: 1, y: 0 }}
+   269→            exit={{ opacity: 0, y: -20 }}
+   270→            className={cn(
+   271→              "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
+   272→              toast.type === 'success'
+   273→                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+   274→                : "bg-red-500/10 border-red-500/30 text-red-400"
+   275→            )}
+   276→          >
+   277→            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+   278→            <span className="text-sm font-medium">{toast.msg}</span>
+   279→          </motion.div>
+   280→        )}
+   281→      </AnimatePresence>
+   282→
+   283→      {/* ─── Header ──────────────────────────────────────────────────── */}
+   284→      <motion.div
+   285→        initial={{ opacity: 0, y: 20 }}
+   286→        animate={{ opacity: 1, y: 0 }}
+   287→        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+   288→      >
+   289→        <div className="flex items-center gap-3">
+   290→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+   291→            <Users className="w-5 h-5 text-white" />
+   292→          </div>
+   293→          <div>
+   294→            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+   295→              Student Management
+   296→              <Badge className="bg-purple-500/15 text-purple-400 border border-purple-500/30 text-[10px] px-2">
+   297→                {total} total
+   298→              </Badge>
+   299→            </h2>
+   300→            <p className="text-xs text-gray-500">Manage student records, enrollment & progress</p>
+   301→          </div>
+   302→        </div>
+   303→
+   304→        <div className="flex items-center gap-2">
+   305→          <motion.button
+   306→            whileHover={{ scale: 1.03 }}
+   307→            whileTap={{ scale: 0.97 }}
+   308→            onClick={() => setCsvDialogOpen(true)}
+   309→            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-white/[0.03] border border-white/[0.08] text-gray-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300"
+   310→          >
+   311→            <FileSpreadsheet className="w-4 h-4" />
+   312→            <span className="hidden sm:inline">CSV Import</span>
+   313→          </motion.button>
+   314→          <motion.button
+   315→            whileHover={{ scale: 1.03 }}
+   316→            whileTap={{ scale: 0.97 }}
+   317→            onClick={openAdd}
+   318→            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-all duration-300"
+   319→          >
+   320→            <Plus className="w-4 h-4" />
+   321→            Add Student
+   322→          </motion.button>
+   323→        </div>
+   324→      </motion.div>
+   325→
+   326→      {/* ─── Search & Filters ────────────────────────────────────────── */}
+   327→      <motion.div
+   328→        initial={{ opacity: 0, y: 15 }}
+   329→        animate={{ opacity: 1, y: 0 }}
+   330→        transition={{ delay: 0.1 }}
+   331→        className="flex flex-col sm:flex-row gap-3"
+   332→      >
+   333→        {/* Search */}
+   334→        <div className="relative flex-1">
+   335→          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+   336→          <input
+   337→            type="text"
+   338→            placeholder="Search by name or roll number..."
+   339→            value={search}
+   340→            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+   341→            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
+   342→          />
+   343→          {search && (
+   344→            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+   345→              <X className="w-4 h-4" />
+   346→            </button>
+   347→          )}
+   348→        </div>
+   349→
+   350→        {/* Department Filter */}
+   351→        <div className="relative">
+   352→          <select
+   353→            value={filterDept}
+   354→            onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
+   355→            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
+   356→          >
+   357→            <option value="" className="bg-[#0a0a1a]">All Departments</option>
+   358→            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   359→          </select>
+   360→          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+   361→        </div>
+   362→
+   363→        {/* Semester Filter */}
+   364→        <div className="relative">
+   365→          <select
+   366→            value={filterSem}
+   367→            onChange={(e) => { setFilterSem(e.target.value); setPage(1); }}
+   368→            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
+   369→          >
+   370→            <option value="" className="bg-[#0a0a1a]">All Semesters</option>
+   371→            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Sem {s}</option>)}
+   372→          </select>
+   373→          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+   374→        </div>
+   375→      </motion.div>
+   376→
+   377→      {/* ─── Data Table ──────────────────────────────────────────────── */}
+   378→      <motion.div
+   379→        initial={{ opacity: 0, y: 15 }}
+   380→        animate={{ opacity: 1, y: 0 }}
+   381→        transition={{ delay: 0.2 }}
+   382→        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+   383→      >
+   384→        {/* Table */}
+   385→        <div className="overflow-x-auto">
+   386→          <table className="w-full">
+   387→            <thead>
+   388→              <tr className="border-b border-white/[0.06]">
+   389→                {['Roll No.', 'Name', 'Department', 'Sem', 'CGPA', 'Placement', 'Actions'].map(h => (
+   390→                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+   391→                    {h}
+   392→                  </th>
+   393→                ))}
+   394→              </tr>
+   395→            </thead>
+   396→            <tbody>
+   397→              {loading ? (
+   398→                Array.from({ length: 5 }).map((_, i) => (
+   399→                  <tr key={i} className="border-b border-white/[0.04]">
+   400→                    {Array.from({ length: 7 }).map((_, j) => (
+   401→                      <td key={j} className="px-4 py-3">
+   402→                        <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+   403→                      </td>
+   404→                    ))}
+   405→                  </tr>
+   406→                ))
+   407→              ) : students.length === 0 ? (
+   408→                <tr>
+   409→                  <td colSpan={7} className="px-4 py-12 text-center">
+   410→                    <Users className="w-10 h-10 text-gray-700 mx-auto mb-3" />
+   411→                    <p className="text-gray-500 text-sm">No students found</p>
+   412→                    <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+   413→                  </td>
+   414→                </tr>
+   415→              ) : (
+   416→                students.map((s, idx) => (
+   417→                  <motion.tr
+   418→                    key={s.id}
+   419→                    initial={{ opacity: 0, x: -10 }}
+   420→                    animate={{ opacity: 1, x: 0 }}
+   421→                    transition={{ delay: idx * 0.03 }}
+   422→                    className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+   423→                  >
+   424→                    {/* Roll No */}
+   425→                    <td className="px-4 py-3">
+   426→                      <span className="text-sm font-mono text-gray-400">{s.rollNumber}</span>
+   427→                    </td>
+   428→                    {/* Name */}
+   429→                    <td className="px-4 py-3">
+   430→                      <div className="flex items-center gap-3">
+   431→                        <div className={cn(
+   432→                          "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br shrink-0",
+   433→                          getAvatarColor(s.user.name)
+   434→                        )}>
+   435→                          {getInitial(s.user.name)}
+   436→                        </div>
+   437→                        <div>
+   438→                          <p className="text-sm font-medium text-white">{s.user.name}</p>
+   439→                          <p className="text-[11px] text-gray-600">{s.user.email}</p>
+   440→                        </div>
+   441→                      </div>
+   442→                    </td>
+   443→                    {/* Department */}
+   444→                    <td className="px-4 py-3">
+   445→                      <span className={cn(
+   446→                        "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
+   447→                        DEPT_COLORS[s.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   448→                      )}>
+   449→                        {s.department}
+   450→                      </span>
+   451→                    </td>
+   452→                    {/* Semester */}
+   453→                    <td className="px-4 py-3">
+   454→                      <span className="text-sm text-gray-300">Sem {s.semester}</span>
+   455→                    </td>
+   456→                    {/* CGPA */}
+   457→                    <td className="px-4 py-3">
+   458→                      <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg", cgpaBg(s.cgpa))}>
+   459→                        <span className={cn("text-sm font-bold", cgpaColor(s.cgpa))}>
+   460→                          {s.cgpa?.toFixed(2) || '0.00'}
+   461→                        </span>
+   462→                        <div className={cn(
+   463→                          "w-1.5 h-1.5 rounded-full",
+   464→                          s.cgpa >= 8 ? 'bg-emerald-400' : s.cgpa >= 6 ? 'bg-yellow-400' : 'bg-red-400'
+   465→                        )} />
+   466→                      </div>
+   467→                    </td>
+   468→                    {/* Placement */}
+   469→                    <td className="px-4 py-3">
+   470→                      <span className={cn(
+   471→                        "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium capitalize",
+   472→                        PLACEMENT_COLORS[s.placementStatus] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   473→                      )}>
+   474→                        {s.placementStatus || 'N/A'}
+   475→                      </span>
+   476→                    </td>
+   477→                    {/* Actions */}
+   478→                    <td className="px-4 py-3">
+   479→                      <div className="flex items-center gap-1">
+   480→                        <motion.button
+   481→                          whileHover={{ scale: 1.1 }}
+   482→                          whileTap={{ scale: 0.9 }}
+   483→                          onClick={() => openEdit(s)}
+   484→                          className="p-1.5 rounded-lg text-gray-500 hover:text-purple-400 hover:bg-purple-500/10 transition-all duration-200"
+   485→                          title="Edit"
+   486→                        >
+   487→                          <Pencil className="w-3.5 h-3.5" />
+   488→                        </motion.button>
+   489→                        <motion.button
+   490→                          whileHover={{ scale: 1.1 }}
+   491→                          whileTap={{ scale: 0.9 }}
+   492→                          onClick={() => setDeleteId(s.id)}
+   493→                          className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+   494→                          title="Delete"
+   495→                        >
+   496→                          <Trash2 className="w-3.5 h-3.5" />
+   497→                        </motion.button>
+   498→                      </div>
+   499→                    </td>
+   500→                  </motion.tr>
+   501→                ))
+   502→              )}
+   503→            </tbody>
+   504→          </table>
+   505→        </div>
+   506→
+   507→        {/* ─── Pagination ────────────────────────────────────────────── */}
+   508→        {!loading && total > 0 && (
+   509→          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-white/[0.06]">
+   510→            <div className="flex items-center gap-2 text-xs text-gray-500">
+   511→              <span>Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}</span>
+   512→              <span className="text-gray-700">|</span>
+   513→              <div className="flex items-center gap-1">
+   514→                <span>Per page:</span>
+   515→                <select
+   516→                  value={limit}
+   517→                  onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+   518→                  className="appearance-none bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5 text-xs text-white focus:outline-none cursor-pointer"
+   519→                >
+   520→                  {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">{s}</option>)}
+   521→                </select>
+   522→              </div>
+   523→            </div>
+   524→
+   525→            <div className="flex items-center gap-1">
+   526→              <button
+   527→                onClick={() => setPage(p => Math.max(1, p - 1))}
+   528→                disabled={page === 1}
+   529→                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+   530→              >
+   531→                <ChevronLeft className="w-4 h-4" />
+   532→              </button>
+   533→              {pageNumbers.map(p => (
+   534→                <button
+   535→                  key={p}
+   536→                  onClick={() => setPage(p)}
+   537→                  className={cn(
+   538→                    "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
+   539→                    p === page
+   540→                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+   541→                      : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+   542→                  )}
+   543→                >
+   544→                  {p}
+   545→                </button>
+   546→              ))}
+   547→              <button
+   548→                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+   549→                disabled={page === totalPages}
+   550→                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+   551→              >
+   552→                <ChevronRight className="w-4 h-4" />
+   553→              </button>
+   554→            </div>
+   555→          </div>
+   556→        )}
+   557→      </motion.div>
+   558→
+   559→      {/* ─── Add/Edit Dialog ─────────────────────────────────────────── */}
+   560→      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+   561→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+   562→          <DialogHeader>
+   563→            <DialogTitle className="text-white flex items-center gap-2">
+   564→              {editId ? <Pencil className="w-4 h-4 text-purple-400" /> : <Plus className="w-4 h-4 text-purple-400" />}
+   565→              {editId ? 'Edit Student' : 'Add New Student'}
+   566→            </DialogTitle>
+   567→            <DialogDescription className="text-gray-500">
+   568→              {editId ? 'Update student information' : 'Fill in the details to add a new student'}
+   569→            </DialogDescription>
+   570→          </DialogHeader>
+   571→
+   572→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+   573→            {/* Name */}
+   574→            <div className="space-y-1.5">
+   575→              <Label className="text-gray-400 text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</Label>
+   576→              <Input
+   577→                value={form.name}
+   578→                onChange={(e) => setForm({ ...form, name: e.target.value })}
+   579→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   580→                placeholder="Full name"
+   581→              />
+   582→            </div>
+   583→            {/* Email */}
+   584→            <div className="space-y-1.5">
+   585→              <Label className="text-gray-400 text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</Label>
+   586→              <Input
+   587→                type="email"
+   588→                value={form.email}
+   589→                onChange={(e) => setForm({ ...form, email: e.target.value })}
+   590→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   591→                placeholder="email@university.edu"
+   592→              />
+   593→            </div>
+   594→            {/* Roll Number */}
+   595→            <div className="space-y-1.5">
+   596→              <Label className="text-gray-400 text-xs flex items-center gap-1"><GraduationCap className="w-3 h-3" /> Roll Number *</Label>
+   597→              <Input
+   598→                value={form.rollNumber}
+   599→                onChange={(e) => setForm({ ...form, rollNumber: e.target.value })}
+   600→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   601→                placeholder="CS2024001"
+   602→              />
+   603→            </div>
+   604→            {/* Phone */}
+   605→            <div className="space-y-1.5">
+   606→              <Label className="text-gray-400 text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</Label>
+   607→              <Input
+   608→                value={form.phone}
+   609→                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+   610→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   611→                placeholder="+91 9876543210"
+   612→              />
+   613→            </div>
+   614→            {/* Department */}
+   615→            <div className="space-y-1.5">
+   616→              <Label className="text-gray-400 text-xs">Department *</Label>
+   617→              <select
+   618→                value={form.department}
+   619→                onChange={(e) => setForm({ ...form, department: e.target.value })}
+   620→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+   621→              >
+   622→                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   623→              </select>
+   624→            </div>
+   625→            {/* Semester */}
+   626→            <div className="space-y-1.5">
+   627→              <Label className="text-gray-400 text-xs">Semester</Label>
+   628→              <select
+   629→                value={form.semester}
+   630→                onChange={(e) => setForm({ ...form, semester: e.target.value })}
+   631→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+   632→              >
+   633→                {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Semester {s}</option>)}
+   634→              </select>
+   635→            </div>
+   636→            {/* Section */}
+   637→            <div className="space-y-1.5">
+   638→              <Label className="text-gray-400 text-xs">Section</Label>
+   639→              <select
+   640→                value={form.section}
+   641→                onChange={(e) => setForm({ ...form, section: e.target.value })}
+   642→                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+   643→              >
+   644→                {SECTIONS.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">Section {s}</option>)}
+   645→              </select>
+   646→            </div>
+   647→            {/* Guardian Name */}
+   648→            <div className="space-y-1.5">
+   649→              <Label className="text-gray-400 text-xs">Guardian Name</Label>
+   650→              <Input
+   651→                value={form.guardianName}
+   652→                onChange={(e) => setForm({ ...form, guardianName: e.target.value })}
+   653→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   654→                placeholder="Guardian full name"
+   655→              />
+   656→            </div>
+   657→            {/* Guardian Phone */}
+   658→            <div className="space-y-1.5">
+   659→              <Label className="text-gray-400 text-xs">Guardian Phone</Label>
+   660→              <Input
+   661→                value={form.guardianPhone}
+   662→                onChange={(e) => setForm({ ...form, guardianPhone: e.target.value })}
+   663→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   664→                placeholder="+91 9876543210"
+   665→              />
+   666→            </div>
+   667→            {/* Skills */}
+   668→            <div className="space-y-1.5 sm:col-span-2">
+   669→              <Label className="text-gray-400 text-xs flex items-center gap-1"><BookOpen className="w-3 h-3" /> Skills (comma-separated)</Label>
+   670→              <Input
+   671→                value={form.skills}
+   672→                onChange={(e) => setForm({ ...form, skills: e.target.value })}
+   673→                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+   674→                placeholder="Python, ML, Web Development"
+   675→              />
+   676→            </div>
+   677→          </div>
+   678→
+   679→          <DialogFooter>
+   680→            <button
+   681→              onClick={() => setDialogOpen(false)}
+   682→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   683→            >
+   684→              Cancel
+   685→            </button>
+   686→            <motion.button
+   687→              whileHover={{ scale: 1.02 }}
+   688→              whileTap={{ scale: 0.98 }}
+   689→              onClick={handleSubmit}
+   690→              disabled={submitting}
+   691→              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+   692→            >
+   693→              {submitting ? 'Saving...' : editId ? 'Update Student' : 'Add Student'}
+   694→            </motion.button>
+   695→          </DialogFooter>
+   696→        </DialogContent>
+   697→      </Dialog>
+   698→
+   699→      {/* ─── Delete Confirmation Dialog ──────────────────────────────── */}
+   700→      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+   701→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-sm">
+   702→          <DialogHeader>
+   703→            <DialogTitle className="text-white flex items-center gap-2">
+   704→              <AlertTriangle className="w-5 h-5 text-red-400" />
+   705→              Confirm Delete
+   706→            </DialogTitle>
+   707→            <DialogDescription className="text-gray-400">
+   708→              This action cannot be undone. The student record and all associated data will be permanently deleted.
+   709→            </DialogDescription>
+   710→          </DialogHeader>
+   711→          <DialogFooter className="gap-2 sm:gap-0">
+   712→            <button
+   713→              onClick={() => setDeleteId(null)}
+   714→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   715→            >
+   716→              Cancel
+   717→            </button>
+   718→            <motion.button
+   719→              whileHover={{ scale: 1.02 }}
+   720→              whileTap={{ scale: 0.98 }}
+   721→              onClick={handleDelete}
+   722→              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all duration-300"
+   723→            >
+   724→              Delete Student
+   725→            </motion.button>
+   726→          </DialogFooter>
+   727→        </DialogContent>
+   728→      </Dialog>
+   729→
+   730→      {/* ─── CSV Import Dialog ───────────────────────────────────────── */}
+   731→      <Dialog open={csvDialogOpen} onOpenChange={setCsvDialogOpen}>
+   732→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-md">
+   733→          <DialogHeader>
+   734→            <DialogTitle className="text-white flex items-center gap-2">
+   735→              <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+   736→              Import Students
+   737→            </DialogTitle>
+   738→            <DialogDescription className="text-gray-400">
+   739→              Upload a CSV or Excel file to bulk import student records
+   740→            </DialogDescription>
+   741→          </DialogHeader>
+   742→
+   743→          <div className="py-4">
+   744→            <div className="border-2 border-dashed border-white/[0.1] rounded-2xl p-8 text-center hover:border-purple-500/30 hover:bg-purple-500/[0.02] transition-all duration-300 cursor-pointer group">
+   745→              <motion.div
+   746→                animate={{ y: [0, -4, 0] }}
+   747→                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+   748→              >
+   749→                <Upload className="w-12 h-12 text-gray-600 mx-auto mb-4 group-hover:text-purple-400 transition-colors" />
+   750→              </motion.div>
+   751→              <p className="text-sm text-gray-400 mb-1">
+   752→                <span className="text-purple-400 font-medium">Click to upload</span> or drag & drop
+   753→              </p>
+   754→              <p className="text-xs text-gray-600">Upload students.xlsx or students.csv</p>
+   755→              <div className="flex items-center justify-center gap-3 mt-4">
+   756→                {['.xlsx', '.xls', '.csv'].map(ext => (
+   757→                  <span key={ext} className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] text-gray-500">
+   758→                    {ext}
+   759→                  </span>
+   760→                ))}
+   761→              </div>
+   762→            </div>
+   763→
+   764→            <div className="mt-4 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
+   765→              <div className="flex gap-2">
+   766→                <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+   767→                <div>
+   768→                  <p className="text-xs text-yellow-500 font-medium">Required Columns</p>
+   769→                  <p className="text-[11px] text-gray-500 mt-0.5">name, email, rollNumber, department, semester</p>
+   770→                </div>
+   771→              </div>
+   772→            </div>
+   773→          </div>
+   774→
+   775→          <DialogFooter>
+   776→            <button
+   777→              onClick={() => setCsvDialogOpen(false)}
+   778→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+   779→            >
+   780→              Cancel
+   781→            </button>
+   782→            <motion.button
+   783→              whileHover={{ scale: 1.02 }}
+   784→              whileTap={{ scale: 0.98 }}
+   785→              onClick={() => {
+   786→                showToast('CSV import feature coming soon!', 'success');
+   787→                setCsvDialogOpen(false);
+   788→              }}
+   789→              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all duration-300 flex items-center gap-2"
+   790→            >
+   791→              <Upload className="w-4 h-4" />
+   792→              Import
+   793→            </motion.button>
+   794→          </DialogFooter>
+   795→        </DialogContent>
+   796→      </Dialog>
+   797→    </div>
+   798→  );
+   799→}
+   800→
