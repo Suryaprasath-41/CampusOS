@@ -76,7 +76,7 @@ export default function ProfileSection() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const [saving, setSaving] = useState(false);
-  const { setChatOpen } = useCampusStore();
+  const { openChatWithContext } = useCampusStore();
 
   const loadProfile = () => {
     setLoading(true);
@@ -516,7 +516,7 @@ export default function ProfileSection() {
       <motion.button
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
-        onClick={() => setChatOpen(true)}
+        onClick={() => openChatWithContext("Tell me about my profile, achievements, and skill roadmap. How can I improve my profile for better placements?")}
         className="w-full p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-cyan-500/10 border border-white/[0.08] hover:border-purple-500/30 transition-all flex items-center justify-center gap-2 text-sm text-gray-300"
       >
         <Bot className="w-4 h-4 text-purple-400" />

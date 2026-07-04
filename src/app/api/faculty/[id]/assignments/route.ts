@@ -44,6 +44,7 @@ export async function GET(
             submittedAt: true,
             marks: true,
             status: true,
+            feedback: true,
             student: {
               include: {
                 user: {

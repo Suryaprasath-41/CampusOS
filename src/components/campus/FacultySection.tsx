@@ -19,7 +19,7 @@ const classInsights = [
 ];
 
 export default function FacultySection() {
-  const { setChatOpen } = useCampusStore();
+  const { openChatWithContext } = useCampusStore();
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -46,7 +46,7 @@ export default function FacultySection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            onClick={() => setChatOpen(true)}
+            onClick={() => openChatWithContext(`Help me with: ${tool.title}. ${tool.desc}`)}
             className="text-left p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all group"
           >
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${
@@ -128,7 +128,7 @@ export default function FacultySection() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setChatOpen(true)}
+                onClick={() => openChatWithContext(`Analyze at-risk student ${s.name} (Roll: ${s.roll}) who has ${s.attendance}% attendance in ${s.subject}. Suggest intervention strategies.`)}
                 className="px-3 py-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-medium hover:bg-purple-500/25 transition-colors flex items-center gap-1"
               >
                 <Sparkles className="w-3 h-3" /> AI Action

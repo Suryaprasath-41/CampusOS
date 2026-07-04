@@ -29,7 +29,7 @@ export default function CommandPalette() {
     commandPaletteOpen,
     setCommandPaletteOpen,
     setActiveSection,
-    setChatOpen,
+    openChatWithContext,
     setVoiceOpen,
     bumpNotifVersion,
   } = useCampusStore();
@@ -60,7 +60,7 @@ export default function CommandPalette() {
       { id: 'nav-ai-memory', type: 'navigation', title: 'AI Memory', subtitle: 'Navigation', icon: Database, keywords: 'brain memory recall context', run: () => { setActiveSection('ai-memory'); close(); } },
       { id: 'nav-settings', type: 'navigation', title: 'Settings', subtitle: 'Navigation', icon: Settings, keywords: 'preferences config theme', run: () => { setActiveSection('settings'); close(); } },
       // ── Actions ─────────────────────────────────────────────────
-      { id: 'act-ai', type: 'action', title: 'Ask AI Assistant', subtitle: 'Quick Action', icon: Sparkles, shortcut: '↵', keywords: 'chat bot help question', run: () => { setChatOpen(true); close(); } },
+      { id: 'act-ai', type: 'action', title: 'Ask AI Assistant', subtitle: 'Quick Action', icon: Sparkles, shortcut: '↵', keywords: 'chat bot help question', run: () => { openChatWithContext("I need help with something on CampusOS. What can you assist me with?"); close(); } },
       { id: 'act-voice', type: 'action', title: 'Open Voice Assistant', subtitle: 'Quick Action', icon: Mic, shortcut: '↵', keywords: 'speak mic speech', run: () => { setVoiceOpen(true); close(); } },
       {
         id: 'act-markread',
@@ -82,7 +82,7 @@ export default function CommandPalette() {
         },
       },
     ];
-  }, [setActiveSection, setChatOpen, setVoiceOpen, setCommandPaletteOpen, bumpNotifVersion]);
+  }, [setActiveSection, openChatWithContext, setVoiceOpen, setCommandPaletteOpen, bumpNotifVersion]);
 
   // Filter commands based on query
   const filtered = useMemo(() => {

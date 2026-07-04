@@ -54,7 +54,7 @@ Placement Status: ${student.placementStatus}`;
     const fullSystem = systemPrompt + `\n\nStudent Context:\n${context}`;
 
     // Build messages
-    const messages: { role: string; content: string }[] = [
+    const messages: { role: 'user' | 'assistant' | 'system'; content: string }[] = [
       { role: 'assistant', content: fullSystem },
     ];
 
@@ -87,6 +87,6 @@ Placement Status: ${student.placementStatus}`;
     return NextResponse.json({ response, agentType: type });
   } catch (error: any) {
     console.error('Chat error:', error);
-    return NextResponse.json({ response: 'I encountered an error. Please try again.', agentType: agentType || 'master' });
+    return NextResponse.json({ response: 'I encountered an error. Please try again.', agentType: type || 'master' });
   }
 }

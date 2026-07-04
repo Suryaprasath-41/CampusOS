@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCampusStore, postAPI } from '@/lib/store';
-import { Mic, X, Sparkles, Volume2, Square } from 'lucide-react';
+import { Mic, X, Square, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
 
 // Minimal Web Speech API types
 interface SpeechRecognitionResult {
@@ -27,11 +26,10 @@ interface SpeechRecognition {
 }
 
 export default function VoiceAssistant() {
-  const { voiceOpen, setVoiceOpen } = useCampusStore();
+  const { voiceOpen, setVoiceOpen, setChatOpen, addChatMessage, setChatLoading, selectedAgent } = useCampusStore();
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export default function VoiceAssistant() {
       return;
     }
     setTranscript('');
-    setResponse('');
+    setSending(false);
     setListening(true);
     recognitionRef.current.start();
   };
@@ -77,34 +75,65 @@ export default function VoiceAssistant() {
   const stopListening = async () => {
     recognitionRef.current?.stop();
     setListening(false);
-    if (transcript.trim()) {
-      await sendQuery(transcript.trim());
-    }
-  };
 
-  const sendQuery = async (q: string) => {
-    setLoading(true);
-    setResponse('');
+    // Wait a moment for final transcript to populate
+    await new Promise((r) => setTimeout(r, 200));
+
+    const finalTranscript = transcript.trim();
+    if (!finalTranscript) return;
+
+    // Show "Sending to AI..." state
+    setSending(true);
+
+    // Add user message to chat
+    addChatMessage({ role: 'user', content: finalTranscript, agentType: selectedAgent });
+    setChatLoading(true);
+
+    // Open chat panel
+    setChatOpen(true);
+
+    // Brief delay to show "Sending to AI..." animation
+    await new Promise((r) => setTimeout(r, 500));
+
+    // Close voice modal
+    setVoiceOpen(false);
+
+    // Reset voice state
+    setSending(false);
+    setTranscript('');
+
+    // Send to AI API
     try {
-      const data = await postAPI('/chat', { message: q, agentType: 'master' });
-      setResponse(data.response);
-      // Try TTS
-      speakResponse(data.response);
-    } catch (e) {
-      setResponse('Sorry, I encountered an error.');
+      const data = await postAPI('/chat', { message: finalTranscript, agentType: selectedAgent });
+      addChatMessage({ role: 'assistant', content: data.response, agentType: data.agentType });
+    } catch {
+      addChatMessage({ role: 'assistant', content: 'Sorry, I encountered an error processing your voice query. Please try again.', agentType: selectedAgent });
     } finally {
-      setLoading(false);
+      setChatLoading(false);
     }
   };
 
-  const speakResponse = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    // Clean markdown
-    const clean = text.replace(/[*#`_]/g, '').replace(/\n+/g, '. ');
-    const utter = new SpeechSynthesisUtterance(clean);
-    utter.rate = 1.0;
-    utter.pitch = 1.0;
-    window.speechSynthesis.speak(utter);
+  // Quick suggestion handler - sends directly to AI chat
+  const handleQuickSuggestion = async (suggestion: string) => {
+    setTranscript(suggestion);
+    setSending(true);
+    addChatMessage({ role: 'user', content: suggestion, agentType: selectedAgent });
+    setChatLoading(true);
+    setChatOpen(true);
+
+    await new Promise((r) => setTimeout(r, 500));
+    setVoiceOpen(false);
+    setSending(false);
+    setTranscript('');
+
+    try {
+      const data = await postAPI('/chat', { message: suggestion, agentType: selectedAgent });
+      addChatMessage({ role: 'assistant', content: data.response, agentType: data.agentType });
+    } catch {
+      addChatMessage({ role: 'assistant', content: 'Sorry, I encountered an error. Please try again.', agentType: selectedAgent });
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   if (!voiceOpen) return null;
@@ -115,7 +144,7 @@ export default function VoiceAssistant() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={() => setVoiceOpen(false)}
+        onClick={() => !sending && setVoiceOpen(false)}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
       >
         <motion.div
@@ -129,36 +158,49 @@ export default function VoiceAssistant() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
           <button
-            onClick={() => setVoiceOpen(false)}
+            onClick={() => !sending && setVoiceOpen(false)}
             className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/[0.05] text-gray-500 hover:text-white transition-colors z-10"
+            disabled={sending}
           >
             <X className="w-4 h-4" />
           </button>
 
           <div className="relative z-10 text-center">
-            <motion.div
-              animate={{
-                scale: listening ? [1, 1.1, 1] : 1,
-                boxShadow: listening
-                  ? ['0 0 0 0 rgba(139,92,246,0.4)', '0 0 0 20px rgba(139,92,246,0)', '0 0 0 0 rgba(139,92,246,0.4)']
-                  : '0 0 30px rgba(139,92,246,0.2)',
-              }}
-              transition={{ duration: 1.5, repeat: listening ? Infinity : 0 }}
-              className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-violet-700 flex items-center justify-center mx-auto mb-6 cursor-pointer"
-              onClick={listening ? stopListening : startListening}
-            >
-              {listening ? (
-                <Square className="w-8 h-8 text-white" fill="white" />
-              ) : (
-                <Mic className="w-10 h-10 text-white" />
-              )}
-            </motion.div>
+            {/* Mic button / Sending animation */}
+            {sending ? (
+              <motion.div
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-600 to-purple-700 flex items-center justify-center mx-auto mb-6"
+              >
+                <Send className="w-8 h-8 text-white" />
+              </motion.div>
+            ) : (
+              <motion.div
+                animate={{
+                  scale: listening ? [1, 1.1, 1] : 1,
+                  boxShadow: listening
+                    ? ['0 0 0 0 rgba(139,92,246,0.4)', '0 0 0 20px rgba(139,92,246,0)', '0 0 0 0 rgba(139,92,246,0.4)']
+                    : '0 0 30px rgba(139,92,246,0.2)',
+                }}
+                transition={{ duration: 1.5, repeat: listening ? Infinity : 0 }}
+                className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-violet-700 flex items-center justify-center mx-auto mb-6 cursor-pointer"
+                onClick={listening ? stopListening : startListening}
+              >
+                {listening ? (
+                  <Square className="w-8 h-8 text-white" fill="white" />
+                ) : (
+                  <Mic className="w-10 h-10 text-white" />
+                )}
+              </motion.div>
+            )}
 
             <h3 className="text-white font-semibold text-lg mb-1">
-              {listening ? 'Listening...' : loading ? 'Thinking...' : 'Voice Assistant'}
+              {sending ? 'Sending to AI...' : listening ? 'Listening...' : 'Voice Assistant'}
             </h3>
             <p className="text-xs text-gray-500 mb-4">
-              {listening ? 'Speak your question' : 'Tap the mic and ask anything'}
+              {sending ? 'Opening chat with your query' : listening ? 'Speak your question' : 'Tap the mic and ask anything'}
             </p>
 
             {/* Transcript */}
@@ -173,51 +215,27 @@ export default function VoiceAssistant() {
               </motion.div>
             )}
 
-            {/* Response */}
-            {response && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-purple-500/[0.05] border border-purple-500/20 rounded-2xl p-4 mb-4 text-left"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-3 h-3 text-purple-400" />
-                  <span className="text-[10px] text-purple-400 uppercase">AI Response</span>
-                  <button
-                    onClick={() => speakResponse(response)}
-                    className="ml-auto p-1 rounded hover:bg-white/[0.05]"
-                    title="Replay audio"
-                  >
-                    <Volume2 className="w-3 h-3 text-gray-400" />
-                  </button>
-                </div>
-                <div className="text-sm text-gray-300 prose prose-invert prose-sm max-w-none [&>p]:mb-1 [&>p:last-child]:mb-0">
-                  <ReactMarkdown>{response}</ReactMarkdown>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Loading dots */}
-            {loading && !response && (
+            {/* Sending animation dots */}
+            {sending && (
               <div className="flex justify-center gap-1.5 py-4">
                 {[0, 1, 2].map(i => (
                   <motion.div
                     key={i}
                     animate={{ y: [0, -8, 0] }}
                     transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-                    className="w-2 h-2 rounded-full bg-purple-400"
+                    className="w-2 h-2 rounded-full bg-cyan-400"
                   />
                 ))}
               </div>
             )}
 
-            {/* Quick suggestions */}
-            {!transcript && !loading && !response && (
+            {/* Quick suggestions - only when idle */}
+            {!transcript && !sending && (
               <div className="flex flex-wrap gap-2 justify-center mt-4">
                 {["What's my attendance?", "Any assignments due?", "Check my fees"].map(s => (
                   <button
                     key={s}
-                    onClick={() => { setTranscript(s); sendQuery(s); }}
+                    onClick={() => handleQuickSuggestion(s)}
                     className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-gray-400 hover:text-white hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
                   >
                     {s}

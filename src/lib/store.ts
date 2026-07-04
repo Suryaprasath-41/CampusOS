@@ -12,6 +12,13 @@ export interface ToastItem {
   };
 }
 
+interface CurrentUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 interface CampusStore {
   activeSection: string;
   setActiveSection: (section: string) => void;
@@ -38,9 +45,20 @@ interface CampusStore {
   bumpNotifVersion: () => void;
   activeRole: 'student' | 'faculty' | 'admin';
   setActiveRole: (role: 'student' | 'faculty' | 'admin') => void;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
   toasts: ToastItem[];
   addToast: (toast: ToastItem) => void;
   removeToast: (id: string) => void;
+  chatContext: string;
+  setChatContext: (ctx: string) => void;
+  openChatWithContext: (context: string) => void;
+  // Auth state
+  isAuthenticated: boolean;
+  setIsAuthenticated: (val: boolean) => void;
+  currentUser: CurrentUser | null;
+  setCurrentUser: (user: CurrentUser | null) => void;
+  logout: () => void;
 }
 
 export const useCampusStore = create<CampusStore>((set) => ({
@@ -69,9 +87,55 @@ export const useCampusStore = create<CampusStore>((set) => ({
   bumpNotifVersion: () => set((state) => ({ notifVersion: state.notifVersion + 1 })),
   activeRole: 'student',
   setActiveRole: (role) => set({ activeRole: role, activeSection: 'dashboard' }),
+  theme: 'dark',
+  setTheme: (theme) => set({ theme }),
   toasts: [],
   addToast: (toast) => set((state) => ({ toasts: [...state.toasts.slice(-4), toast] })), // Keep max 5 toasts
   removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  chatContext: '',
+  setChatContext: (ctx) => set({ chatContext: ctx }),
+  openChatWithContext: (context) => {
+    set((state) => {
+      const agent = state.selectedAgent;
+      return {
+        chatOpen: true,
+        chatContext: '',
+        chatMessages: [...state.chatMessages, { role: 'user', content: context, agentType: agent }],
+        chatLoading: true,
+      };
+    });
+    // Fire-and-forget API call; update store on response
+    const state = useCampusStore.getState();
+    const agent = state.selectedAgent;
+    postAPI('/chat', { message: context, agentType: agent })
+      .then((data) => {
+        useCampusStore.setState((s) => ({
+          chatMessages: [...s.chatMessages, { role: 'assistant', content: data.response, agentType: data.agentType }],
+          chatLoading: false,
+        }));
+      })
+      .catch(() => {
+        useCampusStore.setState((s) => ({
+          chatMessages: [...s.chatMessages, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.', agentType: agent }],
+          chatLoading: false,
+        }));
+      });
+  },
+  // Auth state
+  isAuthenticated: false,
+  setIsAuthenticated: (val) => set({ isAuthenticated: val }),
+  currentUser: null,
+  setCurrentUser: (user) => set({ currentUser: user }),
+  logout: () => set({
+    isAuthenticated: false,
+    currentUser: null,
+    activeRole: 'student' as const,
+    activeSection: 'dashboard',
+    dashboardData: null,
+    chatMessages: [],
+    chatLoading: false,
+    sidebarOpen: true,
+  }),
 }));
 
 const API_PORT = '8001';

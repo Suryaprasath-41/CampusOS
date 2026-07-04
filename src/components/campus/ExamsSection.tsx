@@ -52,7 +52,7 @@ export default function ExamsSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const { setChatOpen } = useCampusStore();
+  const { openChatWithContext } = useCampusStore();
 
   const loadExams = () => {
     setLoading(true);
@@ -340,7 +340,7 @@ export default function ExamsSection() {
                             <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
                               <span>Max Marks: <span className="text-white font-semibold">{exam.maxMarks}</span></span>
                               <button
-                                onClick={() => setChatOpen(true)}
+                                onClick={() => openChatWithContext(`Create a preparation plan for my upcoming ${exam.subjectName} (${exam.examType}) exam. The syllabus is: ${exam.syllabus}. My current preparation level is ${exam.preparation}%.`)}
                                 className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-medium hover:bg-purple-500/25 transition-colors"
                               >
                                 <Bot className="w-3.5 h-3.5" />
@@ -498,7 +498,7 @@ export default function ExamsSection() {
                   </div>
 
                   <button
-                    onClick={() => setChatOpen(true)}
+                    onClick={() => openChatWithContext(`Help me prepare for ${rec.subject}. I have ${rec.daysLeft} days left and my current preparation is ${rec.currentPrep}%. Suggest a study plan.`)}
                     className="mt-4 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-500/15 to-cyan-500/15 border border-purple-500/25 text-purple-300 text-xs font-medium hover:from-purple-500/25 hover:to-cyan-500/25 transition-all"
                   >
                     <Bot className="w-3.5 h-3.5" />

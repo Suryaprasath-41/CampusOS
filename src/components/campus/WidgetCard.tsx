@@ -31,17 +31,17 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
       className={cn(
-        "relative bg-white/[0.03] backdrop-blur-xl border rounded-2xl p-5",
+        "relative bg-[var(--glass-bg)] backdrop-blur-xl border rounded-2xl p-5",
         "transition-all duration-300",
         onClick && "cursor-pointer",
         className
       )}
       style={{
-        borderColor: isHovered ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-        background: isHovered ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+        borderColor: isHovered ? 'var(--accent-purple)' : 'var(--glass-border)',
+        background: isHovered ? 'var(--border-hover)' : 'var(--glass-bg)',
         boxShadow: isHovered
           ? '0 12px 40px rgba(139, 92, 246, 0.12), 0 0 0 1px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
-          : '0 0 30px rgba(139, 92, 246, 0.05)',
+          : 'var(--shadow)',
       }}
     >
       {/* Gradient border on hover - top edge */}
@@ -55,7 +55,7 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
       )}
 
       <div className="flex justify-between items-start mb-3">
-        <span className="text-gray-400 text-sm font-medium">{title}</span>
+        <span className="text-[var(--text-secondary)] text-sm font-medium">{title}</span>
         <div className={cn(
           "p-2 rounded-xl bg-white/[0.05] transition-all duration-300",
           isHovered && "bg-purple-500/10 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
@@ -66,11 +66,11 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
         initial={{ scale: 1.08 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="text-3xl font-bold text-white mb-1"
+        className="text-3xl font-bold text-[var(--text-primary)] mb-1"
       >
         {value}
       </motion.div>
-      {subtitle && <p className="text-gray-500 text-xs">{subtitle}</p>}
+      {subtitle && <p className="text-[var(--text-muted)] text-xs">{subtitle}</p>}
       {risk && (
         <div className={cn(
           "inline-block text-xs px-2 py-0.5 rounded-full mt-2 font-medium",
@@ -118,10 +118,10 @@ export function PredictionBar({ label, value, max = 100, color = 'purple', class
   return (
     <div className={cn("mb-4", className)}>
       <div className="flex justify-between mb-1.5">
-        <span className="text-gray-400 text-sm">{label}</span>
-        <span className="text-white text-sm font-semibold">{value}%</span>
+        <span className="text-[var(--text-secondary)] text-sm">{label}</span>
+        <span className="text-[var(--text-primary)] text-sm font-semibold">{value}%</span>
       </div>
-      <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+      <div className="h-2.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
@@ -145,9 +145,9 @@ export function GlassCard({ children, className, ...props }: { children: React.R
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "relative bg-white/[0.03] backdrop-blur-xl border rounded-2xl p-6",
+        "relative bg-[var(--glass-bg)] backdrop-blur-xl border rounded-2xl p-6",
         "transition-all duration-300 glass-hover",
-        isHovered ? "border-purple-500/20" : "border-white/[0.08]",
+        isHovered ? "border-purple-500/20" : "border-[var(--glass-border)]",
         className
       )}
       style={{
@@ -167,7 +167,7 @@ export function SectionTitle({ children, className }: { children: React.ReactNod
     <motion.h2
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className={cn("text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-6", className)}
+      className={cn("text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)] mb-6", className)}
     >
       {children}
     </motion.h2>

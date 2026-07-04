@@ -1,6 +1,7 @@
 'use client';
 
-import { Bell, Search, Sparkles, Mic, X, CheckCircle2, AlertTriangle, Info, CheckCheck, GraduationCap, BookOpen, Shield } from 'lucide-react';
+import { Bell, Search, Sparkles, Mic, X, CheckCircle2, AlertTriangle, Info, CheckCheck, GraduationCap, BookOpen, Shield, LogOut, User } from 'lucide-react';
+import ThemeToggle from '@/components/campus/ThemeToggle';
 import { useCampusStore, fetchAPI, patchAPI } from '@/lib/store';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,13 +66,15 @@ function RoleSwitcher() {
 }
 
 export default function Header() {
-  const { dashboardData, setChatOpen, setVoiceOpen, setDashboardData, bumpNotifVersion, activeRole } = useCampusStore();
+  const { dashboardData, setVoiceOpen, setDashboardData, bumpNotifVersion, activeRole, openChatWithContext, currentUser } = useCampusStore();
   const [searchFocused, setSearchFocused] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const prevUnreadRef = useRef(0);
 
   const greeting = useMemo(() => {
@@ -93,16 +96,18 @@ export default function Header() {
   }, [unread]);
 
   const roleLabel = useMemo(() => {
+    if (currentUser?.name) return currentUser.name;
     if (activeRole === 'faculty') return 'Dr. Meera';
     if (activeRole === 'admin') return 'Admin';
     return dashboardData?.student?.name || 'Student';
-  }, [activeRole, dashboardData]);
+  }, [activeRole, dashboardData, currentUser]);
 
   const roleSubtext = useMemo(() => {
+    if (currentUser?.email) return currentUser.email;
     if (activeRole === 'faculty') return 'Computer Science • Associate Professor';
     if (activeRole === 'admin') return 'System Administrator';
     return `${dashboardData?.student?.department} • Semester ${dashboardData?.student?.semester}`;
-  }, [activeRole, dashboardData]);
+  }, [activeRole, dashboardData, currentUser]);
 
   const loadNotifications = async () => {
     setLoadingNotifs(true);
@@ -157,6 +162,9 @@ export default function Header() {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -173,7 +181,7 @@ export default function Header() {
   return (
     <header className="relative z-30">
       {/* Subtle bottom border gradient */}
-      <div className="h-16 bg-white/[0.01] backdrop-blur-2xl flex items-center justify-between px-4 sm:px-6 relative">
+      <div className="h-16 bg-[var(--header-bg)] backdrop-blur-2xl flex items-center justify-between px-4 sm:px-6 relative">
         {/* Gradient bottom border */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
         {/* Secondary glow line */}
@@ -181,11 +189,11 @@ export default function Header() {
 
         <div className="flex items-center gap-3 sm:gap-4">
           <div>
-            <h1 className="text-base sm:text-lg font-bold text-white">
+            <h1 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
               {greeting}, <span className={cn("bg-clip-text text-transparent bg-gradient-to-r", roleColorClass)}>{roleLabel}</span>
             </h1>
             <div className="flex items-center gap-2">
-              <p className="text-[10px] sm:text-xs text-gray-500">{roleSubtext}</p>
+              <p className="text-[10px] sm:text-xs text-[var(--text-muted)]">{roleSubtext}</p>
               <span className={cn(
                 "text-[10px] px-1.5 py-0.5 rounded-full border flex items-center gap-1",
                 activeRole === 'student' && "bg-purple-500/10 text-purple-400 border-purple-500/20",
@@ -355,11 +363,101 @@ export default function Header() {
             </AnimatePresence>
           </div>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* User Menu / Logout */}
+          <div className="relative" ref={userMenuRef}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className={cn(
+                "relative p-2.5 rounded-xl border transition-all group",
+                activeRole === 'faculty'
+                  ? "bg-cyan-500/10 border-cyan-500/20 hover:bg-cyan-500/20"
+                  : activeRole === 'admin'
+                  ? "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                  : "bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20"
+              )}
+              title="User Menu"
+            >
+              <User className={cn(
+                "w-4 h-4 transition-colors",
+                activeRole === 'faculty' ? "text-cyan-400"
+                  : activeRole === 'admin' ? "text-amber-400"
+                  : "text-purple-400"
+              )} />
+            </motion.button>
+
+            <AnimatePresence>
+              {userMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-72 bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-50"
+                >
+                  <div className="p-4 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center",
+                        activeRole === 'faculty' ? "bg-cyan-500/20"
+                          : activeRole === 'admin' ? "bg-amber-500/20"
+                          : "bg-purple-500/20"
+                      )}>
+                        <User className={cn(
+                          "w-5 h-5",
+                          activeRole === 'faculty' ? "text-cyan-400"
+                            : activeRole === 'admin' ? "text-amber-400"
+                            : "text-purple-400"
+                        )} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-white truncate">
+                          {currentUser?.name || 'User'}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">
+                          {currentUser?.email || ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded-full border",
+                        activeRole === 'student' && "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                        activeRole === 'faculty' && "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                        activeRole === 'admin' && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                      )}>
+                        {activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        if (typeof window !== 'undefined' && (window as any).__campusLogout) {
+                          (window as any).__campusLogout();
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* AI Chat Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setChatOpen(true)}
+            onClick={() => openChatWithContext("I need help with something on CampusOS. What can you assist me with?")}
             className={cn(
               "flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-shadow relative overflow-hidden group",
               activeRole === 'faculty'

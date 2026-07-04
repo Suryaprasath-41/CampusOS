@@ -80,7 +80,7 @@ const agentColors: Record<string, string> = {
 };
 
 export default function WorkflowSection() {
-  const { setChatOpen } = useCampusStore();
+  const { openChatWithContext } = useCampusStore();
 
   return (
     <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -94,7 +94,7 @@ export default function WorkflowSection() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setChatOpen(true)}
+          onClick={() => openChatWithContext("Help me create a new automated workflow for campus tasks. What workflows can I set up?")}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_20px_rgba(139,92,246,0.3)]"
         >
           <Sparkles className="w-4 h-4" /> Create Workflow
@@ -218,7 +218,7 @@ export default function WorkflowSection() {
             <motion.button
               key={i}
               whileHover={{ scale: 1.02, y: -2 }}
-              onClick={() => setChatOpen(true)}
+              onClick={() => openChatWithContext(`Help me set up the "${tpl.name}" workflow. ${tpl.desc}`)}
               className="text-left p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/30 hover:bg-white/[0.04] transition-all group"
             >
               <div className="text-2xl mb-2">{tpl.icon}</div>

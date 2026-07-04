@@ -6,7 +6,7 @@ import {
   Home, Wallet, CalendarDays, Shield, ChevronLeft, ChevronRight,
   Bot, Sparkles, Workflow, Brain, User, FileText, Command, Settings, Database,
   ClipboardCheck, FlaskConical, Users, AlertTriangle, Bell, Search,
-  BookMarked, Cpu, Layers
+  BookMarked, Cpu, Layers, LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -134,7 +134,7 @@ const adminNavGroups: NavGroup[] = [
 const profileItem = { id: 'profile', label: 'Profile', icon: User };
 
 export default function Sidebar() {
-  const { activeSection, setActiveSection, sidebarOpen, setSidebarOpen, setCommandPaletteOpen, activeRole } = useCampusStore();
+  const { activeSection, setActiveSection, sidebarOpen, setSidebarOpen, setCommandPaletteOpen, activeRole, currentUser } = useCampusStore();
 
   const navGroups = activeRole === 'admin' ? adminNavGroups : activeRole === 'faculty' ? facultyNavGroups : studentNavGroups;
 
@@ -180,10 +180,10 @@ export default function Sidebar() {
       initial={false}
       animate={{ width: sidebarOpen ? 220 : 72 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="h-screen bg-white/[0.02] backdrop-blur-xl border-r border-white/[0.06] flex flex-col relative z-10 shrink-0"
+      className="h-screen bg-[var(--sidebar-bg)] backdrop-blur-xl border-r border-[var(--border-color)] flex flex-col relative z-10 shrink-0"
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-white/[0.06]">
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-[var(--border-color)]">
         <div className={cn(
           "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
           activeRole === 'faculty' ? "bg-gradient-to-br from-cyan-500 to-blue-600 shadow-[0_0_15px_rgba(6,182,212,0.4)]" :
@@ -200,7 +200,7 @@ export default function Sidebar() {
               exit={{ opacity: 0 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <div className="text-sm font-bold text-white">CampusOS</div>
+              <div className="text-sm font-bold text-[var(--text-primary)]">CampusOS</div>
               <div className={cn(
                 "text-[10px] -mt-0.5",
                 activeRole === 'faculty' ? "text-cyan-400" : activeRole === 'admin' ? "text-amber-400" : "text-purple-400"
@@ -218,7 +218,7 @@ export default function Sidebar() {
           <div key={group.label} className={cn(gi > 0 && "mt-2")}>
             {/* Gradient Divider between groups */}
             {gi > 0 && (
-              <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+              <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
             )}
             {/* Group Label */}
             <AnimatePresence>
@@ -229,7 +229,7 @@ export default function Sidebar() {
                   exit={{ opacity: 0 }}
                   className="px-3 mb-1"
                 >
-                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-[0.15em]">
+                  <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.15em]">
                     {group.label}
                   </span>
                 </motion.div>
@@ -249,11 +249,11 @@ export default function Sidebar() {
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium relative group/item",
                       isActive
                         ? accentBg
-                        : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+                        : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--glass-bg)]"
                     )}
                   >
                     {/* Hover trail effect */}
-                    <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-white/[0.04] via-transparent to-transparent" />
+                    <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-[var(--glass-bg)] via-transparent to-transparent" />
                     <item.icon className={cn("w-5 h-5 shrink-0 relative z-10", isActive && accentIcon)} />
                     <AnimatePresence>
                       {sidebarOpen && (
@@ -294,7 +294,7 @@ export default function Sidebar() {
         {/* Profile item - only for student role */}
         {activeRole === 'student' && (
           <div className="mt-2">
-            <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+            <div className="mx-3 mb-2 h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
             <motion.button
               onClick={() => setActiveSection(profileItem.id)}
               whileHover={{ x: 4 }}
@@ -303,10 +303,10 @@ export default function Sidebar() {
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium relative group/item",
                 activeSection === profileItem.id
                   ? accentBg
-                  : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--glass-bg)]"
               )}
             >
-              <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-white/[0.04] via-transparent to-transparent" />
+              <span className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-[var(--glass-bg)] via-transparent to-transparent" />
               <profileItem.icon className={cn("w-5 h-5 shrink-0 relative z-10", activeSection === profileItem.id && accentIcon)} />
               <AnimatePresence>
                 {sidebarOpen && (
@@ -331,18 +331,18 @@ export default function Sidebar() {
       {/* Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-white/[0.08] border border-white/[0.1] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.15] transition-colors z-20"
+        className="absolute -right-3 top-20 w-6 h-6 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-hover)] transition-colors z-20"
       >
         {sidebarOpen ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
       </button>
 
       {/* Bottom */}
-      <div className="p-3 border-t border-white/[0.06] space-y-2">
+      <div className="p-3 border-t border-[var(--border-color)] space-y-2">
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-colors group"
+          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--border-hover)] border border-[var(--border-color)] hover:border-[var(--border-hover)] transition-colors group"
         >
-          <Command className={cn("w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors shrink-0", activeRole === 'faculty' && "group-hover:text-cyan-400", activeRole === 'admin' && "group-hover:text-amber-400")} />
+          <Command className={cn("w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-400 transition-colors shrink-0", activeRole === 'faculty' && "group-hover:text-cyan-400", activeRole === 'admin' && "group-hover:text-amber-400")} />
           <AnimatePresence>
             {sidebarOpen && (
               <motion.div
@@ -351,8 +351,8 @@ export default function Sidebar() {
                 exit={{ opacity: 0 }}
                 className="flex-1 flex items-center justify-between overflow-hidden whitespace-nowrap"
               >
-                <span className="text-xs text-gray-500 group-hover:text-gray-300">Quick Search</span>
-                <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.1] text-gray-400 font-mono">⌘K</kbd>
+                <span className="text-xs text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]">Quick Search</span>
+                <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-muted)] font-mono">⌘K</kbd>
               </motion.div>
             )}
           </AnimatePresence>
@@ -368,7 +368,7 @@ export default function Sidebar() {
               activeRole === 'admin' ? "bg-gradient-to-br from-amber-500 to-orange-600 shadow-[0_0_12px_rgba(245,158,11,0.4)]" :
               "bg-gradient-to-br from-purple-500 to-cyan-500 shadow-[0_0_12px_rgba(139,92,246,0.4)]"
             )}>
-              {activeRole === 'faculty' ? 'M' : activeRole === 'admin' ? 'A' : 'S'}
+              {currentUser?.name?.charAt(0)?.toUpperCase() || (activeRole === 'faculty' ? 'M' : activeRole === 'admin' ? 'A' : 'S')}
             </div>
             <AnimatePresence>
               {sidebarOpen && (
@@ -376,18 +376,31 @@ export default function Sidebar() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="overflow-hidden whitespace-nowrap text-left"
+                  className="overflow-hidden whitespace-nowrap text-left flex-1"
                 >
-                  <div className="text-xs font-medium text-white">
-                    {activeRole === 'faculty' ? 'Dr. Meera' : activeRole === 'admin' ? 'Admin' : 'Sam Kumar'}
+                  <div className="text-xs font-medium text-[var(--text-primary)]">
+                    {currentUser?.name || (activeRole === 'faculty' ? 'Dr. Meera' : activeRole === 'admin' ? 'Admin' : 'Sam Kumar')}
                   </div>
-                  <div className="text-[10px] text-gray-500">
-                    {activeRole === 'faculty' ? 'CS Faculty' : activeRole === 'admin' ? 'Super Admin' : 'CS2022001'}
+                  <div className="text-[10px] text-[var(--text-muted)]">
+                    {currentUser?.email || (activeRole === 'faculty' ? 'CS Faculty' : activeRole === 'admin' ? 'Super Admin' : 'CS2022001')}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </button>
+          {sidebarOpen && (
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).__campusLogout) {
+                  (window as any).__campusLogout();
+                }
+              }}
+              className="p-2 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </motion.aside>

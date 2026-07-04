@@ -451,6 +451,91 @@ CampusOS AI v2.0 Enterprise Edition is a fully functional AI-Native Campus Opera
 - Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui + Framer Motion + Recharts
 - Backend: Next.js API Routes + Prisma ORM + SQLite
 - AI: z-ai-web-dev-sdk (LLM chat)
-- State: Zustand (with role management, toast notifications)
-- Database: SQLite via Prisma (23 students, 13 faculty, 18 subjects, 20 books, 10 events)
-- Components: 45+ React components across 3 portals
+- State: Zustand (with role management, toast notifications, auth state, theme, chat context)
+
+---
+
+Task ID: 8
+Agent: Main Agent (Multi-Agent Coordination)
+Task: Add Login/Authentication, Role-Based Access, Splash Screen, Voice→AI Integration, Button Context AI, Light/Dark Mode Theme
+
+Work Log:
+- Built complete authentication system with custom login API (bypassing NextAuth due to OOM issues):
+  - Login page at /login with glassmorphism design, animated canvas background, branding
+  - Admin credentials: admin@Samyukthenterprises@gmail.com / Samyukth@2378
+  - Custom token-based auth stored in cookies
+  - All existing users seeded with password "password123"
+  - Admin-only user registration via /api/auth/register
+- Built branded splash screen (SplashScreen.tsx):
+  - CampusOS logo with animated gradient
+  - "Made by Jai Samyukth Enterprises" tagline
+  - Progress bar filling over 3 seconds
+  - Only shows once per session (sessionStorage)
+- Enhanced Voice Assistant → AI direct integration:
+  - Voice input automatically sends transcript to AI chat panel
+  - "Sending to AI..." animation between voice capture and chat handoff
+  - Removed separate response display from VoiceAssistant modal
+- Built Button Context Messages for AI:
+  - Added openChatWithContext() to Zustand store
+  - 14+ buttons across Dashboard, WorkflowSection, FacultySection, ExamsSection, ProfileSection, Header now auto-send context to AI
+  - Example: "Check Attendance" button → "Show me my detailed attendance statistics and trends"
+- Built Light/Dark Mode Theme:
+  - CSS variables for 20+ theme properties in :root (light) and .dark (dark)
+  - ThemeProvider (next-themes) wrapping in layout.tsx
+  - ThemeToggle.tsx component with animated Sun/Moon icon swap
+  - 6 components updated to use CSS variables (page.tsx, Sidebar, Header, AnimatedBackground, WidgetCard)
+  - AnimatedBackground adjusts orb opacity and particle colors for light mode
+- Added password field to User Prisma model
+- Converted all section imports in page.tsx to dynamic imports to reduce compilation memory
+
+Stage Summary:
+- Authentication system with custom login API and cookie-based sessions
+- Branded splash screen with "Made by Jai Samyukth Enterprises"
+- Voice → AI direct integration with ChatPanel
+- Button context messages auto-send relevant queries to AI
+- Light/dark mode theme toggle with CSS variables
+- All 28 users now have passwords set
+
+**CRITICAL ISSUE**: The project has grown so large (45+ React components, 20+ API routes, Prisma, Recharts, Framer Motion) that Turbopack compilation exceeds the sandbox's 4GB memory limit. The server is OOM-killed during compilation of the main page (/). Individual routes compile fine but the combined compilation is too heavy. 
+- Workaround: Sequential compilation with delays between requests works
+- Proper fix: Need more server RAM or webpack compilation mode
+
+================================================================================
+CURRENT PROJECT STATUS (Updated Session 3)
+================================================================================
+
+## Project: CampusOS AI v2.0 - Enterprise Edition
+## Status: FUNCTIONAL BUT OOM-CONSTRAINED - All Features Built
+
+### Current Project Status:
+CampusOS AI v2.0 has all requested features built but faces OOM (Out of Memory) issues during Turbopack compilation. The sandbox has 4GB RAM, and the project's 45+ React components + 20+ API routes + Prisma ORM + heavy libraries exceed this during compilation. Individual routes compile and work correctly.
+
+### Completed Features This Session:
+1. ✅ Login/Authentication - Custom login API, cookie-based sessions, admin credentials
+2. ✅ Role-Based Access - Login required, role determines which portal is shown
+3. ✅ Admin-Only User Creation - /api/auth/register endpoint with role verification
+4. ✅ Branded Splash Screen - "CampusOS, Made by Jai Samyukth Enterprises"
+5. ✅ Voice → AI Direct Integration - Voice input sends directly to ChatPanel
+6. ✅ Button Context Messages - 14+ buttons auto-send context to AI
+7. ✅ Light/Dark Mode Theme - Full theme toggle with CSS variables
+8. ✅ Password field added to User model
+9. ✅ All 28 users have passwords set
+
+### Credentials:
+- Admin: admin@Samyukthenterprises@gmail.com / Samyukth@2378
+- Student (Sam Kumar): sam.kumar@campus.edu / password123
+- Faculty: dr.patel@campus.edu / password123 (and all other faculty)
+
+### Unresolved Issues:
+1. **OOM during compilation** - Server killed when compiling main page with all dynamic imports
+2. **NextAuth removed** - Switched to custom auth due to NextAuth's heavy compilation
+3. **Theme not fully applied** - Only 6 core components updated for light mode, many others still use hardcoded dark colors
+4. **Voice → AI** - Needs testing after server stability is resolved
+5. **Splash screen** - Needs testing after server stability is resolved
+
+### Priority Recommendations for Next Phase:
+1. Resolve OOM issue - either increase sandbox memory or switch to webpack compiler
+2. Complete light mode theming for all components
+3. Test and verify login flow end-to-end with agent-browser
+4. Test splash screen and voice integration
+5. Add forgot password / change password functionality

@@ -8,7 +8,7 @@ import { TrendingUp, BookOpen, AlertTriangle, Calendar, Library, Trophy, Clock, 
 import { motion } from 'framer-motion';
 
 export default function Dashboard() {
-  const { dashboardData, setDashboardData, setActiveSection, setChatOpen, setVoiceOpen } = useCampusStore();
+  const { dashboardData, setDashboardData, setActiveSection, setVoiceOpen, openChatWithContext } = useCampusStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function Dashboard() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setChatOpen(true)}
+              onClick={() => openChatWithContext("I need help with something on CampusOS. What can you assist me with?")}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_20px_rgba(139,92,246,0.3)] relative overflow-hidden group"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -255,10 +255,10 @@ export default function Dashboard() {
       {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: Target, label: 'Check Attendance', desc: 'View detailed stats', color: 'purple', action: () => setActiveSection('attendance') },
-          { icon: BookOpen, label: 'Library Books', desc: 'Find & borrow', color: 'cyan', action: () => setActiveSection('library') },
-          { icon: Calendar, label: 'Upcoming Events', desc: 'Register now', color: 'blue', action: () => setActiveSection('events') },
-          { icon: Trophy, label: 'Placement Prep', desc: 'Get ready', color: 'green', action: () => setActiveSection('placement') },
+          { icon: Target, label: 'Check Attendance', desc: 'View detailed stats', color: 'purple', action: () => openChatWithContext("Show me my detailed attendance statistics and trends") },
+          { icon: BookOpen, label: 'Library Books', desc: 'Find & borrow', color: 'cyan', action: () => openChatWithContext("Help me find and borrow library books") },
+          { icon: Calendar, label: 'Upcoming Events', desc: 'Register now', color: 'blue', action: () => openChatWithContext("What events are coming up that I can register for?") },
+          { icon: Trophy, label: 'Placement Prep', desc: 'Get ready', color: 'green', action: () => openChatWithContext("How can I improve my placement readiness?") },
         ].map((qa, i) => (
           <motion.button
             key={i}
@@ -405,7 +405,7 @@ export default function Dashboard() {
               Based on your skills & CGPA, you&apos;re <span className="text-cyan-400 font-semibold">{d.readiness}% ready</span> for placements. Focus on System Design & DSA to reach 95%.
             </p>
             <button
-              onClick={() => setChatOpen(true)}
+              onClick={() => openChatWithContext("Create a personalized plan for my academic and placement improvement")}
               className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium"
             >
               Get personalized plan <ChevronRight className="w-3 h-3" />

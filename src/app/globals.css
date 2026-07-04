@@ -43,8 +43,80 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ─── Light Mode (default) ────────────────────────────────────── */
 :root {
   --radius: 0.75rem;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #f1f5f9;
+  --bg-glass: rgba(241, 245, 249, 0.8);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --sidebar-bg: rgba(248, 250, 252, 0.95);
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --accent-purple: #7c3aed;
+  --accent-cyan: #06b6d4;
+
+  /* shadcn/ui variables - light mode */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #f1f5f9;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: rgba(124, 58, 237, 0.1);
+  --accent-foreground: #7c3aed;
+  --destructive: #ef4444;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #7c3aed;
+  --chart-1: #7c3aed;
+  --chart-2: #06b6d4;
+  --chart-3: #22c55e;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(124, 58, 237, 0.1);
+  --sidebar-accent-foreground: #7c3aed;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #7c3aed;
+}
+
+/* ─── Dark Mode ───────────────────────────────────────────────── */
+.dark {
+  --bg-primary: #050510;
+  --bg-secondary: #0a0a14;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-glass: rgba(255, 255, 255, 0.02);
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --sidebar-bg: rgba(255, 255, 255, 0.02);
+  --header-bg: rgba(255, 255, 255, 0.01);
+  --accent-purple: #8b5cf6;
+  --accent-cyan: #06b6d4;
+
+  /* shadcn/ui variables - dark mode */
   --background: #050510;
   --foreground: #e4e4e7;
   --card: rgba(255,255,255,0.03);
@@ -78,11 +150,6 @@
   --sidebar-ring: #8b5cf6;
 }
 
-.dark {
-  --background: #050510;
-  --foreground: #e4e4e7;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -92,7 +159,7 @@
   }
 }
 
-/* Custom Scrollbar - thin, dark themed */
+/* Custom Scrollbar - thin, themed */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -172,8 +239,8 @@ html {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(139, 92, 246, 0.2);
+  background: var(--glass-bg);
+  border-color: var(--accent-purple);
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1), 0 0 0 1px rgba(139, 92, 246, 0.1);
   transform: translateY(-2px);
 }
@@ -182,7 +249,7 @@ html {
 .shimmer-loading {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
 }
 .shimmer-loading::after {
   content: '';

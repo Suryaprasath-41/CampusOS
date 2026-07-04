@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function AnimatedBackground() {
+  const { resolvedTheme } = useTheme();
+
   useEffect(() => {
     const canvas = document.getElementById('bg-canvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -46,7 +49,7 @@ export default function AnimatedBackground() {
       twinklePhase: number;
     }
 
-    const particleColors: [number, number, number][] = [
+    const darkParticleColors: [number, number, number][] = [
       [255, 255, 255],
       [139, 92, 246],
       [6, 182, 212],
@@ -54,12 +57,22 @@ export default function AnimatedBackground() {
       [34, 197, 94],
     ];
 
+    const lightParticleColors: [number, number, number][] = [
+      [100, 100, 120],
+      [124, 58, 237],
+      [6, 156, 184],
+      [100, 60, 180],
+      [30, 150, 70],
+    ];
+
     const particles: Particle[] = [];
     for (let i = 0; i < 80; i++) {
+      const isLight = document.documentElement.classList.contains('light');
+      const particleColors = isLight ? lightParticleColors : darkParticleColors;
       particles.push({
         x: Math.random(),
         y: Math.random(),
-        r: Math.random() * 2 + 0.3, // More size variety
+        r: Math.random() * 2 + 0.3,
         speed: Math.random() * 0.0003 + 0.0001,
         drift: Math.random() * 0.0005 - 0.00025,
         alpha: Math.random() * 0.4 + 0.05,
@@ -71,7 +84,6 @@ export default function AnimatedBackground() {
 
     // Geometric constellation points for hex/constellation overlay
     const constellationPoints: { x: number; y: number }[] = [];
-    const hexSpacing = 120;
     for (let i = 0; i < 30; i++) {
       constellationPoints.push({
         x: Math.random(),
@@ -83,6 +95,10 @@ export default function AnimatedBackground() {
     const CONNECTION_DIST = 150;
 
     const animate = () => {
+      const isLight = document.documentElement.classList.contains('light');
+      const alphaMultiplier = isLight ? 0.3 : 1.0; // Reduce orb opacity in light mode
+      const gridAlphaMultiplier = isLight ? 0.3 : 1.0;
+
       time += 0.003;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -93,7 +109,7 @@ export default function AnimatedBackground() {
         const y = (orb.y + Math.cos(time * sp + i * 2) * 0.08 + Math.cos(time * sp * 0.6 + i * 0.8) * 0.025) * canvas.height;
 
         // Pulsing alpha
-        const pulseAlpha = orb.baseAlpha + Math.sin(time * orb.pulseSpeed + i) * 0.02;
+        const pulseAlpha = (orb.baseAlpha + Math.sin(time * orb.pulseSpeed + i) * 0.02) * alphaMultiplier;
 
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, orb.r);
         gradient.addColorStop(0, `rgba(${orb.color[0]}, ${orb.color[1]}, ${orb.color[2]}, ${pulseAlpha})`);
@@ -104,8 +120,8 @@ export default function AnimatedBackground() {
 
       // Draw subtle grid pattern with color-shifting effect
       const gridHueShift = Math.sin(time * 0.2) * 0.005;
-      const gridAlpha = 0.015 + gridHueShift;
-      ctx.strokeStyle = `rgba(139, 92, 246, ${Math.max(0.008, gridAlpha)})`;
+      const gridAlpha = (0.015 + gridHueShift) * gridAlphaMultiplier;
+      ctx.strokeStyle = `rgba(139, 92, 246, ${Math.max(0.003, gridAlpha)})`;
       ctx.lineWidth = 0.5;
       const gridSize = 60;
       for (let x = 0; x < canvas.width; x += gridSize) {
@@ -115,7 +131,7 @@ export default function AnimatedBackground() {
         ctx.stroke();
       }
       // Horizontal lines with cyan tint
-      ctx.strokeStyle = `rgba(6, 182, 212, ${Math.max(0.008, gridAlpha * 0.7)})`;
+      ctx.strokeStyle = `rgba(6, 182, 212, ${Math.max(0.003, gridAlpha * 0.7)})`;
       for (let y = 0; y < canvas.height; y += gridSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -143,7 +159,7 @@ export default function AnimatedBackground() {
           const dy = screenPoints[i].sy - screenPoints[j].sy;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < CONNECTION_DIST * 2.5) {
-            const lineAlpha = Math.max(0, 0.03 - (dist / (CONNECTION_DIST * 4)));
+            const lineAlpha = Math.max(0, (0.03 - (dist / (CONNECTION_DIST * 4))) * gridAlphaMultiplier);
             ctx.strokeStyle = `rgba(139, 92, 246, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
@@ -155,10 +171,11 @@ export default function AnimatedBackground() {
       }
 
       // Draw small dots at constellation points
+      const dotAlpha = isLight ? 0.03 : 0.08;
       screenPoints.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.08)';
+        ctx.fillStyle = `rgba(139, 92, 246, ${dotAlpha})`;
         ctx.fill();
       });
 
@@ -175,9 +192,14 @@ export default function AnimatedBackground() {
         if (p.x < -0.02) p.x = 1.02;
         if (p.x > 1.02) p.x = -0.02;
 
+        // Update color based on current theme
+        const particleColors = isLight ? lightParticleColors : darkParticleColors;
+        const colorIndex = particles.indexOf(p) % particleColors.length;
+        p.color = particleColors[colorIndex];
+
         // Twinkle effect
         const twinkle = 0.5 + 0.5 * Math.sin(time * p.twinkleSpeed + p.twinklePhase);
-        const currentAlpha = p.alpha * twinkle;
+        const currentAlpha = p.alpha * twinkle * (isLight ? 0.5 : 1.0);
 
         const px = p.x * canvas.width;
         const py = p.y * canvas.height;
@@ -204,7 +226,7 @@ export default function AnimatedBackground() {
           const dy = (particles[i].y - particles[j].y) * canvas.height;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < CONNECTION_DIST) {
-            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.06;
+            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.06 * gridAlphaMultiplier;
             ctx.strokeStyle = `rgba(139, 92, 246, ${lineAlpha})`;
             ctx.lineWidth = 0.3;
             ctx.beginPath();
@@ -221,7 +243,7 @@ export default function AnimatedBackground() {
         canvas.width / 2, canvas.height / 2, canvas.height * 0.9
       );
       vignetteGradient.addColorStop(0, 'transparent');
-      vignetteGradient.addColorStop(1, 'rgba(5, 5, 16, 0.6)');
+      vignetteGradient.addColorStop(1, isLight ? 'rgba(255, 255, 255, 0.4)' : 'rgba(5, 5, 16, 0.6)');
       ctx.fillStyle = vignetteGradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -233,7 +255,7 @@ export default function AnimatedBackground() {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return (
     <canvas
