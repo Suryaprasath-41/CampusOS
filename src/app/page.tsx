@@ -17,14 +17,16 @@ import WorkflowSection from '@/components/campus/WorkflowSection';
 import FacultySection from '@/components/campus/FacultySection';
 import ProfileSection from '@/components/campus/ProfileSection';
 import AdminPortal from '@/components/campus/AdminPortal';
+import FacultyPortal from '@/components/campus/FacultyPortal';
 import AiMemorySection from '@/components/campus/AiMemorySection';
 import SettingsSection from '@/components/campus/SettingsSection';
 import ChatPanel from '@/components/campus/ChatPanel';
 import VoiceAssistant from '@/components/campus/VoiceAssistant';
 import CommandPalette from '@/components/campus/CommandPalette';
+import NotificationToast from '@/components/campus/NotificationToast';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const sections: Record<string, React.ComponentType> = {
+const studentSections: Record<string, React.ComponentType> = {
   dashboard: Dashboard,
   attendance: AttendanceSection,
   placement: PlacementSection,
@@ -36,15 +38,46 @@ const sections: Record<string, React.ComponentType> = {
   events: EventsSection,
   workflow: WorkflowSection,
   faculty: FacultySection,
+  'faculty-portal': FacultyPortal,
   profile: ProfileSection,
   admin: AdminPortal,
   'ai-memory': AiMemorySection,
   settings: SettingsSection,
 };
 
+const facultySections: Record<string, React.ComponentType> = {
+  dashboard: FacultyPortal,
+  'my-classes': FacultyPortal,
+  attendance: FacultyPortal,
+  assignments: FacultyPortal,
+  research: FacultyPortal,
+  schedule: FacultyPortal,
+  'ai-assistant': FacultyPortal,
+  profile: ProfileSection,
+  settings: SettingsSection,
+};
+
+const adminSections: Record<string, React.ComponentType> = {
+  dashboard: AdminPortal,
+  admin: AdminPortal,
+  students: AdminPortal,
+  faculty: AdminPortal,
+  courses: AdminPortal,
+  complaints: AdminPortal,
+  notifications: AdminPortal,
+  'ai-playground': AdminPortal,
+  search: AdminPortal,
+  'knowledge-base': AdminPortal,
+  automations: AdminPortal,
+  profile: ProfileSection,
+  settings: SettingsSection,
+};
+
 export default function Home() {
-  const { activeSection } = useCampusStore();
-  const SectionComponent = sections[activeSection] || Dashboard;
+  const { activeSection, activeRole } = useCampusStore();
+
+  const sections = activeRole === 'admin' ? adminSections : activeRole === 'faculty' ? facultySections : studentSections;
+  const SectionComponent = sections[activeSection] || (activeRole === 'admin' ? AdminPortal : activeRole === 'faculty' ? FacultyPortal : Dashboard);
 
   return (
     <div className="h-screen flex bg-[#050510] text-white overflow-hidden">
@@ -55,7 +88,7 @@ export default function Home() {
         <main className="flex-1 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeSection}
+              key={`${activeRole}-${activeSection}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -70,6 +103,7 @@ export default function Home() {
       <ChatPanel />
       <VoiceAssistant />
       <CommandPalette />
+      <NotificationToast />
     </div>
   );
 }

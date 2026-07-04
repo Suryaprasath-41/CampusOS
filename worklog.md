@@ -168,45 +168,131 @@ Stage Summary:
 - Charts use dark-themed tooltips consistent with app design
 - Fallback to mock data when API data unavailable
 
+---
+Task ID: 4
+Agent: Backend API Developer
+Task: Create Faculty API endpoints for the CampusOS AI v2.0 application
+
+Work Log:
+- Created GET /api/faculty - List all faculty with subjects, student counts, search/filter support
+- Created GET /api/faculty/[id] - Single faculty details with assigned subjects, students, schedule, summary
+- Created GET /api/faculty/[id]/classes - Classes with enrolled students and per-subject/per-student attendance summaries
+- Created POST /api/faculty/[id]/attendance - Bulk attendance marking with upsert, validation (faculty owns subject, students enrolled)
+- Created GET /api/faculty/[id]/assignments - Faculty assignments with submission stats and average scores
+- Created POST /api/faculty/[id]/assignments - Create assignment with validation (faculty owns subject, date validation)
+- Created PATCH /api/faculty/[id]/assignments/[assignmentId]/grade - Grade submission with validation (faculty owns assignment, marks ≤ max)
+- Created GET /api/faculty/[id]/dashboard - Dashboard data (stats, schedule, attendance overview, assignments, recent queries, recent attendance)
+- All endpoints tested and verified working
+- Proper HTTP status codes: 200, 201, 400, 403, 404, 500
+- Lint passes with no errors
+
+Stage Summary:
+- 8 Faculty API endpoints created across 6 route files
+- Comprehensive validation and error handling
+- Upsert behavior for attendance (update existing records for same date/student/subject)
+- Faculty dashboard includes stats, schedule, attendance overview, assignments, recent AI queries
+
+---
+Task ID: 7
+Agent: Faculty Portal Builder
+Task: Build comprehensive Faculty Portal component for CampusOS AI v2.0
+
+Work Log:
+- Created FacultyPortal.tsx - main faculty portal with 7-tab navigation (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant)
+- Built Faculty Dashboard tab with:
+  - Welcome banner with greeting + semester info for Dr. Priya Sharma
+  - 6 stat cards with AnimatedCounter (My Classes=3, Total Students=78, Today's Classes=4, Pending Reviews=12, Research Papers=5, AI Queries=184)
+  - Live activity ticker with scrolling news (submissions, attendance, citations, AI grading)
+  - AI Predictions panel (Class Engagement 86%, Student Performance 78%, Workload Balance 65%)
+  - Quick Actions grid (Mark Attendance, Grade Assignments, Send Notification, AI Teaching Assistant)
+  - Today's Schedule card with 4 time slots (completed/ongoing/upcoming status)
+  - Recent Student Queries card with 5 queries from ML, P&S, DL students
+  - Class Engagement Trend chart (Recharts LineChart - 8 weeks, 3 subjects)
+- Built My Classes tab with:
+  - Grid of 3 class cards (Machine Learning, Probability & Statistics, Deep Learning)
+  - Department color-coding (CS=purple)
+  - Expandable student list per class with attendance/grade data
+  - Student avatars with attendance percentage and grade badges
+- Built Attendance tab with:
+  - Class selector (3 classes)
+  - Date picker
+  - Student list with Present/Absent toggle switches (animated spring toggle)
+  - Mark All Present / Mark All Absent buttons
+  - Summary stats (present, absent, percentage) with AnimatedCounter
+  - AI Anomaly Alert for 3 students with suspicious attendance patterns
+  - Save & Submit button with visual confirmation
+- Built Assignments tab with:
+  - Create new assignment form (title, subject, due date, max marks, description)
+  - List of 3 assignments with submission counts
+  - Click to see submissions with inline grading (score + feedback per student)
+  - AI Auto-Grade suggestion button
+  - Submission stats (submitted, graded, pending)
+- Built Research tab with:
+  - Research stats (5 papers, 3 published, 260 citations, H-Index 4)
+  - Citation tracker chart (Recharts AreaChart - 12 months)
+  - Papers list with title, journal, status, co-authors, citations, DOI
+  - Add new research paper form
+  - AI Research Assistant chat button
+- Built Schedule tab with:
+  - Weekly timetable grid (Mon-Sat, 9AM-5PM)
+  - Color-coded class blocks by department
+  - Free slot indicators
+  - Class legend
+  - Next week preview with highlights
+- Built AI Assistant tab with:
+  - Agent selector (Teaching Assistant, Grading Agent, Research Assistant)
+  - Token usage display with per-agent breakdown
+  - Chat interface with faculty context
+  - 6 suggested prompts (quiz generation, performance summary, lesson plans, etc.)
+  - Agent status indicators
+- Added Faculty Portal to student sidebar navigation (SYSTEM group, NEW badge)
+- Added Faculty Portal to student sections map in page.tsx
+- Faculty role already routes to FacultyPortal via faculty-portal section key
+- Mock data: Dr. Priya Sharma, CS dept, 3 classes, 78 students across classes, 5 research papers, weekly schedule
+
+Stage Summary:
+- Complete Faculty Portal with 7 sub-tabs, all functional
+- 900+ lines of new FacultyPortal code
+- Consistent glassmorphism dark mode styling matching Dashboard.tsx and AdminPortal.tsx
+- Framer Motion animations throughout (fade-in, slide, spring toggles, hover effects)
+- Recharts charts (LineChart for engagement, AreaChart for citations)
+- All components use glassmorphism: bg-white/[0.03], border-white/[0.08], backdrop-blur-xl
+- No API calls - uses comprehensive mock data for Dr. Priya Sharma
+- Accessible from both student sidebar (NEW badge) and faculty role
+
 ================================================================================
 CURRENT PROJECT STATUS
 ================================================================================
 
 ## Project: CampusOS AI v2.0 - Enterprise Edition
-## Status: ACTIVE DEVELOPMENT - Admin Portal Complete
+## Status: ACTIVE DEVELOPMENT - Faculty Portal Complete
 
 ### What's Working:
-- Full student dashboard with 15 sections (Dashboard, Attendance, Placement, Library, Academic, Exams, Hostel, Finance, Events, Workflows, Faculty AI, Profile, Admin, AI Memory, Settings)
+- Full student dashboard with 16 sections (Dashboard, Attendance, Placement, Library, Academic, Exams, Hostel, Finance, Events, Workflows, Faculty AI, Faculty Portal, Profile, Admin, AI Memory, Settings)
 - AI Chat Panel with LLM integration and multi-agent routing
 - Voice Assistant interface
 - Command Palette (Cmd+K)
 - Notifications dropdown with real-time unread badge
-- Administrator Portal with 8 sub-sections:
-  - Control Center Dashboard (animated stats, system health, quick actions, activity feed, AI insights, analytics charts)
-  - Student Management (CRUD, search, filters, CSV import, pagination)
-  - Faculty Management (CRUD, table/card view toggle)
-  - Course Management (CRUD, grid/table view, department accents)
-  - Complaint Management (status tracking, priority, AI auto-prioritize)
-  - Notification Broadcaster (compose, live preview, phone mockup)
-  - AI Playground (agent config, prompt testing, execution chain visualization)
-  - Smart Search (universal search across all data)
+- Administrator Portal with 8 sub-sections (Dashboard, Students, Faculty, Courses, Complaints, Notifications, AI Playground, Search)
+- Faculty Portal with 7 sub-tabs (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant)
 - 23 students across 6 departments in database
-- All API endpoints functional
+- All API endpoints functional (student, admin, faculty)
+- Faculty API: 8 endpoints (list, detail, classes, attendance marking, assignments CRUD, grading, dashboard)
 - Glassmorphism dark mode UI throughout
 - Animated background with orbs and particles
-- Sidebar with grouped navigation and labels
+- Sidebar with grouped navigation and labels (role-based: student/faculty/admin)
 
 ### Unresolved Issues / Next Priorities:
 1. **Server process lifecycle**: Dev server doesn't persist between shell sessions - needs investigation
-2. **Real data binding**: Admin dashboard stat cards use mixed hardcoded/API data - should be fully dynamic
+2. **Real data binding**: Faculty Portal uses mock data - should connect to faculty API endpoints
 3. **AI Playground chat**: Currently connects to /api/chat but may need admin-specific context
 4. **CSV Import**: Currently mock - should parse actual CSV/Excel files
-5. **Knowledge Base Manager**: Not yet built - upload PDFs, auto-index for RAG
-6. **Automation Builder**: Visual IF-THEN workflow builder (partially started in WorkflowSection)
-7. **User Roles & Permissions**: Role-based access control system (Super Admin, Principal, HOD, etc.)
+5. **Knowledge Base Manager**: ✅ Built - AdminKnowledgeBase.tsx with document library, upload, RAG pipeline, search preview
+6. **Automation Builder**: ✅ Built - AdminAutomationBuilder.tsx with visual IF/THEN workflow editor and test panel
+7. **User Roles & Permissions**: ✅ Role Switcher implemented - Student/Faculty/Admin portal switching
 8. **Real-time sync**: WebSocket integration for live updates across all portals
 9. **Analytics depth**: More detailed analytics with date range selection, export functionality
-10. **Mobile responsiveness**: Some admin sections may need mobile optimization
+10. **Mobile responsiveness**: Some admin/faculty sections may need mobile optimization
 
 ### Technology Stack:
 - Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui + Framer Motion + Recharts
@@ -214,3 +300,157 @@ CURRENT PROJECT STATUS
 - AI: z-ai-web-dev-sdk (LLM chat)
 - State: Zustand
 - Database: SQLite via Prisma (23 students, 13 faculty, 18 subjects, 20 books, 10 events)
+
+---
+Task ID: 2+3
+Agent: Feature Enhancement Developer
+Task: Build Role Switcher, Knowledge Base Manager, and AI Automation Builder
+
+Work Log:
+- Updated store.ts: Added activeRole state ('student'|'faculty'|'admin') and setActiveRole action (resets activeSection to 'dashboard' on role change)
+- Created FacultyPortal.tsx: Complete faculty portal with 8 tabs (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant, Settings) featuring cyan/blue accent theme, mock data for Dr. Meera Sharma
+- Updated Header.tsx: Added Role Switcher component with 3 glassmorphism pills (Student=GraduationCap, Faculty=BookOpen, Admin=Shield), animated background indicator, role-based color theming (purple/cyan/amber), dynamic greeting based on active role
+- Updated Sidebar.tsx: Complete role-based navigation with 3 nav configurations (student: 15 items, faculty: 9 items, admin: 11 items), role-specific accent colors throughout (purple/cyan/amber), dynamic user info display per role
+- Updated page.tsx: Role-based section routing with separate section maps for student/faculty/admin, FacultyPortal integration, animated transitions keyed on role+section
+- Created AdminKnowledgeBase.tsx: Knowledge base management with document library (10 mock docs), drag-drop upload with progress, RAG pipeline status (Extracting→Chunking→Embedding→Indexed), search preview with relevance scores, stats bar
+- Created AdminAutomationBuilder.tsx: Visual no-code IF/THEN workflow builder with left panel workflow list (6 pre-built workflows), right panel block editor (Trigger/Action/Chain cards with dropdowns), connector arrows, enable/disable toggles, test panel with simulated output
+- Updated AdminPortal.tsx: Added Knowledge Base and Automations tabs to the tab bar, imported and rendered new components conditionally
+
+Stage Summary:
+- 3 major features implemented: Role Switcher, Knowledge Base Manager, AI Automation Builder
+- FacultyPortal: 8-tab interface with full mock data and cyan theme
+- Role Switcher: Animated 3-pill toggle with role-based theming across entire UI
+- Knowledge Base: Document library + RAG pipeline + semantic search preview
+- Automation Builder: Visual block editor with 6 pre-built workflows + test panel
+- AdminPortal expanded from 8 to 10 tabs
+- All components use glassmorphism dark mode styling with Framer Motion animations
+- ESLint: 0 errors
+
+---
+Task ID: 5+6
+Agent: Styling & Features Enhancement Specialist
+Task: Major styling enhancement and real-time notification toast system
+
+Work Log:
+- Enhanced globals.css with extensive new utility classes and animations:
+  - .glow-text, .glow-text-purple, .glow-text-cyan - text shadow glow effects
+  - .glass-hover - hover effect for glass cards with purple glow border
+  - .shimmer-loading - skeleton loading animation with purple/cyan gradient sweep
+  - .animate-gradient - smooth background gradient shifting keyframes
+  - Focus-visible styles for accessibility (purple outline on focus)
+  - @keyframes toast-slide-in/out - toast notification entry/exit animations
+  - @keyframes toast-progress - 5s linear progress bar for auto-dismiss
+  - .animate-toast-progress - CSS-driven progress bar class
+  - @keyframes badge-bounce - notification badge bounce animation
+  - @keyframes value-pulse - scale pulse for value changes
+  - @keyframes pulse-border - purple-to-cyan border color cycling
+
+- Enhanced AnimatedBackground.tsx with significant visual improvements:
+  - 80 particles (up from 60) with 5 color varieties (white, purple, cyan, violet, green)
+  - Particle twinkle effect using sine wave on opacity
+  - Glow effect on larger particles (r > 1.2)
+  - Pulsing orb brightness using sine-wave alpha modulation
+  - Color-shifting grid overlay (purple vertical + cyan horizontal with time-based alpha)
+  - Rotating geometric constellation overlay (30 points with connecting lines)
+  - Connecting lines between nearby particles (within 150px threshold)
+  - All orb colors changed from string to RGB arrays for dynamic alpha
+
+- Enhanced Header.tsx with visual polish:
+  - Subtle bottom border gradient (purple-to-transparent line + cyan glow blur)
+  - backdrop-blur-2xl (up from backdrop-blur-xl)
+  - Pulsing gradient border on search input focus (animated gradient wrapper)
+  - Focus shadow glow effect (shadow-[0_0_20px_rgba(139,92,246,0.15)])
+  - Notification badge bounce animation on unread count change (key-based motion)
+  - Improved responsive design (hidden sm:block for search, hidden sm:inline for text)
+  - Better hover states on Voice/Notification buttons with purple/cyan border highlights
+  - shimmer-loading class on notification skeleton placeholders
+
+- Enhanced WidgetCard.tsx with interactive effects:
+  - Hover lift effect (y: -4px instead of -2px) with enhanced shadow
+  - Gradient border on hover (top edge via motion.div with scaleX animation)
+  - Icon container glow on hover (purple bg + shadow)
+  - Value change micro-animation using motion.div with key-based scale pulse
+  - GlassCard component enhanced with glass-hover class + dynamic border color
+  - All hover transitions use cubic-bezier for smooth easing
+
+- Created NotificationToast.tsx - Complete real-time toast notification system:
+  - 4 notification types: success (green), warning (yellow), error (red), info (purple)
+  - Each toast: type-specific icon, title, message, timestamp (time ago format)
+  - Auto-dismiss after 5 seconds with CSS-driven progress bar
+  - Stack from bottom-right with AnimatePresence + popLayout
+  - Glassmorphism styled (bg-[#0a0a14]/90, backdrop-blur-2xl, colored borders)
+  - Action buttons when relevant (View, Details, Register, Pay Now, Renew)
+  - Dismiss button (X icon) on each toast
+  - 12 simulated notification templates covering all campus scenarios
+  - First notification fires after 5s, then every 15-20s randomly
+
+- Updated store.ts with toast state management:
+  - Exported ToastItem interface (id, type, title, message, timestamp, action?)
+  - toasts: ToastItem[] state
+  - addToast action (keeps max 5 toasts via slice)
+  - removeToast action (filter by id)
+
+- Updated page.tsx to integrate NotificationToast component
+
+Stage Summary:
+- All 7 files modified/created successfully
+- ESLint: 0 errors
+- Dev server compiling without issues
+- Visual polish significantly enhanced across all interactive components
+- Real-time notification toast system fully functional
+- All animations use Framer Motion or CSS keyframes (no setState in effects)
+- Responsive design maintained throughout
+- Glassmorphism dark mode theme consistently applied
+
+================================================================================
+CURRENT PROJECT STATUS (Updated)
+================================================================================
+
+## Project: CampusOS AI v2.0 - Enterprise Edition
+## Status: STABLE - Three-Portal Architecture Complete
+
+### Current Project Status Description/Assessment:
+CampusOS AI v2.0 Enterprise Edition is a fully functional AI-Native Campus Operating System with three interconnected portals (Student, Faculty, Administrator) connected via a Role Switcher. The application features glassmorphism dark mode UI, AI-powered chat with multi-agent routing, animated visualizations, and comprehensive CRUD operations. The app is running on Next.js 16 with Prisma ORM + SQLite and all API endpoints are functional.
+
+### Current Goals / Completed Modifications / Verification Results:
+
+**Completed in this session:**
+1. ✅ **Faculty Portal** - Complete 7-tab portal (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant) with mock data for Dr. Priya Sharma
+2. ✅ **Role Switcher** - 3-pill toggle (Student/Faculty/Admin) with role-based navigation, color theming, and smooth transitions
+3. ✅ **Knowledge Base Manager** - AdminKnowledgeBase.tsx with document library, drag-drop upload, RAG pipeline visualization, semantic search preview
+4. ✅ **AI Automation Builder** - AdminAutomationBuilder.tsx with visual IF/THEN workflow editor, 6 pre-built workflows, test panel
+5. ✅ **8 Faculty API Endpoints** - Full CRUD for faculty classes, attendance marking, assignments, grading, dashboard
+6. ✅ **Major Styling Enhancement** - Enhanced AnimatedBackground (80 particles + constellation + connecting lines), Header (gradient borders + pulsing focus), WidgetCard (hover lift + gradient borders + value pulse), globals.css (glow/glass-hover/shimmer utilities)
+7. ✅ **Real-time Notification Toast System** - NotificationToast.tsx with 4 types, auto-dismiss, glassmorphism styling, simulated campus notifications every 15-20s
+8. ✅ **Portal Tab Sync** - FacultyPortal and AdminPortal internal tabs sync with sidebar navigation via store's activeSection
+
+**QA Verification Results:**
+- ✅ All three portals (Student/Faculty/Admin) render correctly
+- ✅ Role Switcher works with smooth transitions
+- ✅ Knowledge Base and Automations tabs work in Admin Portal
+- ✅ Faculty Portal all 7 tabs functional
+- ✅ No TypeScript errors, ESLint passes clean
+- ✅ Dev server running on port 3000 with HTTP 200
+- ✅ AI Chat works with LLM integration
+- ✅ No runtime errors in browser console
+
+### Unresolved Issues or Risks, and Priority Recommendations for Next Phase:
+
+1. **Faculty Portal Mock Data**: Currently uses hardcoded mock data. Should connect to the 8 faculty API endpoints for real data.
+2. **CSV Import**: Admin Student Manager CSV import is currently a mock dialog. Should implement actual CSV/Excel file parsing.
+3. **WebSocket Real-time Sync**: No WebSocket integration yet. All data is fetched on load. Should add Socket.io for live updates across portals.
+4. **AI Playground**: Chat connects to /api/chat but needs admin-specific context (different from student context).
+5. **Mobile Optimization**: Some admin/faculty sections may need mobile-specific layouts (timetable, data tables).
+6. **Analytics Depth**: Add date range selection, export functionality, and more detailed breakdowns.
+7. **User Roles & Permissions RBAC**: While the role switcher exists, there's no actual authentication/authorization. Should implement NextAuth.js with role-based access.
+8. **Knowledge Base RAG Integration**: The Knowledge Base Manager UI exists but needs actual PDF parsing, chunking, and embedding pipeline.
+9. **Automation Execution**: The Automation Builder UI exists but workflows don't actually execute. Need backend logic for trigger detection and action execution.
+10. **Faculty Portal Settings Tab**: Currently not implemented (only 7 tabs rendered, Settings in sidebar but not in portal tabs).
+
+### Technology Stack:
+- Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui + Framer Motion + Recharts
+- Backend: Next.js API Routes + Prisma ORM + SQLite
+- AI: z-ai-web-dev-sdk (LLM chat)
+- State: Zustand (with role management, toast notifications)
+- Database: SQLite via Prisma (23 students, 13 faculty, 18 subjects, 20 books, 10 events)
+- Components: 45+ React components across 3 portals

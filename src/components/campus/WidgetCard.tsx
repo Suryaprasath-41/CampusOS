@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface WidgetCardProps {
   title: string;
@@ -16,26 +17,59 @@ interface WidgetCardProps {
 }
 
 export default function WidgetCard({ title, value, icon, subtitle, risk, trend, className, children, onClick }: WidgetCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  // Use key-based re-render for value pulse animation instead of setState in effect
+  const valueKey = `${value}`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
       className={cn(
-        "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5",
-        "hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300",
-        "shadow-[0_0_30px_rgba(139,92,246,0.05)]",
+        "relative bg-white/[0.03] backdrop-blur-xl border rounded-2xl p-5",
+        "transition-all duration-300",
         onClick && "cursor-pointer",
         className
       )}
+      style={{
+        borderColor: isHovered ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+        background: isHovered ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+        boxShadow: isHovered
+          ? '0 12px 40px rgba(139, 92, 246, 0.12), 0 0 0 1px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+          : '0 0 30px rgba(139, 92, 246, 0.05)',
+      }}
     >
+      {/* Gradient border on hover - top edge */}
+      {isHovered && (
+        <motion.div
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          exit={{ opacity: 0, scaleX: 0 }}
+          className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"
+        />
+      )}
+
       <div className="flex justify-between items-start mb-3">
         <span className="text-gray-400 text-sm font-medium">{title}</span>
-        <div className="p-2 rounded-xl bg-white/[0.05]">{icon}</div>
+        <div className={cn(
+          "p-2 rounded-xl bg-white/[0.05] transition-all duration-300",
+          isHovered && "bg-purple-500/10 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+        )}>{icon}</div>
       </div>
-      <div className="text-3xl font-bold text-white mb-1">{value}</div>
+      <motion.div
+        key={valueKey}
+        initial={{ scale: 1.08 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="text-3xl font-bold text-white mb-1"
+      >
+        {value}
+      </motion.div>
       {subtitle && <p className="text-gray-500 text-xs">{subtitle}</p>}
       {risk && (
         <div className={cn(
@@ -104,13 +138,23 @@ export function PredictionBar({ label, value, max = 100, color = 'purple', class
 }
 
 export function GlassCard({ children, className, ...props }: { children: React.ReactNode; className?: string; [key: string]: any }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6",
-        "hover:border-white/[0.12] transition-all duration-300",
+        "relative bg-white/[0.03] backdrop-blur-xl border rounded-2xl p-6",
+        "transition-all duration-300 glass-hover",
+        isHovered ? "border-purple-500/20" : "border-white/[0.08]",
         className
       )}
+      style={{
+        boxShadow: isHovered
+          ? '0 8px 32px rgba(139, 92, 246, 0.08), 0 0 0 1px rgba(139, 92, 246, 0.08)'
+          : 'none',
+      }}
       {...props}
     >
       {children}

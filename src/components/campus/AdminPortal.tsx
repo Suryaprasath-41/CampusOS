@@ -12,12 +12,13 @@ import {
   Database, Plus, Send, FileBarChart, Settings, Download,
   Clock, TrendingUp, TrendingDown, Brain, Sparkles, Server,
   CheckCircle2, XCircle, AlertCircle, Info, ChevronRight,
-  Monitor, MemoryStick, Globe, HeartPulse, ArrowUpRight
+  Monitor, MemoryStick, Globe, HeartPulse, ArrowUpRight,
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AnimatedCounter from './AnimatedCounter';
 import WidgetCard, { GlassCard, SectionTitle, PredictionBar } from './WidgetCard';
-import { fetchAPI } from '@/lib/store';
+import { fetchAPI, useCampusStore } from '@/lib/store';
 import AdminAIPlayground from './AdminAIPlayground';
 import AdminSmartSearch from './AdminSmartSearch';
 import AdminComplaintManager from './AdminComplaintManager';
@@ -25,6 +26,8 @@ import AdminNotificationBroadcaster from './AdminNotificationBroadcaster';
 import AdminStudentManager from './AdminStudentManager';
 import AdminFacultyManager from './AdminFacultyManager';
 import AdminCourseManager from './AdminCourseManager';
+import AdminKnowledgeBase from './AdminKnowledgeBase';
+import AdminAutomationBuilder from './AdminAutomationBuilder';
 
 // ─── Tab Configuration ───────────────────────────────────────────────
 const tabs = [
@@ -36,6 +39,8 @@ const tabs = [
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'ai-playground', label: 'AI Playground', icon: Bot },
   { id: 'search', label: 'Search', icon: Search },
+  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database },
+  { id: 'automations', label: 'Automations', icon: Layers },
 ] as const;
 
 type TabId = (typeof tabs)[number]['id'];
@@ -92,10 +97,38 @@ const aiInsights = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
+// AdminPortal section-to-tab sync map
+const adminSectionToTabMap: Record<string, TabId> = {
+  dashboard: 'dashboard',
+  admin: 'dashboard',
+  students: 'students',
+  faculty: 'faculty',
+  courses: 'courses',
+  complaints: 'complaints',
+  notifications: 'notifications',
+  'ai-playground': 'ai-playground',
+  search: 'search',
+  'knowledge-base': 'knowledge-base',
+  automations: 'automations',
+};
+
 // Main Component
 // ═══════════════════════════════════════════════════════════════════════
 export default function AdminPortal() {
-  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const { activeSection, setActiveSection } = useCampusStore();
+  const [activeTab, setActiveTab] = useState<TabId>(adminSectionToTabMap[activeSection] || 'dashboard');
+
+  // Sync tab with store's activeSection for sidebar navigation
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    setActiveSection(tab === 'dashboard' ? 'admin' : tab);
+  };
+
+  // Also sync when activeSection changes from sidebar
+  const mappedTab = adminSectionToTabMap[activeSection];
+  if (mappedTab && mappedTab !== activeTab) {
+    setActiveTab(mappedTab);
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -132,7 +165,7 @@ export default function AdminPortal() {
             return (
               <motion.button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className={cn(
@@ -161,7 +194,7 @@ export default function AdminPortal() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            {activeTab === 'dashboard' && <DashboardTab onNavigate={setActiveTab} />}
+            {activeTab === 'dashboard' && <DashboardTab onNavigate={handleTabChange} />}
             {activeTab === 'students' && <AdminStudentManager />}
             {activeTab === 'faculty' && <AdminFacultyManager />}
             {activeTab === 'courses' && <AdminCourseManager />}
@@ -169,6 +202,8 @@ export default function AdminPortal() {
             {activeTab === 'notifications' && <AdminNotificationBroadcaster />}
             {activeTab === 'ai-playground' && <AdminAIPlayground />}
             {activeTab === 'search' && <AdminSmartSearch />}
+            {activeTab === 'knowledge-base' && <AdminKnowledgeBase />}
+            {activeTab === 'automations' && <AdminAutomationBuilder />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -1,5 +1,17 @@
 import { create } from 'zustand';
 
+export interface ToastItem {
+  id: string;
+  type: 'success' | 'warning' | 'error' | 'info';
+  title: string;
+  message: string;
+  timestamp: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
 interface CampusStore {
   activeSection: string;
   setActiveSection: (section: string) => void;
@@ -24,6 +36,11 @@ interface CampusStore {
   setSelectedAgent: (agent: string) => void;
   notifVersion: number;
   bumpNotifVersion: () => void;
+  activeRole: 'student' | 'faculty' | 'admin';
+  setActiveRole: (role: 'student' | 'faculty' | 'admin') => void;
+  toasts: ToastItem[];
+  addToast: (toast: ToastItem) => void;
+  removeToast: (id: string) => void;
 }
 
 export const useCampusStore = create<CampusStore>((set) => ({
@@ -50,6 +67,11 @@ export const useCampusStore = create<CampusStore>((set) => ({
   setSelectedAgent: (agent) => set({ selectedAgent: agent }),
   notifVersion: 0,
   bumpNotifVersion: () => set((state) => ({ notifVersion: state.notifVersion + 1 })),
+  activeRole: 'student',
+  setActiveRole: (role) => set({ activeRole: role, activeSection: 'dashboard' }),
+  toasts: [],
+  addToast: (toast) => set((state) => ({ toasts: [...state.toasts.slice(-4), toast] })), // Keep max 5 toasts
+  removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 }));
 
 const API_PORT = '8001';
