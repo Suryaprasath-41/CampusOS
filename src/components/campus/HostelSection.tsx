@@ -15,7 +15,7 @@ export default function HostelSection() {
   }, []);
 
   if (loading || !data) {
-    return <div className="p-6"><div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" /></div>;
+    return <div className="p-6"><div className="h-64 bg-[var(--bg-card)] rounded-2xl animate-pulse" /></div>;
   }
 
   const days = Object.keys(data.messMenu);
@@ -33,38 +33,38 @@ export default function HostelSection() {
         {/* Room Info */}
         <GlassCard className="flex flex-col items-center py-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/20 flex items-center justify-center mb-4">
-            <Home className="w-8 h-8 text-purple-400" />
+            <Home className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="text-white font-bold text-lg">{data.room.number}</h3>
-          <p className="text-gray-500 text-sm">Block {data.room.block}</p>
+          <h3 className="text-[var(--text-primary)] font-bold text-lg">{data.room.number}</h3>
+          <p className="text-[var(--text-muted)] text-sm">Block {data.room.block}</p>
           <div className="flex items-center gap-2 mt-3">
             <StatusBadge status={data.room.status.toLowerCase()} />
-            <span className="text-xs text-gray-500">{data.room.type}</span>
+            <span className="text-xs text-[var(--text-muted)]">{data.room.type}</span>
           </div>
         </GlassCard>
 
         {/* Complaints */}
         <GlassCard>
           <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="w-5 h-5 text-orange-400" />
-            <h3 className="text-white font-semibold">Active Complaints</h3>
+            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Active Complaints</h3>
           </div>
           {data.complaints.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-4">No active complaints</p>
+            <p className="text-[var(--text-muted)] text-sm text-center py-4">No active complaints</p>
           ) : (
             <div className="space-y-3">
               {data.complaints.map((c: any) => (
-                <div key={c.id} className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <div key={c.id} className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-400 uppercase">{c.type}</span>
+                    <span className="text-xs text-[var(--text-secondary)] uppercase">{c.type}</span>
                     <StatusBadge status={c.status} />
                   </div>
-                  <p className="text-sm text-gray-300">{c.description}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{c.description}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                      c.priority === 'high' ? 'bg-red-500/10 text-red-400' :
-                      c.priority === 'medium' ? 'bg-yellow-500/10 text-yellow-400' :
-                      'bg-green-500/10 text-green-400'
+                      c.priority === 'high' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
+                      c.priority === 'medium' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' :
+                      'bg-green-500/10 text-green-600 dark:text-green-400'
                     }`}>{c.priority}</span>
                   </div>
                 </div>
@@ -76,21 +76,21 @@ export default function HostelSection() {
         {/* Leave Requests */}
         <GlassCard>
           <div className="flex items-center gap-2 mb-4">
-            <CalendarDays className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-white font-semibold">Leave History</h3>
+            <CalendarDays className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Leave History</h3>
           </div>
           {data.leaves.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-4">No leave requests</p>
+            <p className="text-[var(--text-muted)] text-sm text-center py-4">No leave requests</p>
           ) : (
             <div className="space-y-3">
               {data.leaves.map((l: any) => (
-                <div key={l.id} className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <div key={l.id} className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-400 uppercase">{l.type} leave</span>
+                    <span className="text-xs text-[var(--text-secondary)] uppercase">{l.type} leave</span>
                     <StatusBadge status={l.status} />
                   </div>
-                  <p className="text-sm text-gray-300">{l.reason}</p>
-                  {l.approvedBy && <p className="text-xs text-gray-500 mt-1">Approved by: {l.approvedBy}</p>}
+                  <p className="text-sm text-[var(--text-secondary)]">{l.reason}</p>
+                  {l.approvedBy && <p className="text-xs text-[var(--text-muted)] mt-1">Approved by: {l.approvedBy}</p>}
                 </div>
               ))}
             </div>
@@ -101,8 +101,8 @@ export default function HostelSection() {
       {/* Mess Menu */}
       <GlassCard>
         <div className="flex items-center gap-2 mb-4">
-          <Utensils className="w-5 h-5 text-green-400" />
-          <h3 className="text-white font-semibold">Mess Menu</h3>
+          <Utensils className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <h3 className="text-[var(--text-primary)] font-semibold">Mess Menu</h3>
         </div>
         {/* Day Tabs */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
@@ -112,8 +112,8 @@ export default function HostelSection() {
               onClick={() => setActiveDay(day)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 activeDay === day
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                  : 'bg-white/[0.03] text-gray-500 border border-white/[0.06] hover:text-gray-300'
+                  ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30'
+                  : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)] hover:text-[var(--text-secondary)]'
               }`}
             >
               {day}
@@ -122,9 +122,9 @@ export default function HostelSection() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.messMenu[activeDay] && Object.entries(data.messMenu[activeDay]).map(([meal, items]: [string, any]) => (
-            <div key={meal} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-              <div className="text-xs text-purple-400 uppercase font-medium mb-2">{meal}</div>
-              <div className="text-sm text-gray-300">{items}</div>
+            <div key={meal} className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+              <div className="text-xs text-purple-600 dark:text-purple-400 uppercase font-medium mb-2">{meal}</div>
+              <div className="text-sm text-[var(--text-secondary)]">{items}</div>
             </div>
           ))}
         </div>

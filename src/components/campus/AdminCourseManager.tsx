@@ -62,12 +62,12 @@ const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 const CREDITS = [1, 2, 3, 4, 5];
 
 const DEPT_COLORS: Record<string, string> = {
-  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  CS: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  IT: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+  ECE: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  EEE: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+  ME: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+  CE: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
 };
 
 const DEPT_ACCENT: Record<string, string> = {
@@ -255,8 +255,8 @@ export default function AdminCourseManager() {
             className={cn(
               "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
               toast.type === 'success'
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : "bg-red-500/10 border-red-500/30 text-red-400"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                : "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
             )}
           >
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -276,24 +276,24 @@ export default function AdminCourseManager() {
             <BookOpen className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
               Course & Subject Management
-              <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] px-2">
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] px-2">
                 {total} total
               </Badge>
             </h2>
-            <p className="text-xs text-gray-500">Manage courses, subjects, schedules & curriculum</p>
+            <p className="text-xs text-[var(--text-muted)]">Manage courses, subjects, schedules & curriculum</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          <div className="flex items-center rounded-xl bg-white/[0.03] border border-white/[0.08] p-0.5">
+          <div className="flex items-center rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] p-0.5">
             <button
               onClick={() => setViewMode('grid')}
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-200",
-                viewMode === 'grid' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+                viewMode === 'grid' ? "bg-[var(--bg-card)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function AdminCourseManager() {
               onClick={() => setViewMode('table')}
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-200",
-                viewMode === 'table' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+                viewMode === 'table' ? "bg-[var(--bg-card)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               <List className="w-4 h-4" />
@@ -336,16 +336,16 @@ export default function AdminCourseManager() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 group hover:border-white/[0.15] transition-all duration-300"
+            className="relative overflow-hidden bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-4 group hover:border-[var(--border-color)] transition-all duration-300"
           >
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl opacity-5 rounded-full -translate-y-6 translate-x-6 group-hover:opacity-10 transition-opacity" style={{ background: `radial-gradient(circle, ${stat.glow}, transparent)` }} />
             <div className="flex items-center gap-3">
               <div className={cn("w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg shrink-0", stat.gradient)} style={{ boxShadow: `0 0 15px ${stat.glow}` }}>
-                <stat.icon className="w-4 h-4 text-white" />
+                <stat.icon className="w-4 h-4 text-[var(--text-primary)]" />
               </div>
               <div>
-                <p className="text-lg font-bold text-white">{stat.value}</p>
-                <p className="text-[11px] text-gray-500">{stat.label}</p>
+                <p className="text-lg font-bold text-[var(--text-primary)]">{stat.value}</p>
+                <p className="text-[11px] text-[var(--text-muted)]">{stat.label}</p>
               </div>
             </div>
           </div>
@@ -360,16 +360,16 @@ export default function AdminCourseManager() {
         className="flex flex-col sm:flex-row gap-3"
       >
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <input
             type="text"
             placeholder="Search by name, code, or faculty..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
           />
           {search && (
-            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -379,24 +379,24 @@ export default function AdminCourseManager() {
           <select
             value={filterDept}
             onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
           >
-            <option value="" className="bg-[#0a0a1a]">All Departments</option>
-            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+            <option value="" className="bg-[var(--bg-secondary)]">All Departments</option>
+            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
           </select>
-          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] rotate-90 pointer-events-none" />
         </div>
 
         <div className="relative">
           <select
             value={filterSemester}
             onChange={(e) => { setFilterSemester(e.target.value); setPage(1); }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
           >
-            <option value="" className="bg-[#0a0a1a]">All Semesters</option>
-            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Sem {s}</option>)}
+            <option value="" className="bg-[var(--bg-secondary)]">All Semesters</option>
+            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[var(--bg-secondary)]">Sem {s}</option>)}
           </select>
-          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] rotate-90 pointer-events-none" />
         </div>
       </motion.div>
 
@@ -413,13 +413,13 @@ export default function AdminCourseManager() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 animate-pulse">
-                    <div className="h-3 bg-white/[0.04] rounded w-1/3 mb-3" />
-                    <div className="h-5 bg-white/[0.04] rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-white/[0.04] rounded w-1/2 mb-4" />
+                  <div key={i} className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-5 animate-pulse">
+                    <div className="h-3 bg-[var(--glass-bg)] rounded w-1/3 mb-3" />
+                    <div className="h-5 bg-[var(--glass-bg)] rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-[var(--glass-bg)] rounded w-1/2 mb-4" />
                     <div className="flex gap-2">
-                      <div className="h-6 bg-white/[0.04] rounded-full w-14" />
-                      <div className="h-6 bg-white/[0.04] rounded-full w-14" />
+                      <div className="h-6 bg-[var(--glass-bg)] rounded-full w-14" />
+                      <div className="h-6 bg-[var(--glass-bg)] rounded-full w-14" />
                     </div>
                   </div>
                 ))}
@@ -458,14 +458,14 @@ export default function AdminCourseManager() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ delay: 0.15 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl overflow-hidden"
           >
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/[0.06]">
+                  <tr className="border-b border-[var(--border-color)]">
                     {['Code', 'Name', 'Department', 'Semester', 'Credits', 'Faculty', 'Schedule', 'Enrollment', 'Actions'].map(h => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">
                         {h}
                       </th>
                     ))}
@@ -477,7 +477,7 @@ export default function AdminCourseManager() {
                       <tr key={i} className="border-b border-white/[0.04]">
                         {Array.from({ length: 9 }).map((_, j) => (
                           <td key={j} className="px-4 py-3">
-                            <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+                            <div className="h-4 bg-[var(--glass-bg)] rounded animate-pulse" />
                           </td>
                         ))}
                       </tr>
@@ -485,9 +485,9 @@ export default function AdminCourseManager() {
                   ) : subjects.length === 0 ? (
                     <tr>
                       <td colSpan={9} className="px-4 py-12 text-center">
-                        <BookOpen className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                        <p className="text-gray-500 text-sm">No subjects found</p>
-                        <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+                        <BookOpen className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
+                        <p className="text-[var(--text-muted)] text-sm">No subjects found</p>
+                        <p className="text-[var(--text-muted)] text-xs mt-1">Try adjusting your search or filters</p>
                       </td>
                     </tr>
                   ) : (
@@ -497,30 +497,30 @@ export default function AdminCourseManager() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+                        className="border-b border-white/[0.04] hover:bg-[var(--glass-bg)] transition-colors duration-200 group"
                       >
                         {/* Code */}
                         <td className="px-4 py-3">
-                          <span className="text-sm font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                          <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
                             {subject.code}
                           </span>
                         </td>
                         {/* Name */}
                         <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-white max-w-[200px] truncate">{subject.name}</p>
+                          <p className="text-sm font-medium text-[var(--text-primary)] max-w-[200px] truncate">{subject.name}</p>
                         </td>
                         {/* Department */}
                         <td className="px-4 py-3">
                           <span className={cn(
                             "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
-                            DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                            DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                           )}>
                             {subject.department}
                           </span>
                         </td>
                         {/* Semester */}
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-white/[0.04] text-gray-300 border-white/[0.1]">
+                          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-[var(--glass-bg)] text-[var(--text-secondary)] border-[var(--border-color)]">
                             <Calendar className="w-3 h-3" />
                             Sem {subject.semester}
                           </span>
@@ -529,24 +529,24 @@ export default function AdminCourseManager() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
                             <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                            <span className="text-sm font-medium text-white">{subject.credits}</span>
+                            <span className="text-sm font-medium text-[var(--text-primary)]">{subject.credits}</span>
                           </div>
                         </td>
                         {/* Faculty */}
                         <td className="px-4 py-3">
-                          <p className="text-sm text-gray-300">{subject.faculty.name}</p>
-                          <p className="text-[11px] text-gray-600">{subject.faculty.designation}</p>
+                          <p className="text-sm text-[var(--text-secondary)]">{subject.faculty.name}</p>
+                          <p className="text-[11px] text-[var(--text-muted)]">{subject.faculty.designation}</p>
                         </td>
                         {/* Schedule */}
                         <td className="px-4 py-3">
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-[var(--text-secondary)]">
                             {subject.schedule || '—'}
                           </span>
                         </td>
                         {/* Enrollment */}
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-300">
-                            <Users className="w-3.5 h-3.5 text-gray-500" />
+                          <div className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+                            <Users className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                             {subject.enrollmentCount}
                           </div>
                         </td>
@@ -555,7 +555,7 @@ export default function AdminCourseManager() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => setDetailSubject(subject)}
-                              className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-emerald-400 transition-all duration-200"
+                              className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-emerald-600 dark:text-emerald-400 transition-all duration-200"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -573,7 +573,7 @@ export default function AdminCourseManager() {
                                 });
                                 setDialogOpen(true);
                               }}
-                              className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-cyan-400 transition-all duration-200"
+                              className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-cyan-600 dark:text-cyan-400 transition-all duration-200"
                               title="Edit"
                             >
                               <Pencil className="w-4 h-4" />
@@ -589,15 +589,15 @@ export default function AdminCourseManager() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
-                <p className="text-xs text-gray-500">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--border-color)]">
+                <p className="text-xs text-[var(--text-muted)]">
                   Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}
                 </p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+                    className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30"
                   >
                     <ChevronRight className="w-4 h-4 rotate-180" />
                   </button>
@@ -607,7 +607,7 @@ export default function AdminCourseManager() {
                       onClick={() => setPage(p)}
                       className={cn(
                         "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
-                        p === page ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+                        p === page ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
                       )}
                     >
                       {p}
@@ -616,7 +616,7 @@ export default function AdminCourseManager() {
                   <button
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+                    className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -637,7 +637,7 @@ export default function AdminCourseManager() {
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
           </button>
@@ -647,7 +647,7 @@ export default function AdminCourseManager() {
               onClick={() => setPage(p)}
               className={cn(
                 "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
-                p === page ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+                p === page ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
               )}
             >
               {p}
@@ -656,7 +656,7 @@ export default function AdminCourseManager() {
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -665,13 +665,13 @@ export default function AdminCourseManager() {
 
       {/* ─── Add Subject Dialog ──────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-white/[0.1] text-white max-w-lg">
+        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-400" />
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Add New Subject
             </DialogTitle>
-            <DialogDescription className="text-gray-500">
+            <DialogDescription className="text-[var(--text-muted)]">
               Create a new subject entry for the curriculum.
             </DialogDescription>
           </DialogHeader>
@@ -679,48 +679,48 @@ export default function AdminCourseManager() {
           <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
             {/* Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400">Subject Name *</label>
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Subject Name *</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. Data Structures & Algorithms"
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </div>
 
             {/* Code */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400">Subject Code *</label>
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Subject Code *</label>
               <input
                 type="text"
                 value={form.code}
                 onChange={(e) => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 placeholder="e.g. CS301"
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 font-mono"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 font-mono"
               />
             </div>
 
             {/* Department & Semester */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-400">Department *</label>
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Department *</label>
                 <select
                   value={form.department}
                   onChange={(e) => setForm(f => ({ ...f, department: e.target.value, facultyId: '' }))}
-                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
                 >
-                  {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+                  {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-400">Semester *</label>
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Semester *</label>
                 <select
                   value={form.semester}
                   onChange={(e) => setForm(f => ({ ...f, semester: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
                 >
-                  {SEMESTERS.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">Semester {s}</option>)}
+                  {SEMESTERS.map(s => <option key={s} value={s} className="bg-[var(--bg-secondary)]">Semester {s}</option>)}
                 </select>
               </div>
             </div>
@@ -728,29 +728,29 @@ export default function AdminCourseManager() {
             {/* Credits & Faculty */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-400">Credits</label>
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Credits</label>
                 <select
                   value={form.credits}
                   onChange={(e) => setForm(f => ({ ...f, credits: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
                 >
                   {CREDITS.map(c => (
-                    <option key={c} value={c} className="bg-[#0a0a1a]">
+                    <option key={c} value={c} className="bg-[var(--bg-secondary)]">
                       {c} {c === 1 ? 'Credit' : 'Credits'}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-400">Faculty *</label>
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Faculty *</label>
                 <select
                   value={form.facultyId}
                   onChange={(e) => setForm(f => ({ ...f, facultyId: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
                 >
-                  <option value="" className="bg-[#0a0a1a]">Select Faculty</option>
+                  <option value="" className="bg-[var(--bg-secondary)]">Select Faculty</option>
                   {filteredFaculty.map(f => (
-                    <option key={f.id} value={f.id} className="bg-[#0a0a1a]">
+                    <option key={f.id} value={f.id} className="bg-[var(--bg-secondary)]">
                       {f.user.name} ({f.department})
                     </option>
                   ))}
@@ -760,13 +760,13 @@ export default function AdminCourseManager() {
 
             {/* Schedule */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400">Schedule</label>
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Schedule</label>
               <input
                 type="text"
                 value={form.schedule}
                 onChange={(e) => setForm(f => ({ ...f, schedule: e.target.value }))}
                 placeholder="e.g. Mon/Wed 10:00-11:30"
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </div>
           </div>
@@ -774,7 +774,7 @@ export default function AdminCourseManager() {
           <DialogFooter className="pt-2">
             <button
               onClick={() => setDialogOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/[0.05] transition-all duration-200"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200"
             >
               Cancel
             </button>
@@ -798,11 +798,11 @@ export default function AdminCourseManager() {
 
       {/* ─── Subject Detail Dialog ────────────────────────────────────── */}
       <Dialog open={!!detailSubject} onOpenChange={() => setDetailSubject(null)}>
-        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-white/[0.1] text-white max-w-2xl">
+        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-2xl">
           {detailSubject && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-white flex items-center gap-3">
+                <DialogTitle className="text-[var(--text-primary)] flex items-center gap-3">
                   <div className={cn(
                     "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg",
                     DEPT_TOP_LINE[detailSubject.department] || 'from-gray-500 to-gray-600'
@@ -811,10 +811,10 @@ export default function AdminCourseManager() {
                   </div>
                   <div>
                     <span>{detailSubject.name}</span>
-                    <p className="text-xs text-gray-500 font-normal mt-0.5 font-mono">{detailSubject.code}</p>
+                    <p className="text-xs text-[var(--text-muted)] font-normal mt-0.5 font-mono">{detailSubject.code}</p>
                   </div>
                 </DialogTitle>
-                <DialogDescription className="text-gray-500">
+                <DialogDescription className="text-[var(--text-muted)]">
                   Complete subject details and enrollment information
                 </DialogDescription>
               </DialogHeader>
@@ -849,8 +849,8 @@ export default function AdminCourseManager() {
                 </div>
 
                 {/* Faculty Details */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
                     <GraduationCap className="w-3.5 h-3.5" />
                     Faculty Details
                   </h4>
@@ -862,45 +862,45 @@ export default function AdminCourseManager() {
                       {detailSubject.faculty.name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white">{detailSubject.faculty.name}</p>
-                      <p className="text-xs text-gray-500">{detailSubject.faculty.designation} • {detailSubject.faculty.email}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{detailSubject.faculty.name}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{detailSubject.faculty.designation} • {detailSubject.faculty.email}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Schedule */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5" />
                     Schedule
                   </h4>
                   {detailSubject.schedule ? (
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-sm text-gray-300">{detailSubject.schedule}</span>
+                      <span className="text-sm text-[var(--text-secondary)]">{detailSubject.schedule}</span>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-600 italic">No schedule assigned</p>
+                    <p className="text-sm text-[var(--text-muted)] italic">No schedule assigned</p>
                   )}
                 </div>
 
                 {/* Enrollment Summary */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Users className="w-3.5 h-3.5" />
                     Enrollment Summary
                   </h4>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-emerald-400" />
+                        <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-xl font-bold text-white">{detailSubject.enrollmentCount}</p>
-                        <p className="text-[11px] text-gray-500">Students Enrolled</p>
+                        <p className="text-xl font-bold text-[var(--text-primary)]">{detailSubject.enrollmentCount}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">Students Enrolled</p>
                       </div>
                     </div>
-                    <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700"
                         style={{ width: `${Math.min(100, detailSubject.enrollmentCount * 5)}%` }}
@@ -910,23 +910,23 @@ export default function AdminCourseManager() {
                 </div>
 
                 {/* Attendance Summary */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-4">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
                     <BarChart3 className="w-3.5 h-3.5" />
                     Attendance Overview
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-                      <p className="text-lg font-bold text-emerald-400">89%</p>
-                      <p className="text-[10px] text-gray-500">Avg Attendance</p>
+                      <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">89%</p>
+                      <p className="text-[10px] text-[var(--text-muted)]">Avg Attendance</p>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/10">
-                      <p className="text-lg font-bold text-cyan-400">{detailSubject.enrollmentCount}</p>
-                      <p className="text-[10px] text-gray-500">Active Students</p>
+                      <p className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{detailSubject.enrollmentCount}</p>
+                      <p className="text-[10px] text-[var(--text-muted)]">Active Students</p>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
-                      <p className="text-lg font-bold text-yellow-400">24</p>
-                      <p className="text-[10px] text-gray-500">Sessions Held</p>
+                      <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">24</p>
+                      <p className="text-[10px] text-[var(--text-muted)]">Sessions Held</p>
                     </div>
                   </div>
                 </div>
@@ -935,7 +935,7 @@ export default function AdminCourseManager() {
               <DialogFooter className="pt-2">
                 <button
                   onClick={() => setDetailSubject(null)}
-                  className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/[0.05] transition-all duration-200"
+                  className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all duration-200"
                 >
                   Close
                 </button>
@@ -955,7 +955,7 @@ export default function AdminCourseManager() {
                     setDetailSubject(null);
                     setDialogOpen(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all duration-300"
                 >
                   <Pencil className="w-4 h-4" />
                   Edit Subject
@@ -996,7 +996,7 @@ function SubjectCard({
       transition={{ delay: index * 0.04 }}
       whileHover={{ y: -4 }}
       className={cn(
-        "relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] border-t-2 rounded-2xl p-5 group hover:border-white/[0.15] transition-all duration-300",
+        "relative overflow-hidden bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] border-t-2 rounded-2xl p-5 group hover:border-[var(--border-color)] transition-all duration-300",
         topBorderClass,
         glowClass
       )}
@@ -1006,25 +1006,25 @@ function SubjectCard({
 
       {/* Subject Code */}
       <div className="flex items-start justify-between mb-3">
-        <span className="font-mono text-sm font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+        <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
           {subject.code}
         </span>
         <span className={cn(
           "text-[10px] px-2 py-0.5 rounded-full border font-medium",
-          DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+          DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
         )}>
           {subject.department}
         </span>
       </div>
 
       {/* Subject Name */}
-      <h3 className="text-sm font-semibold text-white mb-2 line-clamp-2 leading-snug">
+      <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2 line-clamp-2 leading-snug">
         {subject.name}
       </h3>
 
       {/* Semester Pill */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border bg-white/[0.04] text-gray-400 border-white/[0.1]">
+        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border bg-[var(--glass-bg)] text-[var(--text-secondary)] border-[var(--border-color)]">
           <Calendar className="w-3 h-3" />
           Sem {subject.semester}
         </span>
@@ -1037,32 +1037,32 @@ function SubjectCard({
             key={i}
             className={cn(
               "w-3.5 h-3.5 transition-colors",
-              i < subject.credits ? "text-yellow-500 fill-yellow-500" : "text-gray-700"
+              i < subject.credits ? "text-yellow-500 fill-yellow-500" : "text-[var(--text-muted)]"
             )}
           />
         ))}
-        <span className="text-xs text-gray-500 ml-1">{subject.credits} credits</span>
+        <span className="text-xs text-[var(--text-muted)] ml-1">{subject.credits} credits</span>
       </div>
 
       {/* Faculty */}
       <div className="flex items-center gap-2 mb-3">
-        <User className="w-3.5 h-3.5 text-gray-600" />
-        <span className="text-xs text-gray-400 truncate">{subject.faculty.name}</span>
+        <User className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+        <span className="text-xs text-[var(--text-secondary)] truncate">{subject.faculty.name}</span>
       </div>
 
       {/* Schedule */}
       {subject.schedule && (
         <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-3.5 h-3.5 text-gray-600" />
-          <span className="text-xs text-gray-500 truncate">{subject.schedule}</span>
+          <Clock className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+          <span className="text-xs text-[var(--text-muted)] truncate">{subject.schedule}</span>
         </div>
       )}
 
       {/* Enrollment Count */}
       <div className="flex items-center gap-2 mb-4">
-        <Users className="w-3.5 h-3.5 text-gray-600" />
-        <span className="text-xs text-gray-500">{subject.enrollmentCount} enrolled</span>
-        <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+        <Users className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+        <span className="text-xs text-[var(--text-muted)]">{subject.enrollmentCount} enrolled</span>
+        <div className="flex-1 h-1.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-emerald-500/50 to-teal-500/50 rounded-full"
             style={{ width: `${Math.min(100, subject.enrollmentCount * 5)}%` }}
@@ -1071,17 +1071,17 @@ function SubjectCard({
       </div>
 
       {/* Quick Actions */}
-      <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+      <div className="flex items-center gap-2 pt-3 border-t border-[var(--border-color)]">
         <button
           onClick={onViewDetail}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all duration-200"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all duration-200"
         >
           <Eye className="w-3.5 h-3.5" />
           Details
         </button>
         <button
           onClick={onEdit}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all duration-200"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all duration-200"
         >
           <Pencil className="w-3.5 h-3.5" />
           Edit
@@ -1110,18 +1110,18 @@ function InfoCard({
   accent?: boolean;
 }) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 text-center">
-      <Icon className={cn("w-4 h-4 mx-auto mb-1.5", accent ? "text-yellow-400" : "text-gray-500")} />
-      <p className="text-[10px] text-gray-600 mb-1">{label}</p>
+    <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3 text-center">
+      <Icon className={cn("w-4 h-4 mx-auto mb-1.5", accent ? "text-yellow-600 dark:text-yellow-400" : "text-[var(--text-muted)]")} />
+      <p className="text-[10px] text-[var(--text-muted)] mb-1">{label}</p>
       {badge ? (
         <span className={cn(
           "inline-flex items-center text-xs px-2.5 py-0.5 rounded-full border font-medium",
-          badgeClass || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+          badgeClass || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
         )}>
           {value}
         </span>
       ) : (
-        <p className={cn("text-sm font-semibold", mono ? "font-mono text-emerald-400" : "text-white", accent && "text-yellow-400")}>
+        <p className={cn("text-sm font-semibold", mono ? "font-mono text-emerald-600 dark:text-emerald-400" : "text-[var(--text-primary)]", accent && "text-yellow-600 dark:text-yellow-400")}>
           {value}
         </p>
       )}
@@ -1135,13 +1135,13 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-16 bg-white/[0.02] border border-white/[0.06] rounded-2xl"
+      className="flex flex-col items-center justify-center py-16 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl"
     >
       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center mb-4">
         <BookOpen className="w-8 h-8 text-emerald-500/50" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-400 mb-1">No subjects found</h3>
-      <p className="text-sm text-gray-600 mb-6 text-center max-w-xs">
+      <h3 className="text-lg font-semibold text-[var(--text-secondary)] mb-1">No subjects found</h3>
+      <p className="text-sm text-[var(--text-muted)] mb-6 text-center max-w-xs">
         Start building your curriculum by adding the first subject
       </p>
       <motion.button

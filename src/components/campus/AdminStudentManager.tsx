@@ -62,18 +62,18 @@ const PLACEMENT_STATUSES = ['seeking', 'interview', 'placed'];
 const PAGE_SIZES = [10, 20, 50];
 
 const DEPT_COLORS: Record<string, string> = {
-  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  CS: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  IT: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+  ECE: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  EEE: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+  ME: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+  CE: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
 };
 
 const PLACEMENT_COLORS: Record<string, string> = {
-  seeking: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  interview: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  placed: 'bg-green-500/15 text-green-400 border-green-500/30',
+  seeking: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  interview: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  placed: 'bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30',
 };
 
 // ─── Form State ───────────────────────────────────────────────────────────
@@ -233,9 +233,9 @@ export default function AdminStudentManager() {
 
   // ─── CGPA color ───────────────────────────────────────────────────────
   const cgpaColor = (cgpa: number) => {
-    if (cgpa >= 8) return 'text-emerald-400';
-    if (cgpa >= 6) return 'text-yellow-400';
-    return 'text-red-400';
+    if (cgpa >= 8) return 'text-emerald-600 dark:text-emerald-400';
+    if (cgpa >= 6) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const cgpaBg = (cgpa: number) => {
@@ -270,8 +270,8 @@ export default function AdminStudentManager() {
             className={cn(
               "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
               toast.type === 'success'
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : "bg-red-500/10 border-red-500/30 text-red-400"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                : "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
             )}
           >
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -291,13 +291,13 @@ export default function AdminStudentManager() {
             <Users className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
               Student Management
-              <Badge className="bg-purple-500/15 text-purple-400 border border-purple-500/30 text-[10px] px-2">
+              <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[10px] px-2">
                 {total} total
               </Badge>
             </h2>
-            <p className="text-xs text-gray-500">Manage student records, enrollment & progress</p>
+            <p className="text-xs text-[var(--text-muted)]">Manage student records, enrollment & progress</p>
           </div>
         </div>
 
@@ -306,7 +306,7 @@ export default function AdminStudentManager() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setCsvDialogOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-white/[0.03] border border-white/[0.08] text-gray-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-color)] hover:bg-[var(--glass-bg)] transition-all duration-300"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span className="hidden sm:inline">CSV Import</span>
@@ -332,16 +332,16 @@ export default function AdminStudentManager() {
       >
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <input
             type="text"
             placeholder="Search by name or roll number..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
           />
           {search && (
-            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -352,12 +352,12 @@ export default function AdminStudentManager() {
           <select
             value={filterDept}
             onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
           >
-            <option value="" className="bg-[#0a0a1a]">All Departments</option>
-            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+            <option value="" className="bg-[var(--bg-secondary)]">All Departments</option>
+            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
           </select>
-          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] rotate-90 pointer-events-none" />
         </div>
 
         {/* Semester Filter */}
@@ -365,12 +365,12 @@ export default function AdminStudentManager() {
           <select
             value={filterSem}
             onChange={(e) => { setFilterSem(e.target.value); setPage(1); }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 cursor-pointer"
           >
-            <option value="" className="bg-[#0a0a1a]">All Semesters</option>
-            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Sem {s}</option>)}
+            <option value="" className="bg-[var(--bg-secondary)]">All Semesters</option>
+            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[var(--bg-secondary)]">Sem {s}</option>)}
           </select>
-          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] rotate-90 pointer-events-none" />
         </div>
       </motion.div>
 
@@ -379,15 +379,15 @@ export default function AdminStudentManager() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+        className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl overflow-hidden"
       >
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]">
+              <tr className="border-b border-[var(--border-color)]">
                 {['Roll No.', 'Name', 'Department', 'Sem', 'CGPA', 'Placement', 'Actions'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                     {h}
                   </th>
                 ))}
@@ -399,7 +399,7 @@ export default function AdminStudentManager() {
                   <tr key={i} className="border-b border-white/[0.04]">
                     {Array.from({ length: 7 }).map((_, j) => (
                       <td key={j} className="px-4 py-3">
-                        <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+                        <div className="h-4 bg-[var(--glass-bg)] rounded animate-pulse" />
                       </td>
                     ))}
                   </tr>
@@ -407,9 +407,9 @@ export default function AdminStudentManager() {
               ) : students.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center">
-                    <Users className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                    <p className="text-gray-500 text-sm">No students found</p>
-                    <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+                    <Users className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
+                    <p className="text-[var(--text-muted)] text-sm">No students found</p>
+                    <p className="text-[var(--text-muted)] text-xs mt-1">Try adjusting your search or filters</p>
                   </td>
                 </tr>
               ) : (
@@ -419,11 +419,11 @@ export default function AdminStudentManager() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.03 }}
-                    className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+                    className="border-b border-white/[0.04] hover:bg-[var(--glass-bg)] transition-colors duration-200 group"
                   >
                     {/* Roll No */}
                     <td className="px-4 py-3">
-                      <span className="text-sm font-mono text-gray-400">{s.rollNumber}</span>
+                      <span className="text-sm font-mono text-[var(--text-secondary)]">{s.rollNumber}</span>
                     </td>
                     {/* Name */}
                     <td className="px-4 py-3">
@@ -435,8 +435,8 @@ export default function AdminStudentManager() {
                           {getInitial(s.user.name)}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{s.user.name}</p>
-                          <p className="text-[11px] text-gray-600">{s.user.email}</p>
+                          <p className="text-sm font-medium text-[var(--text-primary)]">{s.user.name}</p>
+                          <p className="text-[11px] text-[var(--text-muted)]">{s.user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -444,14 +444,14 @@ export default function AdminStudentManager() {
                     <td className="px-4 py-3">
                       <span className={cn(
                         "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
-                        DEPT_COLORS[s.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                        DEPT_COLORS[s.department] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                       )}>
                         {s.department}
                       </span>
                     </td>
                     {/* Semester */}
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-300">Sem {s.semester}</span>
+                      <span className="text-sm text-[var(--text-secondary)]">Sem {s.semester}</span>
                     </td>
                     {/* CGPA */}
                     <td className="px-4 py-3">
@@ -469,7 +469,7 @@ export default function AdminStudentManager() {
                     <td className="px-4 py-3">
                       <span className={cn(
                         "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium capitalize",
-                        PLACEMENT_COLORS[s.placementStatus] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                        PLACEMENT_COLORS[s.placementStatus] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                       )}>
                         {s.placementStatus || 'N/A'}
                       </span>
@@ -481,7 +481,7 @@ export default function AdminStudentManager() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => openEdit(s)}
-                          className="p-1.5 rounded-lg text-gray-500 hover:text-purple-400 hover:bg-purple-500/10 transition-all duration-200"
+                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 transition-all duration-200"
                           title="Edit"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -490,7 +490,7 @@ export default function AdminStudentManager() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => setDeleteId(s.id)}
-                          className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-all duration-200"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -506,18 +506,18 @@ export default function AdminStudentManager() {
 
         {/* ─── Pagination ────────────────────────────────────────────── */}
         {!loading && total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-white/[0.06]">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-[var(--border-color)]">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
               <span>Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}</span>
-              <span className="text-gray-700">|</span>
+              <span className="text-[var(--text-muted)]">|</span>
               <div className="flex items-center gap-1">
                 <span>Per page:</span>
                 <select
                   value={limit}
                   onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                  className="appearance-none bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5 text-xs text-white focus:outline-none cursor-pointer"
+                  className="appearance-none bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-md px-2 py-0.5 text-xs text-[var(--text-primary)] focus:outline-none cursor-pointer"
                 >
-                  {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">{s}</option>)}
+                  {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[var(--bg-secondary)]">{s}</option>)}
                 </select>
               </div>
             </div>
@@ -526,7 +526,7 @@ export default function AdminStudentManager() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -537,8 +537,8 @@ export default function AdminStudentManager() {
                   className={cn(
                     "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
                     p === page
-                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                      : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+                      ? "bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
                   )}
                 >
                   {p}
@@ -547,7 +547,7 @@ export default function AdminStudentManager() {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -558,13 +558,13 @@ export default function AdminStudentManager() {
 
       {/* ─── Add/Edit Dialog ─────────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              {editId ? <Pencil className="w-4 h-4 text-purple-400" /> : <Plus className="w-4 h-4 text-purple-400" />}
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              {editId ? <Pencil className="w-4 h-4 text-purple-600 dark:text-purple-400" /> : <Plus className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
               {editId ? 'Edit Student' : 'Add New Student'}
             </DialogTitle>
-            <DialogDescription className="text-gray-500">
+            <DialogDescription className="text-[var(--text-muted)]">
               {editId ? 'Update student information' : 'Fill in the details to add a new student'}
             </DialogDescription>
           </DialogHeader>
@@ -572,105 +572,105 @@ export default function AdminStudentManager() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             {/* Name */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</Label>
+              <Label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="Full name"
               />
             </div>
             {/* Email */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</Label>
+              <Label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</Label>
               <Input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="email@university.edu"
               />
             </div>
             {/* Roll Number */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs flex items-center gap-1"><GraduationCap className="w-3 h-3" /> Roll Number *</Label>
+              <Label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><GraduationCap className="w-3 h-3" /> Roll Number *</Label>
               <Input
                 value={form.rollNumber}
                 onChange={(e) => setForm({ ...form, rollNumber: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="CS2024001"
               />
             </div>
             {/* Phone */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</Label>
+              <Label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="+91 9876543210"
               />
             </div>
             {/* Department */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Department *</Label>
+              <Label className="text-[var(--text-secondary)] text-xs">Department *</Label>
               <select
                 value={form.department}
                 onChange={(e) => setForm({ ...form, department: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
               >
-                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
               </select>
             </div>
             {/* Semester */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Semester</Label>
+              <Label className="text-[var(--text-secondary)] text-xs">Semester</Label>
               <select
                 value={form.semester}
                 onChange={(e) => setForm({ ...form, semester: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
               >
-                {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Semester {s}</option>)}
+                {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[var(--bg-secondary)]">Semester {s}</option>)}
               </select>
             </div>
             {/* Section */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Section</Label>
+              <Label className="text-[var(--text-secondary)] text-xs">Section</Label>
               <select
                 value={form.section}
                 onChange={(e) => setForm({ ...form, section: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all cursor-pointer"
               >
-                {SECTIONS.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">Section {s}</option>)}
+                {SECTIONS.map(s => <option key={s} value={s} className="bg-[var(--bg-secondary)]">Section {s}</option>)}
               </select>
             </div>
             {/* Guardian Name */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Guardian Name</Label>
+              <Label className="text-[var(--text-secondary)] text-xs">Guardian Name</Label>
               <Input
                 value={form.guardianName}
                 onChange={(e) => setForm({ ...form, guardianName: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="Guardian full name"
               />
             </div>
             {/* Guardian Phone */}
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Guardian Phone</Label>
+              <Label className="text-[var(--text-secondary)] text-xs">Guardian Phone</Label>
               <Input
                 value={form.guardianPhone}
                 onChange={(e) => setForm({ ...form, guardianPhone: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="+91 9876543210"
               />
             </div>
             {/* Skills */}
             <div className="space-y-1.5 sm:col-span-2">
-              <Label className="text-gray-400 text-xs flex items-center gap-1"><BookOpen className="w-3 h-3" /> Skills (comma-separated)</Label>
+              <Label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><BookOpen className="w-3 h-3" /> Skills (comma-separated)</Label>
               <Input
                 value={form.skills}
                 onChange={(e) => setForm({ ...form, skills: e.target.value })}
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20"
+                className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20"
                 placeholder="Python, ML, Web Development"
               />
             </div>
@@ -679,7 +679,7 @@ export default function AdminStudentManager() {
           <DialogFooter>
             <button
               onClick={() => setDialogOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Cancel
             </button>
@@ -698,20 +698,20 @@ export default function AdminStudentManager() {
 
       {/* ─── Delete Confirmation Dialog ──────────────────────────────── */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-sm">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               Confirm Delete
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-[var(--text-secondary)]">
               This action cannot be undone. The student record and all associated data will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
             <button
               onClick={() => setDeleteId(null)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Cancel
             </button>
@@ -729,32 +729,32 @@ export default function AdminStudentManager() {
 
       {/* ─── CSV Import Dialog ───────────────────────────────────────── */}
       <Dialog open={csvDialogOpen} onOpenChange={setCsvDialogOpen}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-md">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Import Students
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-[var(--text-secondary)]">
               Upload a CSV or Excel file to bulk import student records
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <div className="border-2 border-dashed border-white/[0.1] rounded-2xl p-8 text-center hover:border-purple-500/30 hover:bg-purple-500/[0.02] transition-all duration-300 cursor-pointer group">
+            <div className="border-2 border-dashed border-[var(--border-color)] rounded-2xl p-8 text-center hover:border-purple-500/30 hover:bg-purple-500/[0.02] transition-all duration-300 cursor-pointer group">
               <motion.div
                 animate={{ y: [0, -4, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <Upload className="w-12 h-12 text-gray-600 mx-auto mb-4 group-hover:text-purple-400 transition-colors" />
+                <Upload className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-4 group-hover:text-purple-600 dark:text-purple-400 transition-colors" />
               </motion.div>
-              <p className="text-sm text-gray-400 mb-1">
-                <span className="text-purple-400 font-medium">Click to upload</span> or drag & drop
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                <span className="text-purple-600 dark:text-purple-400 font-medium">Click to upload</span> or drag & drop
               </p>
-              <p className="text-xs text-gray-600">Upload students.xlsx or students.csv</p>
+              <p className="text-xs text-[var(--text-muted)]">Upload students.xlsx or students.csv</p>
               <div className="flex items-center justify-center gap-3 mt-4">
                 {['.xlsx', '.xls', '.csv'].map(ext => (
-                  <span key={ext} className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] text-gray-500">
+                  <span key={ext} className="px-2 py-0.5 rounded-md bg-[var(--glass-bg)] border border-[var(--border-color)] text-[10px] text-[var(--text-muted)]">
                     {ext}
                   </span>
                 ))}
@@ -766,7 +766,7 @@ export default function AdminStudentManager() {
                 <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs text-yellow-500 font-medium">Required Columns</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">name, email, rollNumber, department, semester</p>
+                  <p className="text-[11px] text-[var(--text-muted)] mt-0.5">name, email, rollNumber, department, semester</p>
                 </div>
               </div>
             </div>
@@ -775,7 +775,7 @@ export default function AdminStudentManager() {
           <DialogFooter>
             <button
               onClick={() => setCsvDialogOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Cancel
             </button>

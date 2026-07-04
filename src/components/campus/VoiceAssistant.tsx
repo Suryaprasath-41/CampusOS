@@ -152,14 +152,14 @@ export default function VoiceAssistant() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+          className="w-full max-w-md bg-[var(--bg-secondary)]/95 backdrop-blur-2xl border border-[var(--border-color)] rounded-3xl p-8 shadow-2xl relative overflow-hidden"
         >
           {/* Animated gradient bg */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
           <button
             onClick={() => !sending && setVoiceOpen(false)}
-            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/[0.05] text-gray-500 hover:text-white transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors z-10"
             disabled={sending}
           >
             <X className="w-4 h-4" />
@@ -196,10 +196,10 @@ export default function VoiceAssistant() {
               </motion.div>
             )}
 
-            <h3 className="text-white font-semibold text-lg mb-1">
+            <h3 className="text-[var(--text-primary)] font-semibold text-lg mb-1">
               {sending ? 'Sending to AI...' : listening ? 'Listening...' : 'Voice Assistant'}
             </h3>
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-[var(--text-muted)] mb-4">
               {sending ? 'Opening chat with your query' : listening ? 'Speak your question' : 'Tap the mic and ask anything'}
             </p>
 
@@ -208,10 +208,10 @@ export default function VoiceAssistant() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 mb-4 text-left"
+                className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-4 mb-4 text-left"
               >
-                <div className="text-[10px] text-purple-400 uppercase mb-1">You said</div>
-                <p className="text-sm text-white">{transcript}</p>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 uppercase mb-1">You said</div>
+                <p className="text-sm text-[var(--text-primary)]">{transcript}</p>
               </motion.div>
             )}
 
@@ -223,7 +223,7 @@ export default function VoiceAssistant() {
                     key={i}
                     animate={{ y: [0, -8, 0] }}
                     transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-                    className="w-2 h-2 rounded-full bg-cyan-400"
+                    className="w-2 h-2 rounded-full bg-cyan-600 dark:bg-cyan-400"
                   />
                 ))}
               </div>
@@ -236,7 +236,7 @@ export default function VoiceAssistant() {
                   <button
                     key={s}
                     onClick={() => handleQuickSuggestion(s)}
-                    className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-gray-400 hover:text-white hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
+                    className="px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] hover:border-purple-500/30 transition-all"
                   >
                     {s}
                   </button>

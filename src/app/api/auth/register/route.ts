@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
+import { verifyToken } from '../login/route';
+
+// Email regex for basic format validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,22 +17,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Decode token to check role
-    try {
-      const decoded = Buffer.from(token, 'base64').toString();
-      const [, , role] = decoded.split(':');
-      if (role !== 'admin') {
-        return NextResponse.json({ error: 'Only admins can create users' }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+    // Decode and verify token
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 403 });
+    }
+
+    if (decoded.role !== 'admin') {
+      return NextResponse.json({ error: 'Only admins can create users' }, { status: 403 });
     }
 
     const body = await req.json();
     let { email, password, name, role, department } = body;
 
+    // Input validation
     if (!email || !password || !name || !role) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields (email, password, name, role)' },
+        { status: 400 }
+      );
+    }
+
+    // Trim inputs
+    email = email.trim();
+    name = name.trim();
+
+    // Validate email format
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
+        { status: 400 }
+      );
     }
 
     // Auto-append @JSE.com if no domain provided
@@ -37,20 +65,38 @@ export async function POST(req: NextRequest) {
 
     // Enforce @JSE.com domain
     if (!email.endsWith('@JSE.com')) {
-      return NextResponse.json({ error: 'All accounts must use @JSE.com email domain' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'All accounts must use @JSE.com email domain' },
+        { status: 400 }
+      );
+    }
+
+    // Validate role
+    const validRoles = ['student', 'faculty', 'admin'];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { error: 'Invalid role. Must be student, faculty, or admin' },
+        { status: 400 }
+      );
     }
 
     // Check if user already exists
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
-      return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 409 }
+      );
     }
+
+    // Hash password with bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
     const user = await db.user.create({
       data: {
         email,
-        password, // Plain text for now - will be hashed by bcrypt on login check
+        password: hashedPassword,
         name,
         role,
         department: department || null,
@@ -81,12 +127,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    }, { status: 201 });
-  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: true,
+        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      },
+      { status: 201 }
+    );
+  } catch (error: unknown) {
     console.error('Register error:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

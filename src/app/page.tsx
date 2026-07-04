@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useCampusStore } from '@/lib/store';
 import AnimatedBackground from '@/components/campus/AnimatedBackground';
 import Sidebar from '@/components/campus/Sidebar';
@@ -47,9 +46,7 @@ const studentSections: Record<string, React.ComponentType> = {
   events: EventsSection,
   workflow: WorkflowSection,
   faculty: FacultySection,
-  'faculty-portal': FacultyPortal,
   profile: ProfileSection,
-  admin: AdminPortal,
   'ai-memory': AiMemorySection,
   settings: SettingsSection,
 };
@@ -99,8 +96,12 @@ const adminSections: Record<string, React.ComponentType> = {
   settings: SettingsSection,
 };
 
+// Redirect to login page
+function redirectToLogin() {
+  window.location.href = '/login';
+}
+
 export default function Home() {
-  const router = useRouter();
   const { activeSection, activeRole, isAuthenticated, setIsAuthenticated, setCurrentUser, setActiveRole, logout } = useCampusStore();
   const [showSplash, setShowSplash] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -113,29 +114,75 @@ export default function Home() {
         const token = document.cookie.split('; ').find(row => row.startsWith('campusos-token='));
         if (token) {
           const tokenValue = token.split('=')[1];
+
+          // Parse the new HMAC-signed token format: base64(userId:email:role:timestamp:signature)
           const decoded = atob(tokenValue);
-          const [id, email, role] = decoded.split(':');
-          if (id && email && role) {
+          const parts = decoded.split(':');
+          if (parts.length < 3) {
+            redirectToLogin();
+            return;
+          }
+
+          const [id, email, role] = parts;
+
+          if (id && email && role && ['student', 'faculty', 'admin'].includes(role)) {
+            // Set auth state optimistically from client-side decode for fast UI
             setIsAuthenticated(true);
             setCurrentUser({ id, email, name: email.split('@')[0], role });
             setActiveRole(role as 'student' | 'faculty' | 'admin');
             setCheckingAuth(false);
 
+            // Show splash if first visit
             const hasSeenSplash = sessionStorage.getItem('campusos-splash-seen');
             if (!hasSeenSplash) {
               setShowSplash(true);
             }
+
+            // Verify token server-side via session-info endpoint
+            try {
+              const res = await fetch('/api/auth/session-info');
+              if (res.ok) {
+                const data = await res.json();
+                if (data.authenticated && data.user) {
+                  // Update with verified server-side data (includes full name)
+                  setCurrentUser({
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.name,
+                    role: data.user.role,
+                  });
+                  setActiveRole(data.user.role as 'student' | 'faculty' | 'admin');
+                } else {
+                  // Server says not authenticated — clear and redirect
+                  document.cookie = 'campusos-token=; path=/; max-age=0';
+                  logout();
+                  redirectToLogin();
+                  return;
+                }
+              } else {
+                // Token invalid or expired — clear and redirect
+                document.cookie = 'campusos-token=; path=/; max-age=0';
+                logout();
+                redirectToLogin();
+                return;
+              }
+            } catch {
+              // Network error — keep the optimistic client-side auth (don't kick user out)
+              console.warn('Session verification failed due to network error, using client-side token');
+            }
+
             return;
           }
         }
-        router.push('/login');
+        // No valid token found
+        redirectToLogin();
       } catch {
-        router.push('/login');
+        redirectToLogin();
       }
     };
 
     checkSession();
-  }, [router, setIsAuthenticated, setCurrentUser, setActiveRole]);
+  }, [setIsAuthenticated, setCurrentUser, setActiveRole, logout]);
 
   const handleSplashComplete = () => {
     sessionStorage.setItem('campusos-splash-seen', 'true');
@@ -145,7 +192,7 @@ export default function Home() {
   const handleLogout = () => {
     document.cookie = 'campusos-token=; path=/; max-age=0';
     logout();
-    router.push('/login');
+    redirectToLogin();
   };
 
   // Expose logout to window

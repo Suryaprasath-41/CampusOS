@@ -83,12 +83,12 @@ export default function AiMemorySection() {
   if (loading) {
     return (
       <div className="p-6 space-y-4 h-full overflow-y-auto">
-        <div className="h-8 w-48 bg-white/[0.05] rounded-lg animate-pulse" />
+        <div className="h-8 w-48 bg-[var(--bg-card)] rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-white/[0.03] rounded-2xl animate-pulse" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
         </div>
         <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-white/[0.03] rounded-xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />)}
+          {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-[var(--bg-card)] rounded-xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />)}
         </div>
       </div>
     );
@@ -98,8 +98,8 @@ export default function AiMemorySection() {
     return (
       <div className="p-6 flex items-center justify-center h-full">
         <GlassCard className="text-center max-w-md">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-          <p className="text-red-400 mb-3">{error}</p>
+          <AlertCircle className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-3" />
+          <p className="text-red-600 dark:text-red-400 mb-3">{error}</p>
           <button onClick={handleRefresh} className="px-4 py-2 bg-purple-600 rounded-xl text-sm text-white hover:bg-purple-700 transition-colors">
             Try Again
           </button>
@@ -144,10 +144,10 @@ export default function AiMemorySection() {
           <SectionTitle>AI Memory Center</SectionTitle>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={handleRefresh} className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors" title="Refresh">
-            <RefreshCw className="w-4 h-4 text-gray-400" />
+          <button onClick={handleRefresh} className="p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--glass-bg)] transition-colors" title="Refresh">
+            <RefreshCw className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
-          <button onClick={handleClearAll} className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs hover:bg-red-500/20 transition-colors flex items-center gap-1.5">
+          <button onClick={handleClearAll} className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs hover:bg-red-500/20 transition-colors flex items-center gap-1.5">
             <Trash2 className="w-3.5 h-3.5" /> Clear All
           </button>
         </div>
@@ -157,31 +157,31 @@ export default function AiMemorySection() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <GlassCard className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Database className="w-4 h-4 text-purple-400" />
-            <span className="text-xs text-gray-500">Total Memories</span>
+            <Database className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-xs text-[var(--text-muted)]">Total Memories</span>
           </div>
-          <AnimatedCounter value={data?.totalMemories || 0} className="text-2xl font-bold text-white" />
+          <AnimatedCounter value={data?.totalMemories || 0} className="text-2xl font-bold text-[var(--text-primary)]" />
         </GlassCard>
         <GlassCard className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Tag className="w-4 h-4 text-cyan-400" />
-            <span className="text-xs text-gray-500">Categories</span>
+            <Tag className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+            <span className="text-xs text-[var(--text-muted)]">Categories</span>
           </div>
-          <AnimatedCounter value={categories.length} className="text-2xl font-bold text-white" />
+          <AnimatedCounter value={categories.length} className="text-2xl font-bold text-[var(--text-primary)]" />
         </GlassCard>
         <GlassCard className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <MessageSquare className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-gray-500">Conversations</span>
+            <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <span className="text-xs text-[var(--text-muted)]">Conversations</span>
           </div>
-          <AnimatedCounter value={data?.totalConversations || 0} className="text-2xl font-bold text-white" />
+          <AnimatedCounter value={data?.totalConversations || 0} className="text-2xl font-bold text-[var(--text-primary)]" />
         </GlassCard>
         <GlassCard className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Brain className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs text-gray-500">Memory Density</span>
+            <Brain className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+            <span className="text-xs text-[var(--text-muted)]">Memory Density</span>
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-[var(--text-primary)]">
             {data?.totalConversations ? ((data.totalMemories / data.totalConversations) * 100).toFixed(0) : 0}%
           </div>
         </GlassCard>
@@ -193,8 +193,8 @@ export default function AiMemorySection() {
           onClick={() => setFilterCat('all')}
           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
             filterCat === 'all'
-              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-              : 'bg-white/[0.04] text-gray-500 border border-white/[0.06] hover:bg-white/[0.08]'
+              ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30'
+              : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)] hover:bg-[var(--glass-bg)]'
           }`}
         >
           All ({data?.memories?.length || 0})
@@ -205,8 +205,8 @@ export default function AiMemorySection() {
             onClick={() => setFilterCat(cat)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
               filterCat === cat
-                ? `${catBgColors[cat] || 'bg-purple-500/10 border-purple-500/20'} text-white`
-                : 'bg-white/[0.04] text-gray-500 border border-white/[0.06] hover:bg-white/[0.08]'
+                ? `${catBgColors[cat] || 'bg-purple-500/10 border-purple-500/20'} text-[var(--text-primary)]`
+                : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)] hover:bg-[var(--glass-bg)]'
             }`}
           >
             <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${catColors[cat] || 'from-gray-500 to-gray-600'}`} />
@@ -218,7 +218,7 @@ export default function AiMemorySection() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Memory Cards */}
         <div className="lg:col-span-2 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Stored Memories</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Stored Memories</h3>
           <AnimatePresence>
             {filteredMemories.length === 0 ? (
               <motion.div
@@ -226,9 +226,9 @@ export default function AiMemorySection() {
                 animate={{ opacity: 1 }}
                 className="text-center py-12"
               >
-                <Brain className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No memories found</p>
-                <p className="text-gray-600 text-xs mt-1">Chat with the AI to generate memories</p>
+                <Brain className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-3" />
+                <p className="text-[var(--text-muted)] text-sm">No memories found</p>
+                <p className="text-[var(--text-muted)] text-xs mt-1">Chat with the AI to generate memories</p>
               </motion.div>
             ) : (
               filteredMemories.map((mem: Memory, i: number) => (
@@ -247,21 +247,21 @@ export default function AiMemorySection() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${catBgColors[mem.category] || 'bg-gray-500/10 border-gray-500/20'} border font-medium capitalize`}>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${catBgColors[mem.category] || 'bg-[var(--bg-card)] border-[var(--border-color)]'} border font-medium capitalize`}>
                             {mem.category.replace('_', ' ')}
                           </span>
-                          <span className="text-[10px] text-gray-600 flex items-center gap-1">
+                          <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {new Date(mem.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className={`text-sm text-gray-300 ${expandedMem !== mem.id ? 'line-clamp-2' : ''}`}>
+                        <p className={`text-sm text-[var(--text-secondary)] ${expandedMem !== mem.id ? 'line-clamp-2' : ''}`}>
                           {mem.content}
                         </p>
                         {mem.content.length > 100 && (
                           <button
                             onClick={() => setExpandedMem(expandedMem === mem.id ? null : mem.id)}
-                            className="text-xs text-purple-400 hover:text-purple-300 mt-1 flex items-center gap-1"
+                            className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 mt-1 flex items-center gap-1"
                           >
                             {expandedMem === mem.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                             {expandedMem === mem.id ? 'Less' : 'More'}
@@ -271,7 +271,7 @@ export default function AiMemorySection() {
                       <button
                         onClick={() => handleDelete(mem.id)}
                         disabled={deleting === mem.id}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-600 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                       >
                         <Trash2 className={`w-3.5 h-3.5 ${deleting === mem.id ? 'animate-pulse' : ''}`} />
                       </button>
@@ -285,7 +285,7 @@ export default function AiMemorySection() {
 
         {/* Recent Conversations Sidebar */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Recent Conversations</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Recent Conversations</h3>
           {(data?.recentConversations || []).map((conv: Conversation, i: number) => (
             <motion.div
               key={conv.id}
@@ -297,20 +297,20 @@ export default function AiMemorySection() {
                 <div className="flex items-start gap-2">
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 text-[10px] ${
                     conv.role === 'user'
-                      ? 'bg-purple-500/20 text-purple-400'
-                      : 'bg-cyan-500/20 text-cyan-400'
+                      ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
+                      : 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
                   }`}>
                     {conv.role === 'user' ? '👤' : '🤖'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 line-clamp-2">{conv.content}</p>
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{conv.content}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {conv.agentType && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.05] text-gray-500 capitalize">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-card)] text-[var(--text-muted)] capitalize">
                           {conv.agentType}
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-600">
+                      <span className="text-[10px] text-[var(--text-muted)]">
                         {new Date(conv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -321,7 +321,7 @@ export default function AiMemorySection() {
           ))}
 
           {/* Memory Categories Visualization */}
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-3">Category Distribution</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mt-6 mb-3">Category Distribution</h3>
           {categories.map((cat, i) => {
             const count = data.memoriesByCategory[cat];
             const pct = data.totalMemories > 0 ? (count / data.totalMemories) * 100 : 0;
@@ -336,11 +336,11 @@ export default function AiMemorySection() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${catColors[cat] || 'from-gray-500 to-gray-600'}`} />
-                      <span className="text-xs text-gray-300 capitalize">{cat.replace('_', ' ')}</span>
+                      <span className="text-xs text-[var(--text-secondary)] capitalize">{cat.replace('_', ' ')}</span>
                     </div>
-                    <span className="text-xs text-gray-500">{count}</span>
+                    <span className="text-xs text-[var(--text-muted)]">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[var(--bg-card)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}

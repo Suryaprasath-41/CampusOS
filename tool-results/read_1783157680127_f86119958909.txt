@@ -1,0 +1,1201 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useMemo } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     7→  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+     8→} from 'recharts';
+     9→import {
+    10→  LayoutDashboard, Users, GraduationCap, BookOpen, AlertTriangle,
+    11→  Bell, Bot, Search, Shield, Activity, Cpu, HardDrive, Zap,
+    12→  Database, Plus, Send, FileBarChart, Settings, Download,
+    13→  Clock, TrendingUp, TrendingDown, Brain, Sparkles, Server,
+    14→  CheckCircle2, XCircle, AlertCircle, Info, ChevronRight,
+    15→  Monitor, MemoryStick, Globe, HeartPulse, ArrowUpRight,
+    16→  Layers
+    17→} from 'lucide-react';
+    18→import { cn } from '@/lib/utils';
+    19→import AnimatedCounter from './AnimatedCounter';
+    20→import WidgetCard, { GlassCard, SectionTitle, PredictionBar } from './WidgetCard';
+    21→import { fetchAPI, useCampusStore } from '@/lib/store';
+    22→import AdminAIPlayground from './AdminAIPlayground';
+    23→import AdminSmartSearch from './AdminSmartSearch';
+    24→import AdminComplaintManager from './AdminComplaintManager';
+    25→import AdminNotificationBroadcaster from './AdminNotificationBroadcaster';
+    26→import AdminStudentManager from './AdminStudentManager';
+    27→import AdminFacultyManager from './AdminFacultyManager';
+    28→import AdminCourseManager from './AdminCourseManager';
+    29→import AdminKnowledgeBase from './AdminKnowledgeBase';
+    30→import AdminAutomationBuilder from './AdminAutomationBuilder';
+    31→import AdminUserManager from './AdminUserManager';
+    32→
+    33→// ─── Tab Configuration ───────────────────────────────────────────────
+    34→const tabs = [
+    35→  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    36→  { id: 'students', label: 'Students', icon: Users },
+    37→  { id: 'faculty', label: 'Faculty', icon: GraduationCap },
+    38→  { id: 'courses', label: 'Courses', icon: BookOpen },
+    39→  { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
+    40→  { id: 'users', label: 'User Accounts', icon: Shield },
+    41→  { id: 'notifications', label: 'Notifications', icon: Bell },
+    42→  { id: 'ai-playground', label: 'AI Playground', icon: Bot },
+    43→  { id: 'search', label: 'Search', icon: Search },
+    44→  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database },
+    45→  { id: 'automations', label: 'Automations', icon: Layers },
+    46→] as const;
+    47→
+    48→type TabId = (typeof tabs)[number]['id'];
+    49→
+    50→// ─── Stat Card Data ──────────────────────────────────────────────────
+    51→const statCards = [
+    52→  { label: 'Students', value: 2451, icon: Users, color: 'purple', gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-400', tab: 'students' as TabId },
+    53→  { label: 'Faculty', value: 168, icon: GraduationCap, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.3)', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-400', tab: 'faculty' as TabId },
+    54→  { label: 'Departments', value: 11, icon: Shield, color: 'blue', gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.3)', bg: 'bg-blue-500/10 border-blue-500/20', textColor: 'text-blue-400', tab: 'courses' as TabId },
+    55→  { label: 'Attendance Today', value: 91.2, decimals: 1, suffix: '%', icon: Activity, color: 'green', gradient: 'from-green-500 to-emerald-600', glow: 'rgba(34,197,94,0.3)', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-400', tab: 'dashboard' as TabId },
+    56→  { label: 'Library Books', value: 54120, icon: BookOpen, color: 'orange', gradient: 'from-orange-500 to-red-600', glow: 'rgba(249,115,22,0.3)', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-400', tab: 'dashboard' as TabId },
+    57→  { label: 'Pending Complaints', value: 12, icon: AlertTriangle, color: 'red', gradient: 'from-red-500 to-rose-600', glow: 'rgba(239,68,68,0.3)', bg: 'bg-red-500/10 border-red-500/20', textColor: 'text-red-400', tab: 'complaints' as TabId },
+    58→  { label: 'Upcoming Events', value: 7, icon: Clock, color: 'yellow', gradient: 'from-yellow-500 to-amber-600', glow: 'rgba(234,179,8,0.3)', bg: 'bg-yellow-500/10 border-yellow-500/20', textColor: 'text-yellow-400', tab: 'dashboard' as TabId },
+    59→  { label: 'AI Requests Today', value: 18420, icon: Zap, color: 'violet', gradient: 'from-violet-500 to-purple-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-violet-500/10 border-violet-500/20', textColor: 'text-violet-400', tab: 'ai-playground' as TabId },
+    60→  { label: 'System Health', value: 99.98, decimals: 2, suffix: '%', icon: HeartPulse, color: 'emerald', gradient: 'from-emerald-500 to-teal-600', glow: 'rgba(16,185,129,0.3)', bg: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-400', tab: 'dashboard' as TabId },
+    61→];
+    62→
+    63→// ─── System Health Data ──────────────────────────────────────────────
+    64→const systemMetrics = [
+    65→  { label: 'CPU Usage', value: 67, color: 'purple' },
+    66→  { label: 'Memory Usage', value: 54, color: 'cyan' },
+    67→  { label: 'API Response Time', value: 45, max: 200, unit: 'ms', displayValue: '45ms', color: 'green' },
+    68→  { label: 'Database Health', value: 99.9, decimals: 1, color: 'emerald' },
+    69→];
+    70→
+    71→// ─── Quick Actions ───────────────────────────────────────────────────
+    72→const quickActions = [
+    73→  { label: 'Add Student', icon: Plus, gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.2)', tab: 'students' as TabId },
+    74→  { label: 'Add Faculty', icon: GraduationCap, gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.2)', tab: 'faculty' as TabId },
+    75→  { label: 'Create Account', icon: Shield, gradient: 'from-amber-500 to-orange-600', glow: 'rgba(245,158,11,0.2)', tab: 'users' as TabId },
+    76→  { label: 'Send Notification', icon: Send, gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.2)', tab: 'notifications' as TabId },
+    77→  { label: 'AI Settings', icon: Settings, gradient: 'from-orange-500 to-amber-600', glow: 'rgba(249,115,22,0.2)', tab: 'ai-playground' as TabId },
+    78→  { label: 'Export Data', icon: Download, gradient: 'from-pink-500 to-rose-600', glow: 'rgba(236,72,153,0.2)', tab: 'search' as TabId },
+    79→];
+    80→
+    81→// ─── Recent Activity Data ────────────────────────────────────────────
+    82→const recentActivity = [
+    83→  { message: 'New student enrollment: Aarav Sharma (CS2024045)', type: 'enrollment', time: '2 min ago' },
+    84→  { message: 'Complaint #128 resolved by Admin', type: 'complaint', time: '15 min ago' },
+    85→  { message: 'Faculty Dr. Meera posted CS301 grades', type: 'academic', time: '32 min ago' },
+    86→  { message: 'System backup completed successfully', type: 'system', time: '1 hr ago' },
+    87→  { message: 'Event "Tech Fest 2025" registration opened', type: 'event', time: '2 hrs ago' },
+    88→  { message: 'AI Agent processed 1,240 chat requests', type: 'ai', time: '3 hrs ago' },
+    89→  { message: 'Fee payment received: ₹45,000 (Rahul K.)', type: 'fee', time: '4 hrs ago' },
+    90→  { message: 'Library: 23 books overdue — reminders sent', type: 'library', time: '5 hrs ago' },
+    91→];
+    92→
+    93→// ─── AI Insights ─────────────────────────────────────────────────────
+    94→const aiInsights = [
+    95→  { text: 'CS department attendance dropped 12% this week — likely due to severe weather warnings in the region', severity: 'warning', icon: TrendingDown },
+    96→  { text: 'Library book returns improved 8% after automated reminder system deployment', severity: 'success', icon: TrendingUp },
+    97→  { text: 'Peak AI chat usage detected between 9-11 AM — consider scaling resources during morning hours', severity: 'info', icon: Brain },
+    98→  { text: '3 faculty members haven\'t posted grades for mid-semester exams yet', severity: 'warning', icon: AlertCircle },
+    99→];
+   100→
+   101→// ═══════════════════════════════════════════════════════════════════════
+   102→// AdminPortal section-to-tab sync map
+   103→const adminSectionToTabMap: Record<string, TabId> = {
+   104→  dashboard: 'dashboard',
+   105→  admin: 'dashboard',
+   106→  students: 'students',
+   107→  faculty: 'faculty',
+   108→  courses: 'courses',
+   109→  complaints: 'complaints',
+   110→  'admin-users': 'users',
+   111→  'admin-students': 'students',
+   112→  'admin-faculty': 'faculty',
+   113→  'admin-courses': 'courses',
+   114→  'admin-complaints': 'complaints',
+   115→  'admin-notifications': 'notifications',
+   116→  'admin-ai-playground': 'ai-playground',
+   117→  'admin-search': 'search',
+   118→  'admin-knowledge': 'knowledge-base',
+   119→  'admin-automations': 'automations',
+   120→  notifications: 'notifications',
+   121→  'ai-playground': 'ai-playground',
+   122→  search: 'search',
+   123→  'knowledge-base': 'knowledge-base',
+   124→  automations: 'automations',
+   125→};
+   126→
+   127→// Main Component
+   128→// ═══════════════════════════════════════════════════════════════════════
+   129→export default function AdminPortal() {
+   130→  const { activeSection, setActiveSection } = useCampusStore();
+   131→  const [activeTab, setActiveTab] = useState<TabId>(adminSectionToTabMap[activeSection] || 'dashboard');
+   132→
+   133→  // Sync tab with store's activeSection for sidebar navigation
+   134→  const handleTabChange = (tab: TabId) => {
+   135→    setActiveTab(tab);
+   136→    setActiveSection(tab === 'dashboard' ? 'admin' : tab);
+   137→  };
+   138→
+   139→  // Also sync when activeSection changes from sidebar
+   140→  const mappedTab = adminSectionToTabMap[activeSection];
+   141→  if (mappedTab && mappedTab !== activeTab) {
+   142→    setActiveTab(mappedTab);
+   143→  }
+   144→
+   145→  return (
+   146→    <div className="h-full flex flex-col">
+   147→      {/* ─── Top Bar ─────────────────────────────────────────── */}
+   148→      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+   149→        <div className="flex items-center gap-3">
+   150→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+   151→            <Shield className="w-5 h-5 text-white" />
+   152→          </div>
+   153→          <div>
+   154→            <h1 className="text-lg font-bold text-white">CampusOS Control Center</h1>
+   155→            <p className="text-[11px] text-gray-500">System Administration & AI Operations</p>
+   156→          </div>
+   157→        </div>
+   158→        <div className="flex items-center gap-3">
+   159→          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+   160→            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+   161→            <span className="text-xs text-emerald-400 font-medium">All Systems Operational</span>
+   162→          </div>
+   163→          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+   164→            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">
+   165→              A
+   166→            </div>
+   167→            <span className="text-xs text-gray-300 font-medium hidden sm:inline">Admin</span>
+   168→          </div>
+   169→        </div>
+   170→      </div>
+   171→
+   172→      {/* ─── Tab Bar ─────────────────────────────────────────── */}
+   173→      <div className="px-4 pt-3 pb-2">
+   174→        <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   175→          {tabs.map((tab) => {
+   176→            const isActive = activeTab === tab.id;
+   177→            return (
+   178→              <motion.button
+   179→                key={tab.id}
+   180→                onClick={() => handleTabChange(tab.id)}
+   181→                whileHover={{ scale: 1.03 }}
+   182→                whileTap={{ scale: 0.97 }}
+   183→                className={cn(
+   184→                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 shrink-0",
+   185→                  isActive
+   186→                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+   187→                    : "bg-white/[0.02] text-gray-500 border border-white/[0.06] hover:text-gray-300 hover:bg-white/[0.04] hover:border-white/[0.1]"
+   188→                )}
+   189→              >
+   190→                <tab.icon className={cn("w-4 h-4", isActive && "text-purple-400")} />
+   191→                <span>{tab.label}</span>
+   192→                {isActive && <Sparkles className="w-3 h-3 text-purple-400" />}
+   193→              </motion.button>
+   194→            );
+   195→          })}
+   196→        </div>
+   197→      </div>
+   198→
+   199→      {/* ─── Content Area ─────────────────────────────────────── */}
+   200→      <div className="flex-1 overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   201→        <AnimatePresence mode="wait">
+   202→          <motion.div
+   203→            key={activeTab}
+   204→            initial={{ opacity: 0, y: 12 }}
+   205→            animate={{ opacity: 1, y: 0 }}
+   206→            exit={{ opacity: 0, y: -12 }}
+   207→            transition={{ duration: 0.25 }}
+   208→          >
+   209→            {activeTab === 'dashboard' && <DashboardTab onNavigate={handleTabChange} />}
+   210→            {activeTab === 'students' && <AdminStudentManager />}
+   211→            {activeTab === 'faculty' && <AdminFacultyManager />}
+   212→            {activeTab === 'courses' && <AdminCourseManager />}
+   213→            {activeTab === 'complaints' && <AdminComplaintManager />}
+   214→            {activeTab === 'notifications' && <AdminNotificationBroadcaster />}
+   215→            {activeTab === 'ai-playground' && <AdminAIPlayground />}
+   216→            {activeTab === 'search' && <AdminSmartSearch />}
+   217→            {activeTab === 'knowledge-base' && <AdminKnowledgeBase />}
+   218→            {activeTab === 'automations' && <AdminAutomationBuilder />}
+   219→            {activeTab === 'users' && <AdminUserManager />}
+   220→          </motion.div>
+   221→        </AnimatePresence>
+   222→      </div>
+   223→    </div>
+   224→  );
+   225→}
+   226→
+   227→// ═══════════════════════════════════════════════════════════════════════
+   228→// Dashboard Tab (Control Center) — The Hero Section
+   229→// ═══════════════════════════════════════════════════════════════════════
+   230→function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+   231→  const [adminData, setAdminData] = useState<any>(null);
+   232→  const [loading, setLoading] = useState(true);
+   233→
+   234→  useEffect(() => {
+   235→    fetchAPI('/admin').then((data) => {
+   236→      setAdminData(data);
+   237→    }).catch(console.error).finally(() => setLoading(false));
+   238→  }, []);
+   239→
+   240→  // Merge API data with stat cards
+   241→  const liveStatCards = statCards.map(card => {
+   242→    if (!adminData?.stats) return card;
+   243→    const s = adminData.stats;
+   244→    const mapping: Record<string, number> = {
+   245→      'Students': s.totalStudents || 0,
+   246→      'Faculty': s.totalFaculty || 0,
+   247→      'Departments': s.totalDepartments || 0,
+   248→      'Attendance Today': s.avgAttendance || 0,
+   249→      'Library Books': s.totalBooks || 0,
+   250→      'Pending Complaints': s.pendingComplaints || 0,
+   251→      'Upcoming Events': s.upcomingEvents || 0,
+   252→    };
+   253→    if (mapping[card.label] !== undefined) {
+   254→      return { ...card, value: mapping[card.label] };
+   255→    }
+   256→    return card;
+   257→  });
+   258→
+   259→  // Merge API recent activity
+   260→  const liveActivity = adminData?.recentActivity?.length > 0
+   261→    ? adminData.recentActivity.map((a: any) => ({
+   262→        message: a.message,
+   263→        type: a.type,
+   264→        time: a.time,
+   265→      }))
+   266→    : recentActivity;
+   267→
+   268→  if (loading) {
+   269→    return (
+   270→      <div className="space-y-6 pt-2">
+   271→        <div className="h-40 bg-white/[0.03] rounded-2xl animate-pulse" />
+   272→        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
+   273→          {[...Array(9)].map((_, i) => (
+   274→            <div key={i} className="h-28 bg-white/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+   275→          ))}
+   276→        </div>
+   277→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   278→          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+   279→          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+   280→        </div>
+   281→      </div>
+   282→    );
+   283→  }
+   284→
+   285→  return (
+   286→    <div className="space-y-6 pt-2">
+   287→      {/* ─── Hero Banner ────────────────────────────────────── */}
+   288→      <motion.div
+   289→        initial={{ opacity: 0, y: 20 }}
+   290→        animate={{ opacity: 1, y: 0 }}
+   291→        transition={{ duration: 0.6 }}
+   292→        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+   293→      >
+   294→        {/* Animated gradient background */}
+   295→        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-cyan-500/10" />
+   296→        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+   297→
+   298→        {/* Animated border glow */}
+   299→        <motion.div
+   300→          className="absolute inset-0 rounded-2xl"
+   301→          style={{
+   302→            background: 'linear-gradient(90deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3), rgba(139,92,246,0.3))',
+   303→            backgroundSize: '200% 100%',
+   304→          }}
+   305→          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+   306→          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+   307→        >
+   308→          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+   309→        </motion.div>
+   310→
+   311→        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+   312→          <div>
+   313→            <motion.div
+   314→              initial={{ opacity: 0, x: -20 }}
+   315→              animate={{ opacity: 1, x: 0 }}
+   316→              transition={{ delay: 0.2 }}
+   317→              className="flex items-center gap-2 mb-2"
+   318→            >
+   319→              <Sparkles className="w-5 h-5 text-purple-400" />
+   320→              <span className="text-xs text-purple-400 font-medium uppercase tracking-wider">AI-Powered Administration</span>
+   321→            </motion.div>
+   322→            <motion.h1
+   323→              initial={{ opacity: 0, x: -20 }}
+   324→              animate={{ opacity: 1, x: 0 }}
+   325→              transition={{ delay: 0.3 }}
+   326→              className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-300 to-cyan-400 mb-2"
+   327→            >
+   328→              CampusOS Control Center
+   329→            </motion.h1>
+   330→            <motion.p
+   331→              initial={{ opacity: 0, x: -20 }}
+   332→              animate={{ opacity: 1, x: 0 }}
+   333→              transition={{ delay: 0.4 }}
+   334→              className="text-gray-400 text-sm max-w-lg"
+   335→            >
+   336→              Real-time campus monitoring, AI-driven insights, and complete administrative control at your fingertips.
+   337→            </motion.p>
+   338→          </div>
+   339→          <motion.div
+   340→            initial={{ opacity: 0, scale: 0.9 }}
+   341→            animate={{ opacity: 1, scale: 1 }}
+   342→            transition={{ delay: 0.5 }}
+   343→            className="flex items-center gap-3"
+   344→          >
+   345→            <div className="text-right hidden sm:block">
+   346→              <p className="text-xs text-gray-500">Last synced</p>
+   347→              <p className="text-sm text-gray-300 font-medium">Just now</p>
+   348→            </div>
+   349→            <motion.div
+   350→              whileHover={{ scale: 1.05 }}
+   351→              whileTap={{ scale: 0.95 }}
+   352→              className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+   353→            >
+   354→              <Server className="w-5 h-5 text-purple-400" />
+   355→            </motion.div>
+   356→          </motion.div>
+   357→        </div>
+   358→      </motion.div>
+   359→
+   360→      {/* ─── Stat Cards Grid ─────────────────────────────────── */}
+   361→      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
+   362→        {liveStatCards.map((card, i) => (
+   363→          <motion.div
+   364→            key={card.label}
+   365→            initial={{ opacity: 0, y: 20 }}
+   366→            animate={{ opacity: 1, y: 0 }}
+   367→            transition={{ delay: 0.1 + i * 0.05 }}
+   368→            whileHover={{ scale: 1.03, y: -3 }}
+   369→            onClick={() => onNavigate(card.tab)}
+   370→            className={cn(
+   371→              "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4",
+   372→              "hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300 cursor-pointer",
+   373→              "group"
+   374→            )}
+   375→          >
+   376→            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3 border", card.bg)}>
+   377→              <card.icon className={cn("w-4.5 h-4.5", card.textColor)} />
+   378→            </div>
+   379→            <div className="text-2xl font-bold text-white mb-0.5">
+   380→              <AnimatedCounter
+   381→                value={card.value}
+   382→                decimals={card.decimals || 0}
+   383→                suffix={card.suffix || ''}
+   384→                duration={1.5}
+   385→              />
+   386→            </div>
+   387→            <p className="text-[11px] text-gray-500 truncate">{card.label}</p>
+   388→          </motion.div>
+   389→        ))}
+   390→      </div>
+   391→
+   392→      {/* ─── System Health + Quick Actions Row ────────────── */}
+   393→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   394→        {/* System Health Widget */}
+   395→        <motion.div
+   396→          initial={{ opacity: 0, x: -20 }}
+   397→          animate={{ opacity: 1, x: 0 }}
+   398→          transition={{ delay: 0.4 }}
+   399→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   400→        >
+   401→          <div className="flex items-center justify-between mb-5">
+   402→            <div className="flex items-center gap-2">
+   403→              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+   404→                <HeartPulse className="w-4 h-4 text-emerald-400" />
+   405→              </div>
+   406→              <h3 className="text-white font-semibold">System Health</h3>
+   407→            </div>
+   408→            <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+   409→              HEALTHY
+   410→            </span>
+   411→          </div>
+   412→
+   413→          <div className="space-y-4">
+   414→            {systemMetrics.map((metric, i) => (
+   415→              <motion.div
+   416→                key={metric.label}
+   417→                initial={{ opacity: 0, x: -10 }}
+   418→                animate={{ opacity: 1, x: 0 }}
+   419→                transition={{ delay: 0.5 + i * 0.1 }}
+   420→              >
+   421→                <div className="flex justify-between mb-1.5">
+   422→                  <div className="flex items-center gap-2">
+   423→                    {metric.label === 'CPU Usage' && <Cpu className="w-3.5 h-3.5 text-gray-500" />}
+   424→                    {metric.label === 'Memory Usage' && <HardDrive className="w-3.5 h-3.5 text-gray-500" />}
+   425→                    {metric.label === 'API Response Time' && <Zap className="w-3.5 h-3.5 text-gray-500" />}
+   426→                    {metric.label === 'Database Health' && <Database className="w-3.5 h-3.5 text-gray-500" />}
+   427→                    <span className="text-gray-400 text-xs">{metric.label}</span>
+   428→                  </div>
+   429→                  <span className="text-white text-xs font-semibold">
+   430→                    {metric.displayValue || `${metric.value}%`}
+   431→                  </span>
+   432→                </div>
+   433→                <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+   434→                  <motion.div
+   435→                    initial={{ width: 0 }}
+   436→                    animate={{ width: `${Math.min(100, metric.value / (metric.max || 100) * 100)}%` }}
+   437→                    transition={{ duration: 1.2, ease: 'easeOut', delay: 0.6 + i * 0.1 }}
+   438→                    className={cn(
+   439→                      "h-full rounded-full shadow-[0_0_8px_rgba(139,92,246,0.3)]",
+   440→                      metric.color === 'purple' && "bg-gradient-to-r from-purple-500 to-violet-600",
+   441→                      metric.color === 'cyan' && "bg-gradient-to-r from-cyan-500 to-blue-600",
+   442→                      metric.color === 'green' && "bg-gradient-to-r from-green-500 to-emerald-600",
+   443→                      metric.color === 'emerald' && "bg-gradient-to-r from-emerald-500 to-teal-600",
+   444→                    )}
+   445→                  />
+   446→                </div>
+   447→              </motion.div>
+   448→            ))}
+   449→          </div>
+   450→
+   451→          {/* Mini server status indicators */}
+   452→          <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center gap-4">
+   453→            <div className="flex items-center gap-1.5">
+   454→              <Globe className="w-3 h-3 text-gray-500" />
+   455→              <span className="text-[11px] text-gray-500">API</span>
+   456→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   457→            </div>
+   458→            <div className="flex items-center gap-1.5">
+   459→              <Database className="w-3 h-3 text-gray-500" />
+   460→              <span className="text-[11px] text-gray-500">DB</span>
+   461→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   462→            </div>
+   463→            <div className="flex items-center gap-1.5">
+   464→              <Bot className="w-3 h-3 text-gray-500" />
+   465→              <span className="text-[11px] text-gray-500">AI</span>
+   466→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   467→            </div>
+   468→            <div className="flex items-center gap-1.5">
+   469→              <Monitor className="w-3 h-3 text-gray-500" />
+   470→              <span className="text-[11px] text-gray-500">CDN</span>
+   471→              <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+   472→            </div>
+   473→          </div>
+   474→        </motion.div>
+   475→
+   476→        {/* Quick Actions */}
+   477→        <motion.div
+   478→          initial={{ opacity: 0, x: 20 }}
+   479→          animate={{ opacity: 1, x: 0 }}
+   480→          transition={{ delay: 0.4 }}
+   481→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   482→        >
+   483→          <div className="flex items-center gap-2 mb-5">
+   484→            <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+   485→              <Zap className="w-4 h-4 text-purple-400" />
+   486→            </div>
+   487→            <h3 className="text-white font-semibold">Quick Actions</h3>
+   488→          </div>
+   489→
+   490→          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+   491→            {quickActions.map((action, i) => (
+   492→              <motion.button
+   493→                key={action.label}
+   494→                initial={{ opacity: 0, scale: 0.9 }}
+   495→                animate={{ opacity: 1, scale: 1 }}
+   496→                transition={{ delay: 0.5 + i * 0.05 }}
+   497→                whileHover={{ scale: 1.05, y: -2 }}
+   498→                whileTap={{ scale: 0.95 }}
+   499→                className={cn(
+   500→                  "flex flex-col items-center gap-2.5 p-4 rounded-xl",
+   501→                  "bg-white/[0.03] border border-white/[0.06]",
+   502→                  "hover:border-white/[0.12] hover:bg-white/[0.05]",
+   503→                  "transition-all duration-300 group"
+   504→                )}
+   505→                style={{ boxShadow: `0 0 0px ${action.glow}` }}
+   506→                onClick={() => onNavigate(action.tab)}
+   507→                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 20px ${action.glow}`; }}
+   508→                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0px ${action.glow}`; }}
+   509→              >
+   510→                <div className={cn(
+   511→                  "w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br",
+   512→                  action.gradient,
+   513→                  "shadow-lg group-hover:scale-110 transition-transform duration-300"
+   514→                )}>
+   515→                  <action.icon className="w-5 h-5 text-white" />
+   516→                </div>
+   517→                <span className="text-xs text-gray-400 font-medium text-center group-hover:text-gray-200 transition-colors">
+   518→                  {action.label}
+   519→                </span>
+   520→              </motion.button>
+   521→            ))}
+   522→          </div>
+   523→        </motion.div>
+   524→      </div>
+   525→
+   526→      {/* ─── Recent Activity + AI Insights Row ─────────────── */}
+   527→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   528→        {/* Recent Activity Feed */}
+   529→        <motion.div
+   530→          initial={{ opacity: 0, y: 20 }}
+   531→          animate={{ opacity: 1, y: 0 }}
+   532→          transition={{ delay: 0.6 }}
+   533→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   534→        >
+   535→          <div className="flex items-center justify-between mb-5">
+   536→            <div className="flex items-center gap-2">
+   537→              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+   538→                <Activity className="w-4 h-4 text-blue-400" />
+   539→              </div>
+   540→              <h3 className="text-white font-semibold">Recent Activity</h3>
+   541→            </div>
+   542→            <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+   543→              LIVE
+   544→            </span>
+   545→          </div>
+   546→
+   547→          <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   548→            {liveActivity.map((activity, i) => (
+   549→              <motion.div
+   550→                key={i}
+   551→                initial={{ opacity: 0, x: -10 }}
+   552→                animate={{ opacity: 1, x: 0 }}
+   553→                transition={{ delay: 0.7 + i * 0.05 }}
+   554→                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors group"
+   555→              >
+   556→                <div className={cn(
+   557→                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+   558→                  activity.type === 'enrollment' && 'bg-purple-500/10',
+   559→                  activity.type === 'complaint' && 'bg-red-500/10',
+   560→                  activity.type === 'academic' && 'bg-cyan-500/10',
+   561→                  activity.type === 'system' && 'bg-gray-500/10',
+   562→                  activity.type === 'event' && 'bg-blue-500/10',
+   563→                  activity.type === 'ai' && 'bg-violet-500/10',
+   564→                  activity.type === 'fee' && 'bg-green-500/10',
+   565→                  activity.type === 'library' && 'bg-orange-500/10',
+   566→                )}>
+   567→                  {activity.type === 'enrollment' && <Users className="w-3.5 h-3.5 text-purple-400" />}
+   568→                  {activity.type === 'complaint' && <AlertTriangle className="w-3.5 h-3.5 text-red-400" />}
+   569→                  {activity.type === 'academic' && <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />}
+   570→                  {activity.type === 'system' && <Server className="w-3.5 h-3.5 text-gray-400" />}
+   571→                  {activity.type === 'event' && <Clock className="w-3.5 h-3.5 text-blue-400" />}
+   572→                  {activity.type === 'ai' && <Bot className="w-3.5 h-3.5 text-violet-400" />}
+   573→                  {activity.type === 'fee' && <Activity className="w-3.5 h-3.5 text-green-400" />}
+   574→                  {activity.type === 'library' && <BookOpen className="w-3.5 h-3.5 text-orange-400" />}
+   575→                </div>
+   576→                <div className="flex-1 min-w-0">
+   577→                  <p className="text-sm text-gray-300 group-hover:text-gray-100 transition-colors leading-snug">
+   578→                    {activity.message}
+   579→                  </p>
+   580→                  <p className="text-[10px] text-gray-600 mt-0.5">{activity.time}</p>
+   581→                </div>
+   582→                <ChevronRight className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-500 shrink-0 mt-1 transition-colors" />
+   583→              </motion.div>
+   584→            ))}
+   585→          </div>
+   586→        </motion.div>
+   587→
+   588→        {/* AI Insights Panel */}
+   589→        <motion.div
+   590→          initial={{ opacity: 0, y: 20 }}
+   591→          animate={{ opacity: 1, y: 0 }}
+   592→          transition={{ delay: 0.7 }}
+   593→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   594→        >
+   595→          <div className="flex items-center justify-between mb-5">
+   596→            <div className="flex items-center gap-2">
+   597→              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+   598→                <Brain className="w-4 h-4 text-violet-400" />
+   599→              </div>
+   600→              <h3 className="text-white font-semibold">AI Insights</h3>
+   601→            </div>
+   602→            <span className="text-[10px] px-2 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium animate-pulse">
+   603→              THINKING
+   604→            </span>
+   605→          </div>
+   606→
+   607→          <div className="space-y-3">
+   608→            {aiInsights.map((insight, i) => (
+   609→              <motion.div
+   610→                key={i}
+   611→                initial={{ opacity: 0, x: 10 }}
+   612→                animate={{ opacity: 1, x: 0 }}
+   613→                transition={{ delay: 0.8 + i * 0.1 }}
+   614→                className={cn(
+   615→                  "flex items-start gap-3 p-4 rounded-xl border transition-all duration-300",
+   616→                  insight.severity === 'warning' && "bg-yellow-500/[0.04] border-yellow-500/10 hover:border-yellow-500/20",
+   617→                  insight.severity === 'success' && "bg-green-500/[0.04] border-green-500/10 hover:border-green-500/20",
+   618→                  insight.severity === 'info' && "bg-blue-500/[0.04] border-blue-500/10 hover:border-blue-500/20",
+   619→                )}
+   620→              >
+   621→                <div className={cn(
+   622→                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+   623→                  insight.severity === 'warning' && "bg-yellow-500/10",
+   624→                  insight.severity === 'success' && "bg-green-500/10",
+   625→                  insight.severity === 'info' && "bg-blue-500/10",
+   626→                )}>
+   627→                  <insight.icon className={cn(
+   628→                    "w-3.5 h-3.5",
+   629→                    insight.severity === 'warning' && "text-yellow-400",
+   630→                    insight.severity === 'success' && "text-green-400",
+   631→                    insight.severity === 'info' && "text-blue-400",
+   632→                  )} />
+   633→                </div>
+   634→                <div className="flex-1 min-w-0">
+   635→                  <p className="text-sm text-gray-300 leading-snug">{insight.text}</p>
+   636→                  <div className="flex items-center gap-2 mt-2">
+   637→                    <span className={cn(
+   638→                      "text-[10px] font-medium px-2 py-0.5 rounded-full",
+   639→                      insight.severity === 'warning' && "bg-yellow-500/10 text-yellow-400",
+   640→                      insight.severity === 'success' && "bg-green-500/10 text-green-400",
+   641→                      insight.severity === 'info' && "bg-blue-500/10 text-blue-400",
+   642→                    )}>
+   643→                      {insight.severity.toUpperCase()}
+   644→                    </span>
+   645→                    <span className="text-[10px] text-gray-600">AI-generated</span>
+   646→                  </div>
+   647→                </div>
+   648→              </motion.div>
+   649→            ))}
+   650→          </div>
+   651→
+   652→          {/* AI Confidence */}
+   653→          <div className="mt-4 pt-4 border-t border-white/[0.06]">
+   654→            <div className="flex items-center justify-between mb-2">
+   655→              <span className="text-xs text-gray-500">AI Confidence Score</span>
+   656→              <span className="text-xs text-purple-400 font-semibold">94.7%</span>
+   657→            </div>
+   658→            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+   659→              <motion.div
+   660→                initial={{ width: 0 }}
+   661→                animate={{ width: '94.7%' }}
+   662→                transition={{ duration: 1.5, ease: 'easeOut', delay: 1 }}
+   663→                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+   664→              />
+   665→            </div>
+   666→          </div>
+   667→        </motion.div>
+   668→      </div>
+   669→
+   670→      {/* ─── Campus Analytics Section ──────────────────────────────── */}
+   671→      <motion.div
+   672→        initial={{ opacity: 0, y: 20 }}
+   673→        animate={{ opacity: 1, y: 0 }}
+   674→        transition={{ delay: 0.9 }}
+   675→      >
+   676→        <div className="flex items-center gap-2 mb-4">
+   677→          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+   678→            <FileBarChart className="w-4 h-4 text-purple-400" />
+   679→          </div>
+   680→          <h3 className="text-white font-semibold text-lg">Campus Analytics</h3>
+   681→          <span className="text-[10px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium ml-2">
+   682→            INSIGHTS
+   683→          </span>
+   684→        </div>
+   685→
+   686→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   687→          {/* Attendance Heatmap */}
+   688→          <motion.div
+   689→            initial={{ opacity: 0, scale: 0.95 }}
+   690→            animate={{ opacity: 1, scale: 1 }}
+   691→            transition={{ delay: 1.0 }}
+   692→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   693→          >
+   694→            <div className="flex items-center justify-between mb-4">
+   695→              <h4 className="text-white font-medium text-sm">Attendance Heatmap</h4>
+   696→              <span className="text-[10px] text-gray-500">By Day & Time Slot</span>
+   697→            </div>
+   698→            <AttendanceHeatmap />
+   699→          </motion.div>
+   700→
+   701→          {/* Department Performance Bar Chart */}
+   702→          <motion.div
+   703→            initial={{ opacity: 0, scale: 0.95 }}
+   704→            animate={{ opacity: 1, scale: 1 }}
+   705→            transition={{ delay: 1.1 }}
+   706→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   707→          >
+   708→            <div className="flex items-center justify-between mb-4">
+   709→              <h4 className="text-white font-medium text-sm">Department Performance</h4>
+   710→              <span className="text-[10px] text-gray-500">Avg CGPA by Dept</span>
+   711→            </div>
+   712→            <DepartmentPerformanceChart adminData={adminData} />
+   713→          </motion.div>
+   714→
+   715→          {/* Placement Trend Line Chart */}
+   716→          <motion.div
+   717→            initial={{ opacity: 0, scale: 0.95 }}
+   718→            animate={{ opacity: 1, scale: 1 }}
+   719→            transition={{ delay: 1.2 }}
+   720→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   721→          >
+   722→            <div className="flex items-center justify-between mb-4">
+   723→              <h4 className="text-white font-medium text-sm">Placement Trend</h4>
+   724→              <span className="text-[10px] text-gray-500">Monthly Placements</span>
+   725→            </div>
+   726→            <PlacementTrendChart />
+   727→          </motion.div>
+   728→
+   729→          {/* Fee Collection Pie Chart */}
+   730→          <motion.div
+   731→            initial={{ opacity: 0, scale: 0.95 }}
+   732→            animate={{ opacity: 1, scale: 1 }}
+   733→            transition={{ delay: 1.3 }}
+   734→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   735→          >
+   736→            <div className="flex items-center justify-between mb-4">
+   737→              <h4 className="text-white font-medium text-sm">Fee Collection</h4>
+   738→              <span className="text-[10px] text-gray-500">Payment Status</span>
+   739→            </div>
+   740→            <FeeCollectionChart adminData={adminData} />
+   741→          </motion.div>
+   742→        </div>
+   743→      </motion.div>
+   744→    </div>
+   745→  );
+   746→}
+   747→
+   748→// ─── Attendance Heatmap Component ────────────────────────────────────
+   749→function AttendanceHeatmap() {
+   750→  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+   751→  const slots = ['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '2 PM', '3 PM', '4 PM'];
+   752→
+   753→  // Generate realistic heatmap data
+   754→  const heatmapData = useMemo(() => {
+   755→    const data: number[][] = [];
+   756→    for (let d = 0; d < 7; d++) {
+   757→      const row: number[] = [];
+   758→      for (let s = 0; s < 8; s++) {
+   759→        if (d >= 5) { // Weekend
+   760→          row.push(Math.random() * 15);
+   761→        } else if (s >= 4 && s <= 5) { // Afternoon peak
+   762→          row.push(70 + Math.random() * 30);
+   763→        } else if (s >= 1 && s <= 3) { // Morning peak
+   764→          row.push(80 + Math.random() * 20);
+   765→        } else { // Early/late
+   766→          row.push(30 + Math.random() * 40);
+   767→        }
+   768→      }
+   769→      data.push(row);
+   770→    }
+   771→    return data;
+   772→  }, []);
+   773→
+   774→  const getColor = (value: number) => {
+   775→    if (value < 20) return 'rgba(139, 92, 246, 0.08)';
+   776→    if (value < 40) return 'rgba(139, 92, 246, 0.2)';
+   777→    if (value < 60) return 'rgba(139, 92, 246, 0.35)';
+   778→    if (value < 80) return 'rgba(139, 92, 246, 0.55)';
+   779→    return 'rgba(139, 92, 246, 0.8)';
+   780→  };
+   781→
+   782→  return (
+   783→    <div className="overflow-x-auto">
+   784→      <div className="min-w-[320px]">
+   785→        {/* Time slot headers */}
+   786→        <div className="flex items-center gap-1 mb-2 pl-10">
+   787→          {slots.map((slot) => (
+   788→            <div key={slot} className="flex-1 text-center text-[9px] text-gray-500 font-medium">
+   789→              {slot}
+   790→            </div>
+   791→          ))}
+   792→        </div>
+   793→        {/* Day rows */}
+   794→        {days.map((day, dIdx) => (
+   795→          <div key={day} className="flex items-center gap-1 mb-1">
+   796→            <div className="w-9 text-right text-[10px] text-gray-400 font-medium pr-1">{day}</div>
+   797→            {heatmapData[dIdx].map((value, sIdx) => (
+   798→              <motion.div
+   799→                key={`${dIdx}-${sIdx}`}
+   800→                initial={{ opacity: 0, scale: 0 }}
+   801→                animate={{ opacity: 1, scale: 1 }}
+   802→                transition={{ delay: 1.0 + dIdx * 0.05 + sIdx * 0.02, duration: 0.3 }}
+   803→                className="flex-1 aspect-square rounded-md cursor-pointer hover:scale-110 transition-transform"
+   804→                style={{ backgroundColor: getColor(value), minHeight: '24px' }}
+   805→                title={`${day} ${slots[sIdx]}: ${Math.round(value)}% attendance`}
+   806→              />
+   807→            ))}
+   808→          </div>
+   809→        ))}
+   810→        {/* Legend */}
+   811→        <div className="flex items-center justify-end gap-2 mt-3">
+   812→          <span className="text-[9px] text-gray-500">Low</span>
+   813→          <div className="flex gap-0.5">
+   814→            {[0.08, 0.2, 0.35, 0.55, 0.8].map((opacity, i) => (
+   815→              <div
+   816→                key={i}
+   817→                className="w-4 h-3 rounded-sm"
+   818→                style={{ backgroundColor: `rgba(139, 92, 246, ${opacity})` }}
+   819→              />
+   820→            ))}
+   821→          </div>
+   822→          <span className="text-[9px] text-gray-500">High</span>
+   823→        </div>
+   824→      </div>
+   825→    </div>
+   826→  );
+   827→}
+   828→
+   829→// ─── Department Performance Chart ────────────────────────────────────
+   830→function DepartmentPerformanceChart({ adminData }: { adminData: any }) {
+   831→  const data = useMemo(() => {
+   832→    if (adminData?.attendanceByDepartment?.length > 0) {
+   833→      return adminData.attendanceByDepartment.map((d: any) => ({
+   834→        department: d.department?.replace('Computer Science', 'CS')?.replace('Information Technology', 'IT')?.replace('Electronics & Communication', 'ECE')?.replace('Electrical Engineering', 'EEE')?.replace('Mechanical Engineering', 'ME')?.replace('Civil Engineering', 'CE') || d.department,
+   835→        cgpa: d.avgCgpa || d.cgpa || 0,
+   836→      }));
+   837→    }
+   838→    return [
+   839→      { department: 'CS', cgpa: 8.08 },
+   840→      { department: 'IT', cgpa: 8.03 },
+   841→      { department: 'ECE', cgpa: 7.55 },
+   842→      { department: 'EEE', cgpa: 7.50 },
+   843→      { department: 'ME', cgpa: 7.50 },
+   844→      { department: 'CE', cgpa: 7.88 },
+   845→    ];
+   846→  }, [adminData]);
+   847→
+   848→  return (
+   849→    <div className="h-56">
+   850→      <ResponsiveContainer width="100%" height="100%">
+   851→        <BarChart data={data} barCategoryGap="20%">
+   852→          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+   853→          <XAxis
+   854→            dataKey="department"
+   855→            tick={{ fill: '#9ca3af', fontSize: 11 }}
+   856→            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+   857→            tickLine={false}
+   858→          />
+   859→          <YAxis
+   860→            domain={[0, 10]}
+   861→            tick={{ fill: '#9ca3af', fontSize: 10 }}
+   862→            axisLine={false}
+   863→            tickLine={false}
+   864→          />
+   865→          <Tooltip
+   866→            contentStyle={{
+   867→              backgroundColor: 'rgba(10, 10, 30, 0.95)',
+   868→              border: '1px solid rgba(139, 92, 246, 0.3)',
+   869→              borderRadius: '12px',
+   870→              color: '#e5e7eb',
+   871→              fontSize: 12,
+   872→              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+   873→            }}
+   874→            formatter={(value: number) => [value.toFixed(2), 'Avg CGPA']}
+   875→            cursor={{ fill: 'rgba(139, 92, 246, 0.08)' }}
+   876→          />
+   877→          <defs>
+   878→            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+   879→              <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.9} />
+   880→              <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.7} />
+   881→            </linearGradient>
+   882→          </defs>
+   883→          <Bar dataKey="cgpa" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
+   884→        </BarChart>
+   885→      </ResponsiveContainer>
+   886→    </div>
+   887→  );
+   888→}
+   889→
+   890→// ─── Placement Trend Chart ───────────────────────────────────────────
+   891→function PlacementTrendChart() {
+   892→  const data = useMemo(() => [
+   893→    { month: 'Jul', placements: 12 },
+   894→    { month: 'Aug', placements: 28 },
+   895→    { month: 'Sep', placements: 45 },
+   896→    { month: 'Oct', placements: 62 },
+   897→    { month: 'Nov', placements: 54 },
+   898→    { month: 'Dec', placements: 38 },
+   899→    { month: 'Jan', placements: 72 },
+   900→    { month: 'Feb', placements: 85 },
+   901→  ], []);
+   902→
+   903→  return (
+   904→    <div className="h-56">
+   905→      <ResponsiveContainer width="100%" height="100%">
+   906→        <AreaChart data={data}>
+   907→          <defs>
+   908→            <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
+   909→              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
+   910→              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+   911→            </linearGradient>
+   912→          </defs>
+   913→          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+   914→          <XAxis
+   915→            dataKey="month"
+   916→            tick={{ fill: '#9ca3af', fontSize: 11 }}
+   917→            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+   918→            tickLine={false}
+   919→          />
+   920→          <YAxis
+   921→            tick={{ fill: '#9ca3af', fontSize: 10 }}
+   922→            axisLine={false}
+   923→            tickLine={false}
+   924→          />
+   925→          <Tooltip
+   926→            contentStyle={{
+   927→              backgroundColor: 'rgba(10, 10, 30, 0.95)',
+   928→              border: '1px solid rgba(6, 182, 212, 0.3)',
+   929→              borderRadius: '12px',
+   930→              color: '#e5e7eb',
+   931→              fontSize: 12,
+   932→              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+   933→            }}
+   934→            formatter={(value: number) => [value, 'Placements']}
+   935→          />
+   936→          <Area
+   937→            type="monotone"
+   938→            dataKey="placements"
+   939→            stroke="#06b6d4"
+   940→            strokeWidth={2.5}
+   941→            fill="url(#cyanGradient)"
+   942→            dot={{ fill: '#06b6d4', r: 4, strokeWidth: 2, stroke: '#0a0a1e' }}
+   943→            activeDot={{ fill: '#06b6d4', r: 6, strokeWidth: 2, stroke: '#0a0a1e' }}
+   944→          />
+   945→        </AreaChart>
+   946→      </ResponsiveContainer>
+   947→    </div>
+   948→  );
+   949→}
+   950→
+   951→// ─── Fee Collection Chart ────────────────────────────────────────────
+   952→function FeeCollectionChart({ adminData }: { adminData: any }) {
+   953→  const data = useMemo(() => {
+   954→    if (adminData?.stats) {
+   955→      const s = adminData.stats;
+   956→      return [
+   957→        { name: 'Paid', value: s.feesPaid || 45, color: '#22c55e' },
+   958→        { name: 'Pending', value: s.feesPending || 28, color: '#eab308' },
+   959→        { name: 'Overdue', value: s.feesOverdue || 12, color: '#ef4444' },
+   960→      ];
+   961→    }
+   962→    return [
+   963→      { name: 'Paid', value: 45, color: '#22c55e' },
+   964→      { name: 'Pending', value: 28, color: '#eab308' },
+   965→      { name: 'Overdue', value: 12, color: '#ef4444' },
+   966→    ];
+   967→  }, [adminData]);
+   968→
+   969→  const total = data.reduce((sum, d) => sum + d.value, 0);
+   970→
+   971→  return (
+   972→    <div className="h-56 flex items-center">
+   973→      <div className="w-1/2">
+   974→        <ResponsiveContainer width="100%" height={200}>
+   975→          <PieChart>
+   976→            <Pie
+   977→              data={data}
+   978→              cx="50%"
+   979→              cy="50%"
+   980→              innerRadius={50}
+   981→              outerRadius={80}
+   982→              paddingAngle={3}
+   983→              dataKey="value"
+   984→              stroke="none"
+   985→            >
+   986→              {data.map((entry, index) => (
+   987→                <Cell key={`cell-${index}`} fill={entry.color} />
+   988→              ))}
+   989→            </Pie>
+   990→            <Tooltip
+   991→              contentStyle={{
+   992→                backgroundColor: 'rgba(10, 10, 30, 0.95)',
+   993→                border: '1px solid rgba(255,255,255,0.1)',
+   994→                borderRadius: '12px',
+   995→                color: '#e5e7eb',
+   996→                fontSize: 12,
+   997→                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+   998→              }}
+   999→              formatter={(value: number, name: string) => [`₹${value}L`, name]}
+  1000→            />
+  1001→          </PieChart>
+  1002→        </ResponsiveContainer>
+  1003→      </div>
+  1004→      <div className="w-1/2 space-y-3">
+  1005→        {data.map((item) => (
+  1006→          <div key={item.name} className="flex items-center gap-3">
+  1007→            <div
+  1008→              className="w-3 h-3 rounded-full shrink-0"
+  1009→              style={{ backgroundColor: item.color }}
+  1010→            />
+  1011→            <div className="flex-1 min-w-0">
+  1012→              <div className="flex items-center justify-between">
+  1013→                <span className="text-xs text-gray-400">{item.name}</span>
+  1014→                <span className="text-xs text-white font-semibold">
+  1015→                  {Math.round((item.value / total) * 100)}%
+  1016→                </span>
+  1017→              </div>
+  1018→              <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mt-1">
+  1019→                <motion.div
+  1020→                  initial={{ width: 0 }}
+  1021→                  animate={{ width: `${(item.value / total) * 100}%` }}
+  1022→                  transition={{ duration: 1, ease: 'easeOut', delay: 1.5 }}
+  1023→                  className="h-full rounded-full"
+  1024→                  style={{ backgroundColor: item.color }}
+  1025→                />
+  1026→              </div>
+  1027→            </div>
+  1028→          </div>
+  1029→        ))}
+  1030→        <div className="pt-2 border-t border-white/[0.06]">
+  1031→          <div className="flex items-center justify-between">
+  1032→            <span className="text-xs text-gray-500">Total Collection</span>
+  1033→            <span className="text-sm text-white font-bold">₹{total}L</span>
+  1034→          </div>
+  1035→        </div>
+  1036→      </div>
+  1037→    </div>
+  1038→  );
+  1039→}
+  1040→
+  1041→// ═══════════════════════════════════════════════════════════════════════
+  1042→// Placeholder Tab — Beautiful placeholder for each sub-section
+  1043→// ═══════════════════════════════════════════════════════════════════════
+  1044→interface PlaceholderTabProps {
+  1045→  id: string;
+  1046→  label: string;
+  1047→  description: string;
+  1048→  icon: React.ComponentType<{ className?: string }>;
+  1049→  gradient: string;
+  1050→  accentColor: string;
+  1051→  stats: { l: string; v: string }[];
+  1052→}
+  1053→
+  1054→function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentColor, stats }: PlaceholderTabProps) {
+  1055→  const accentMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+  1056→    purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', glow: 'rgba(139,92,246,0.3)' },
+  1057→    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', glow: 'rgba(6,182,212,0.3)' },
+  1058→    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'rgba(59,130,246,0.3)' },
+  1059→    red: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', glow: 'rgba(239,68,68,0.3)' },
+  1060→    yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-400', glow: 'rgba(234,179,8,0.3)' },
+  1061→    violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', glow: 'rgba(139,92,246,0.3)' },
+  1062→    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'rgba(16,185,129,0.3)' },
+  1063→    orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', glow: 'rgba(249,115,22,0.3)' },
+  1064→  };
+  1065→
+  1066→  const accent = accentMap[accentColor] || accentMap.purple;
+  1067→
+  1068→  return (
+  1069→    <div className="space-y-6 pt-2">
+  1070→      {/* Section Header */}
+  1071→      <motion.div
+  1072→        initial={{ opacity: 0, y: 20 }}
+  1073→        animate={{ opacity: 1, y: 0 }}
+  1074→        transition={{ duration: 0.5 }}
+  1075→        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+  1076→      >
+  1077→        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent" />
+  1078→        <motion.div
+  1079→          className="absolute inset-0 rounded-2xl"
+  1080→          style={{
+  1081→            background: `linear-gradient(90deg, ${accent.glow}, transparent, ${accent.glow})`,
+  1082→            backgroundSize: '200% 100%',
+  1083→          }}
+  1084→          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+  1085→          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+  1086→        >
+  1087→          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+  1088→        </motion.div>
+  1089→
+  1090→        <div className="relative z-10 flex items-start gap-4">
+  1091→          <motion.div
+  1092→            initial={{ scale: 0 }}
+  1093→            animate={{ scale: 1 }}
+  1094→            transition={{ delay: 0.2, type: 'spring' }}
+  1095→            className={cn(
+  1096→              "w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br",
+  1097→              gradient,
+  1098→              "shadow-lg"
+  1099→            )}
+  1100→            style={{ boxShadow: `0 0 25px ${accent.glow}` }}
+  1101→          >
+  1102→            <Icon className="w-7 h-7 text-white" />
+  1103→          </motion.div>
+  1104→          <div>
+  1105→            <motion.h2
+  1106→              initial={{ opacity: 0, x: -10 }}
+  1107→              animate={{ opacity: 1, x: 0 }}
+  1108→              transition={{ delay: 0.2 }}
+  1109→              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400"
+  1110→            >
+  1111→              {label}
+  1112→            </motion.h2>
+  1113→            <motion.p
+  1114→              initial={{ opacity: 0, x: -10 }}
+  1115→              animate={{ opacity: 1, x: 0 }}
+  1116→              transition={{ delay: 0.3 }}
+  1117→              className="text-gray-500 text-sm mt-1 max-w-lg"
+  1118→            >
+  1119→              {description}
+  1120→            </motion.p>
+  1121→          </div>
+  1122→        </div>
+  1123→      </motion.div>
+  1124→
+  1125→      {/* Stats Row */}
+  1126→      <div className="grid grid-cols-3 gap-3">
+  1127→        {stats.map((stat, i) => (
+  1128→          <motion.div
+  1129→            key={stat.l}
+  1130→            initial={{ opacity: 0, y: 15 }}
+  1131→            animate={{ opacity: 1, y: 0 }}
+  1132→            transition={{ delay: 0.3 + i * 0.1 }}
+  1133→            whileHover={{ scale: 1.02, y: -2 }}
+  1134→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.12] transition-all duration-300"
+  1135→          >
+  1136→            <p className="text-[11px] text-gray-500 mb-1">{stat.l}</p>
+  1137→            <p className={cn("text-xl font-bold", accent.text)}>{stat.v}</p>
+  1138→          </motion.div>
+  1139→        ))}
+  1140→      </div>
+  1141→
+  1142→      {/* Coming Soon Card */}
+  1143→      <motion.div
+  1144→        initial={{ opacity: 0, y: 20 }}
+  1145→        animate={{ opacity: 1, y: 0 }}
+  1146→        transition={{ delay: 0.5 }}
+  1147→        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 hover:border-white/[0.12] transition-all duration-300"
+  1148→      >
+  1149→        <div className="flex flex-col items-center text-center">
+  1150→          <motion.div
+  1151→            animate={{ rotate: [0, 10, -10, 0] }}
+  1152→            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  1153→            className={cn(
+  1154→              "w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-br mb-6",
+  1155→              gradient
+  1156→            )}
+  1157→            style={{ boxShadow: `0 0 30px ${accent.glow}` }}
+  1158→          >
+  1159→            <Icon className="w-10 h-10 text-white" />
+  1160→          </motion.div>
+  1161→          <h3 className="text-xl font-bold text-white mb-2">Coming Soon</h3>
+  1162→          <p className="text-gray-500 text-sm max-w-md mb-6">
+  1163→            This section is being built with AI-powered features. Stay tuned for an enhanced administrative experience.
+  1164→          </p>
+  1165→          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+  1166→            <Sparkles className={cn("w-4 h-4", accent.text)} />
+  1167→            <span className="text-xs text-gray-400">AI-powered features in development</span>
+  1168→          </div>
+  1169→        </div>
+  1170→      </motion.div>
+  1171→
+  1172→      {/* Feature Preview Grid */}
+  1173→      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+  1174→        {[
+  1175→          { title: 'Smart Search', desc: 'AI-powered semantic search across all records' },
+  1176→          { title: 'Bulk Operations', desc: 'Perform actions on multiple records simultaneously' },
+  1177→          { title: 'Analytics', desc: 'Deep insights with interactive visualizations' },
+  1178→        ].map((feature, i) => (
+  1179→          <motion.div
+  1180→            key={feature.title}
+  1181→            initial={{ opacity: 0, y: 15 }}
+  1182→            animate={{ opacity: 1, y: 0 }}
+  1183→            transition={{ delay: 0.6 + i * 0.1 }}
+  1184→            className={cn(
+  1185→              "bg-white/[0.02] border border-white/[0.06] rounded-xl p-4",
+  1186→              "hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300",
+  1187→              "group cursor-pointer"
+  1188→            )}
+  1189→          >
+  1190→            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", accent.bg, accent.border, "border")}>
+  1191→              <ArrowUpRight className={cn("w-4 h-4", accent.text)} />
+  1192→            </div>
+  1193→            <h4 className="text-sm font-semibold text-white mb-1 group-hover:text-gray-200">{feature.title}</h4>
+  1194→            <p className="text-xs text-gray-600">{feature.desc}</p>
+  1195→          </motion.div>
+  1196→        ))}
+  1197→      </div>
+  1198→    </div>
+  1199→  );
+  1200→}
+  1201→

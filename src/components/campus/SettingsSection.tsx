@@ -21,20 +21,20 @@ interface ToggleSettingProps {
 
 function ToggleSetting({ label, description, icon, enabled, onToggle }: ToggleSettingProps) {
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] rounded-xl transition-colors group">
+    <div className="flex items-center justify-between p-4 hover:bg-[var(--bg-card)] rounded-xl transition-colors group">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/[0.05] flex items-center justify-center text-gray-400 group-hover:text-purple-400 transition-colors">
+        <div className="w-9 h-9 rounded-xl bg-[var(--bg-card)] flex items-center justify-center text-[var(--text-secondary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
           {icon}
         </div>
         <div>
-          <div className="text-sm font-medium text-white">{label}</div>
-          <div className="text-xs text-gray-500">{description}</div>
+          <div className="text-sm font-medium text-[var(--text-primary)]">{label}</div>
+          <div className="text-xs text-[var(--text-muted)]">{description}</div>
         </div>
       </div>
       <button
         onClick={onToggle}
         className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
-          enabled ? 'bg-purple-600 shadow-[0_0_12px_rgba(139,92,246,0.4)]' : 'bg-white/[0.1]'
+          enabled ? 'bg-purple-600 shadow-[0_0_12px_rgba(139,92,246,0.4)]' : 'bg-[var(--bg-card)]'
         }`}
       >
         <motion.div
@@ -132,8 +132,8 @@ export default function SettingsSection() {
         <div className="lg:col-span-2 space-y-6">
           {/* Theme Selection */}
           <GlassCard className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Palette className="w-4 h-4 text-purple-400" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Palette className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               Theme
             </h3>
             <div className="grid grid-cols-5 gap-3 mb-6">
@@ -144,15 +144,15 @@ export default function SettingsSection() {
                   className={`relative p-3 rounded-xl border transition-all ${
                     selectedTheme === theme.id
                       ? 'border-purple-500/50 bg-purple-500/5'
-                      : 'border-white/[0.06] hover:border-white/[0.12]'
+                      : 'border-[var(--border-color)] hover:border-purple-500/30'
                   }`}
                 >
                   <div className="flex gap-1 mb-2 justify-center">
                     {theme.colors.map((c, i) => (
-                      <div key={i} className="w-5 h-5 rounded-full border border-white/[0.1]" style={{ backgroundColor: c }} />
+                      <div key={i} className="w-5 h-5 rounded-full border border-[var(--border-color)]" style={{ backgroundColor: c }} />
                     ))}
                   </div>
-                  <div className="text-[10px] text-gray-400 text-center">{theme.label}</div>
+                  <div className="text-[10px] text-[var(--text-secondary)] text-center">{theme.label}</div>
                   {selectedTheme === theme.id && (
                     <motion.div
                       initial={{ scale: 0 }}
@@ -166,8 +166,8 @@ export default function SettingsSection() {
               ))}
             </div>
 
-            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-400" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
               Accent Color
             </h3>
             <div className="flex gap-3">
@@ -177,14 +177,14 @@ export default function SettingsSection() {
                   onClick={() => { setSelectedAccent(accent.id); setAccentColor(accent.id); }}
                   className={`relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
                     selectedAccent === accent.id
-                      ? 'bg-white/[0.05] border border-white/[0.15]'
-                      : 'hover:bg-white/[0.03]'
+                      ? 'bg-[var(--bg-card)] border border-[var(--border-color)]'
+                      : 'hover:bg-[var(--bg-card)]'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${accent.gradient} shadow-lg ${
-                    selectedAccent === accent.id ? 'ring-2 ring-offset-2 ring-offset-[#050510] ring-white/30' : ''
+                    selectedAccent === accent.id ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-secondary)] ring-purple-500/30' : ''
                   }`} />
-                  <span className="text-[10px] text-gray-500">{accent.label}</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">{accent.label}</span>
                 </button>
               ))}
             </div>
@@ -199,11 +199,11 @@ export default function SettingsSection() {
               transition={{ delay: si * 0.1 }}
             >
               <GlassCard className="overflow-hidden">
-                <div className="px-5 py-3 border-b border-white/[0.06] flex items-center gap-2">
-                  <div className="text-purple-400">{section.icon}</div>
-                  <h3 className="text-sm font-semibold text-white">{section.title}</h3>
+                <div className="px-5 py-3 border-b border-[var(--border-color)] flex items-center gap-2">
+                  <div className="text-purple-600 dark:text-purple-400">{section.icon}</div>
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)]">{section.title}</h3>
                 </div>
-                <div className="divide-y divide-white/[0.04]">
+                <div className="divide-y divide-[var(--border-color)]">
                   {section.items.map((item) => (
                     <ToggleSetting
                       key={item.key}
@@ -224,39 +224,39 @@ export default function SettingsSection() {
         <div className="space-y-6">
           {/* Profile Quick Settings */}
           <GlassCard className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-green-400" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
               Privacy & Data
             </h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left group">
+              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] transition-colors text-left group">
                 <div className="flex items-center gap-2">
-                  <Download className="w-4 h-4 text-gray-400 group-hover:text-cyan-400 transition-colors" />
-                  <span className="text-sm text-gray-300">Export My Data</span>
+                  <Download className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors" />
+                  <span className="text-sm text-[var(--text-secondary)]">Export My Data</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-600" />
+                <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
               </button>
-              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left group">
+              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] transition-colors text-left group">
                 <div className="flex items-center gap-2">
-                  <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
-                  <span className="text-sm text-gray-300">Clear AI Memory</span>
+                  <Trash2 className="w-4 h-4 text-[var(--text-muted)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
+                  <span className="text-sm text-[var(--text-secondary)]">Clear AI Memory</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-600" />
+                <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
               </button>
-              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left group">
+              <button className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] transition-colors text-left group">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                  <span className="text-sm text-gray-300">Privacy Settings</span>
+                  <Shield className="w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+                  <span className="text-sm text-[var(--text-secondary)]">Privacy Settings</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-600" />
+                <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
               </button>
             </div>
           </GlassCard>
 
           {/* AI Agents Configuration */}
           <GlassCard className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Bot className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Bot className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               Agent Preferences
             </h3>
             <div className="space-y-2">
@@ -272,13 +272,13 @@ export default function SettingsSection() {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.05 }}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{agent.emoji}</span>
                     <div>
-                      <div className="text-xs font-medium text-white">{agent.name}</div>
-                      <div className="text-[10px] text-gray-600">{agent.desc}</div>
+                      <div className="text-xs font-medium text-[var(--text-primary)]">{agent.name}</div>
+                      <div className="text-[10px] text-[var(--text-muted)]">{agent.desc}</div>
                     </div>
                   </div>
                   <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
@@ -289,41 +289,41 @@ export default function SettingsSection() {
 
           {/* System Info */}
           <GlassCard className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-gray-400" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-[var(--text-muted)]" />
               System Info
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-500">Version</span>
-                <span className="text-gray-300">2.0.0 Enterprise</span>
+                <span className="text-[var(--text-muted)]">Version</span>
+                <span className="text-[var(--text-secondary)]">2.0.0 Enterprise</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Active Backend</span>
-                <span className="text-green-400 flex items-center gap-1">
+                <span className="text-[var(--text-muted)]">Active Backend</span>
+                <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                   Next.js + Prisma
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Python Backend</span>
-                <span className="text-cyan-400">FastAPI @ :8001</span>
+                <span className="text-[var(--text-muted)]">Python Backend</span>
+                <span className="text-cyan-600 dark:text-cyan-400">FastAPI @ :8001</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Frontend</span>
-                <span className="text-gray-300">Next.js 16</span>
+                <span className="text-[var(--text-muted)]">Frontend</span>
+                <span className="text-[var(--text-secondary)]">Next.js 16</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">AI Engine</span>
-                <span className="text-purple-400">Multi-Agent LLM</span>
+                <span className="text-[var(--text-muted)]">AI Engine</span>
+                <span className="text-purple-600 dark:text-purple-400">Multi-Agent LLM</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Database</span>
-                <span className="text-gray-300">SQLite</span>
+                <span className="text-[var(--text-muted)]">Database</span>
+                <span className="text-[var(--text-secondary)]">SQLite</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Protocol</span>
-                <span className="text-gray-300">MCP v1.0</span>
+                <span className="text-[var(--text-muted)]">Protocol</span>
+                <span className="text-[var(--text-secondary)]">MCP v1.0</span>
               </div>
             </div>
           </GlassCard>

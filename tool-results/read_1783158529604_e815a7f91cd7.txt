@@ -1,0 +1,573 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  Zap, Play, Pause, Trash2, Plus, ChevronRight, ArrowDown,
+     7→  AlertTriangle, BookOpen, GraduationCap, Wallet, Shield,
+     8→  Clock, CheckCircle2, XCircle, Settings, Sparkles,
+     9→  ArrowUpRight, MoreVertical, Eye, RefreshCw, Loader2,
+    10→  Layers, GitBranch, ToggleLeft, ToggleRight, Send, Bell,
+    11→  FileText, Users
+    12→} from 'lucide-react';
+    13→import { cn } from '@/lib/utils';
+    14→import AnimatedCounter from './AnimatedCounter';
+    15→import WidgetCard, { GlassCard, SectionTitle, PredictionBar } from './WidgetCard';
+    16→
+    17→// ─── Types ───────────────────────────────────────────────────────────
+    18→interface WorkflowBlock {
+    19→  id: string;
+    20→  type: 'trigger' | 'action' | 'chain';
+    21→  label: string;
+    22→  config: {
+    23→    source?: string;
+    24→    operator?: string;
+    25→    value?: string;
+    26→    actionType?: string;
+    27→    target?: string;
+    28→    message?: string;
+    29→  };
+    30→}
+    31→
+    32→interface Workflow {
+    33→  id: string;
+    34→  name: string;
+    35→  description: string;
+    36→  enabled: boolean;
+    37→  runCount: number;
+    38→  lastRun: string;
+    39→  blocks: WorkflowBlock[];
+    40→  icon: React.ComponentType<{ className?: string }>;
+    41→  color: string;
+    42→}
+    43→
+    44→// ─── Mock Workflows ──────────────────────────────────────────────────
+    45→const initialWorkflows: Workflow[] = [
+    46→  {
+    47→    id: '1',
+    48→    name: 'Auto-notify on low attendance',
+    49→    description: 'IF attendance < 75%, THEN send notification',
+    50→    enabled: true,
+    51→    runCount: 234,
+    52→    lastRun: '2 hrs ago',
+    53→    icon: AlertTriangle,
+    54→    color: 'purple',
+    55→    blocks: [
+    56→      { id: 't1', type: 'trigger', label: 'IF', config: { source: 'Student Attendance', operator: '<', value: '75%' } },
+    57→      { id: 'a1', type: 'action', label: 'THEN', config: { actionType: 'Send Notification', target: 'Student + HOD', message: 'Attendance below threshold' } },
+    58→    ],
+    59→  },
+    60→  {
+    61→    id: '2',
+    62→    name: 'Flag overdue books',
+    63→    description: 'IF book overdue > 7 days, THEN flag + notify',
+    64→    enabled: true,
+    65→    runCount: 89,
+    66→    lastRun: '1 hr ago',
+    67→    icon: BookOpen,
+    68→    color: 'cyan',
+    69→    blocks: [
+    70→      { id: 't2', type: 'trigger', label: 'IF', config: { source: 'Library Overdue', operator: '>', value: '7 days' } },
+    71→      { id: 'a2', type: 'action', label: 'THEN', config: { actionType: 'Flag Record', target: 'Student Record', message: 'Book overdue - flag added' } },
+    72→      { id: 'c2', type: 'chain', label: 'AND', config: { actionType: 'Send Notification', target: 'Student', message: 'Return book immediately' } },
+    73→    ],
+    74→  },
+    75→  {
+    76→    id: '3',
+    77→    name: 'Auto-prioritize complaints',
+    78→    description: 'IF complaint type = infrastructure, THEN set priority = high',
+    79→    enabled: true,
+    80→    runCount: 156,
+    81→    lastRun: '30 min ago',
+    82→    icon: Shield,
+    83→    color: 'green',
+    84→    blocks: [
+    85→      { id: 't3', type: 'trigger', label: 'IF', config: { source: 'New Complaint', operator: '=', value: 'Infrastructure' } },
+    86→      { id: 'a3', type: 'action', label: 'THEN', config: { actionType: 'Set Priority', target: 'Complaint', message: 'Priority set to HIGH' } },
+    87→    ],
+    88→  },
+    89→  {
+    90→    id: '4',
+    91→    name: 'Placement readiness alert',
+    92→    description: 'IF CGPA > 8 AND skills match > 3, THEN add to placement pool',
+    93→    enabled: false,
+    94→    runCount: 45,
+    95→    lastRun: '1 day ago',
+    96→    icon: GraduationCap,
+    97→    color: 'orange',
+    98→    blocks: [
+    99→      { id: 't4', type: 'trigger', label: 'IF', config: { source: 'Student Profile', operator: '>', value: 'CGPA 8.0' } },
+   100→      { id: 'a4', type: 'action', label: 'THEN', config: { actionType: 'Add to Pool', target: 'Placement Pool', message: 'Student eligible for placement' } },
+   101→      { id: 'c4', type: 'chain', label: 'AND', config: { actionType: 'Send Email', target: 'Student', message: 'You are now in the placement pool!' } },
+   102→    ],
+   103→  },
+   104→  {
+   105→    id: '5',
+   106→    name: 'Fee reminder',
+   107→    description: 'IF fee due < 3 days, THEN send email + notification',
+   108→    enabled: true,
+   109→    runCount: 312,
+   110→    lastRun: '4 hrs ago',
+   111→    icon: Wallet,
+   112→    color: 'red',
+   113→    blocks: [
+   114→      { id: 't5', type: 'trigger', label: 'IF', config: { source: 'Fee Due Date', operator: '<', value: '3 days' } },
+   115→      { id: 'a5', type: 'action', label: 'THEN', config: { actionType: 'Send Email', target: 'Student + Parents', message: 'Fee payment due soon' } },
+   116→      { id: 'c5', type: 'chain', label: 'AND', config: { actionType: 'Send Notification', target: 'Student Portal', message: 'Fee reminder notification' } },
+   117→    ],
+   118→  },
+   119→  {
+   120→    id: '6',
+   121→    name: 'Grade submission reminder',
+   122→    description: 'IF grading deadline < 2 days AND grades not posted, THEN notify faculty',
+   123→    enabled: true,
+   124→    runCount: 67,
+   125→    lastRun: '6 hrs ago',
+   126→    icon: FileText,
+   127→    color: 'violet',
+   128→    blocks: [
+   129→      { id: 't6', type: 'trigger', label: 'IF', config: { source: 'Grading Deadline', operator: '<', value: '2 days' } },
+   130→      { id: 'a6', type: 'action', label: 'THEN', config: { actionType: 'Send Notification', target: 'Faculty', message: 'Please submit grades before deadline' } },
+   131→    ],
+   132→  },
+   133→];
+   134→
+   135→// ─── Block Color Config ──────────────────────────────────────────────
+   136→const blockStyles: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+   137→  trigger: {
+   138→    bg: 'bg-purple-500/10',
+   139→    border: 'border-purple-500/30',
+   140→    text: 'text-purple-400',
+   141→    glow: 'shadow-[0_0_15px_rgba(139,92,246,0.2)]',
+   142→  },
+   143→  action: {
+   144→    bg: 'bg-cyan-500/10',
+   145→    border: 'border-cyan-500/30',
+   146→    text: 'text-cyan-400',
+   147→    glow: 'shadow-[0_0_15px_rgba(6,182,212,0.2)]',
+   148→  },
+   149→  chain: {
+   150→    bg: 'bg-green-500/10',
+   151→    border: 'border-green-500/30',
+   152→    text: 'text-green-400',
+   153→    glow: 'shadow-[0_0_15px_rgba(34,197,94,0.2)]',
+   154→  },
+   155→};
+   156→
+   157→// ─── Main Component ──────────────────────────────────────────────────
+   158→export default function AdminAutomationBuilder() {
+   159→  const [workflows, setWorkflows] = useState<Workflow[]>(initialWorkflows);
+   160→  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(initialWorkflows[0]);
+   161→  const [testRunning, setTestRunning] = useState(false);
+   162→  const [testResult, setTestResult] = useState<string | null>(null);
+   163→  const [showAddWorkflow, setShowAddWorkflow] = useState(false);
+   164→
+   165→  const toggleWorkflow = (id: string) => {
+   166→    setWorkflows(prev => prev.map(w =>
+   167→      w.id === id ? { ...w, enabled: !w.enabled } : w
+   168→    ));
+   169→    if (selectedWorkflow?.id === id) {
+   170→      setSelectedWorkflow(prev => prev ? { ...prev, enabled: !prev.enabled } : null);
+   171→    }
+   172→  };
+   173→
+   174→  const runTest = () => {
+   175→    setTestRunning(true);
+   176→    setTestResult(null);
+   177→    setTimeout(() => {
+   178→      setTestRunning(false);
+   179→      setTestResult(
+   180→        `✅ Workflow "${selectedWorkflow?.name}" test completed successfully!\n\n` +
+   181→        `Trigger: ${selectedWorkflow?.blocks[0]?.config.source} ${selectedWorkflow?.blocks[0]?.config.operator} ${selectedWorkflow?.blocks[0]?.config.value}\n` +
+   182→        `Matched: 12 records found\n` +
+   183→        `Actions executed: ${selectedWorkflow?.blocks.filter(b => b.type !== 'trigger').length}\n` +
+   184→        `Notifications sent: 12\n` +
+   185→        `Execution time: 0.34s\n` +
+   186→        `Status: SUCCESS`
+   187→      );
+   188→    }, 2000);
+   189→  };
+   190→
+   191→  const addNewWorkflow = () => {
+   192→    const newWf: Workflow = {
+   193→      id: String(Date.now()),
+   194→      name: 'New Custom Workflow',
+   195→      description: 'Custom IF/THEN automation',
+   196→      enabled: false,
+   197→      runCount: 0,
+   198→      lastRun: 'Never',
+   199→      icon: Zap,
+   200→      color: 'purple',
+   201→      blocks: [
+   202→        { id: 'tn', type: 'trigger', label: 'IF', config: { source: 'Select source', operator: '=', value: '' } },
+   203→        { id: 'an', type: 'action', label: 'THEN', config: { actionType: 'Select action', target: '', message: '' } },
+   204→      ],
+   205→    };
+   206→    setWorkflows(prev => [newWf, ...prev]);
+   207→    setSelectedWorkflow(newWf);
+   208→    setShowAddWorkflow(false);
+   209→  };
+   210→
+   211→  return (
+   212→    <div className="flex h-full min-h-0 mt-4 gap-4">
+   213→      {/* ─── Left Panel: Workflow List ─────────────────────── */}
+   214→      <div className="w-72 shrink-0 flex flex-col gap-3">
+   215→        <div className="flex items-center justify-between">
+   216→          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+   217→            <GitBranch className="w-4 h-4 text-purple-400" /> Workflows
+   218→          </h3>
+   219→          <motion.button
+   220→            whileHover={{ scale: 1.05 }}
+   221→            whileTap={{ scale: 0.95 }}
+   222→            onClick={addNewWorkflow}
+   223→            className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors"
+   224→          >
+   225→            <Plus className="w-4 h-4" />
+   226→          </motion.button>
+   227→        </div>
+   228→
+   229→        <div className="flex-1 overflow-y-auto space-y-2 max-h-[calc(100vh-260px)]">
+   230→          {workflows.map((wf, i) => (
+   231→            <motion.div
+   232→              key={wf.id}
+   233→              initial={{ opacity: 0, x: -10 }}
+   234→              animate={{ opacity: 1, x: 0 }}
+   235→              transition={{ delay: i * 0.05 }}
+   236→              onClick={() => setSelectedWorkflow(wf)}
+   237→              className={cn(
+   238→                "p-3 rounded-xl border cursor-pointer transition-all",
+   239→                selectedWorkflow?.id === wf.id
+   240→                  ? "bg-purple-500/10 border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+   241→                  : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]"
+   242→              )}
+   243→            >
+   244→              <div className="flex items-start justify-between">
+   245→                <div className="flex items-center gap-2">
+   246→                  <wf.icon className={cn(
+   247→                    "w-4 h-4 shrink-0",
+   248→                    wf.color === 'purple' ? 'text-purple-400' :
+   249→                    wf.color === 'cyan' ? 'text-cyan-400' :
+   250→                    wf.color === 'green' ? 'text-green-400' :
+   251→                    wf.color === 'orange' ? 'text-orange-400' :
+   252→                    wf.color === 'red' ? 'text-red-400' :
+   253→                    'text-violet-400'
+   254→                  )} />
+   255→                  <span className="text-sm text-white font-medium line-clamp-1">{wf.name}</span>
+   256→                </div>
+   257→                <button
+   258→                  onClick={(e) => { e.stopPropagation(); toggleWorkflow(wf.id); }}
+   259→                  className="shrink-0"
+   260→                >
+   261→                  {wf.enabled ? (
+   262→                    <ToggleRight className="w-5 h-5 text-green-400" />
+   263→                  ) : (
+   264→                    <ToggleLeft className="w-5 h-5 text-gray-600" />
+   265→                  )}
+   266→                </button>
+   267→              </div>
+   268→              <p className="text-[11px] text-gray-500 mt-1 line-clamp-1">{wf.description}</p>
+   269→              <div className="flex items-center gap-3 mt-2">
+   270→                <span className="text-[10px] text-gray-600 flex items-center gap-1">
+   271→                  <Play className="w-2.5 h-2.5" /> {wf.runCount} runs
+   272→                </span>
+   273→                <span className="text-[10px] text-gray-600 flex items-center gap-1">
+   274→                  <Clock className="w-2.5 h-2.5" /> {wf.lastRun}
+   275→                </span>
+   276→              </div>
+   277→            </motion.div>
+   278→          ))}
+   279→        </div>
+   280→      </div>
+   281→
+   282→      {/* ─── Right Panel: Workflow Editor ──────────────────── */}
+   283→      <div className="flex-1 flex flex-col min-w-0">
+   284→        {selectedWorkflow ? (
+   285→          <>
+   286→            {/* Workflow Header */}
+   287→            <GlassCard className="mb-4">
+   288→              <div className="flex items-center justify-between">
+   289→                <div className="flex items-center gap-3">
+   290→                  <div className={cn(
+   291→                    "p-2.5 rounded-xl",
+   292→                    selectedWorkflow.color === 'purple' ? 'bg-purple-500/10 border border-purple-500/20' :
+   293→                    selectedWorkflow.color === 'cyan' ? 'bg-cyan-500/10 border border-cyan-500/20' :
+   294→                    selectedWorkflow.color === 'green' ? 'bg-green-500/10 border border-green-500/20' :
+   295→                    selectedWorkflow.color === 'orange' ? 'bg-orange-500/10 border border-orange-500/20' :
+   296→                    selectedWorkflow.color === 'red' ? 'bg-red-500/10 border border-red-500/20' :
+   297→                    'bg-violet-500/10 border border-violet-500/20'
+   298→                  )}>
+   299→                    <selectedWorkflow.icon className={cn(
+   300→                      "w-5 h-5",
+   301→                      selectedWorkflow.color === 'purple' ? 'text-purple-400' :
+   302→                      selectedWorkflow.color === 'cyan' ? 'text-cyan-400' :
+   303→                      selectedWorkflow.color === 'green' ? 'text-green-400' :
+   304→                      selectedWorkflow.color === 'orange' ? 'text-orange-400' :
+   305→                      selectedWorkflow.color === 'red' ? 'text-red-400' :
+   306→                      'text-violet-400'
+   307→                    )} />
+   308→                  </div>
+   309→                  <div>
+   310→                    <h2 className="text-lg font-bold text-white">{selectedWorkflow.name}</h2>
+   311→                    <p className="text-xs text-gray-500">{selectedWorkflow.description}</p>
+   312→                  </div>
+   313→                </div>
+   314→                <div className="flex items-center gap-3">
+   315→                  <div className="flex items-center gap-2 text-xs">
+   316→                    <span className="text-gray-500">Status:</span>
+   317→                    <button
+   318→                      onClick={() => toggleWorkflow(selectedWorkflow.id)}
+   319→                      className={cn(
+   320→                        "px-3 py-1 rounded-full text-xs font-medium border",
+   321→                        selectedWorkflow.enabled
+   322→                          ? "bg-green-500/10 text-green-400 border-green-500/20"
+   323→                          : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+   324→                      )}
+   325→                    >
+   326→                      {selectedWorkflow.enabled ? 'Active' : 'Paused'}
+   327→                    </button>
+   328→                  </div>
+   329→                  <div className="text-xs text-gray-500">
+   330→                    <span className="text-white font-semibold">{selectedWorkflow.runCount}</span> runs
+   331→                  </div>
+   332→                  <div className="text-xs text-gray-500">
+   333→                    Last: {selectedWorkflow.lastRun}
+   334→                  </div>
+   335→                </div>
+   336→              </div>
+   337→            </GlassCard>
+   338→
+   339→            {/* Visual Block Editor */}
+   340→            <div className="flex-1 overflow-y-auto space-y-4">
+   341→              <div className="flex flex-col items-center gap-0">
+   342→                {selectedWorkflow.blocks.map((block, i) => {
+   343→                  const style = blockStyles[block.type];
+   344→                  return (
+   345→                    <div key={block.id} className="w-full max-w-2xl">
+   346→                      {/* Connector Arrow */}
+   347→                      {i > 0 && (
+   348→                        <div className="flex flex-col items-center">
+   349→                          <motion.div
+   350→                            initial={{ height: 0 }}
+   351→                            animate={{ height: 24 }}
+   352→                            className="w-px bg-gradient-to-b from-white/20 to-white/5 relative"
+   353→                          >
+   354→                            <motion.div
+   355→                              initial={{ opacity: 0, y: -5 }}
+   356→                              animate={{ opacity: 1, y: 0 }}
+   357→                              transition={{ delay: 0.3 }}
+   358→                            >
+   359→                              <ArrowDown className="w-4 h-4 text-gray-600 absolute -bottom-2 left-1/2 -translate-x-1/2" />
+   360→                            </motion.div>
+   361→                          </motion.div>
+   362→                          <span className="text-[10px] text-gray-600 font-medium mt-1">
+   363→                            {block.label}
+   364→                          </span>
+   365→                        </div>
+   366→                      )}
+   367→
+   368→                      {/* Block Card */}
+   369→                      <motion.div
+   370→                        initial={{ opacity: 0, scale: 0.95 }}
+   371→                        animate={{ opacity: 1, scale: 1 }}
+   372→                        transition={{ delay: i * 0.15 }}
+   373→                        className={cn(
+   374→                          "p-4 rounded-2xl border transition-all",
+   375→                          style.bg,
+   376→                          style.border,
+   377→                          style.glow
+   378→                        )}
+   379→                      >
+   380→                        <div className="flex items-center gap-3 mb-3">
+   381→                          <div className={cn(
+   382→                            "px-2.5 py-1 rounded-lg text-xs font-bold",
+   383→                            block.type === 'trigger' ? 'bg-purple-500/20 text-purple-300' :
+   384→                            block.type === 'action' ? 'bg-cyan-500/20 text-cyan-300' :
+   385→                            'bg-green-500/20 text-green-300'
+   386→                          )}>
+   387→                            {block.label}
+   388→                          </div>
+   389→                          <span className="text-xs text-gray-500 uppercase tracking-wider">
+   390→                            {block.type === 'trigger' ? 'TRIGGER' : block.type === 'action' ? 'ACTION' : 'CHAIN ACTION'}
+   391→                          </span>
+   392→                        </div>
+   393→
+   394→                        {block.type === 'trigger' ? (
+   395→                          <div className="flex items-center gap-2 flex-wrap">
+   396→                            <select
+   397→                              defaultValue={block.config.source}
+   398→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/40"
+   399→                            >
+   400→                              <option>Student Attendance</option>
+   401→                              <option>Library Overdue</option>
+   402→                              <option>New Complaint</option>
+   403→                              <option>Student Profile</option>
+   404→                              <option>Fee Due Date</option>
+   405→                              <option>Grading Deadline</option>
+   406→                            </select>
+   407→                            <select
+   408→                              defaultValue={block.config.operator}
+   409→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/40"
+   410→                            >
+   411→                              <option>{'<'}</option>
+   412→                              <option>{'>'}</option>
+   413→                              <option>=</option>
+   414→                              <option>{'!='}</option>
+   415→                              <option>{'<='}</option>
+   416→                              <option>{'>='}</option>
+   417→                            </select>
+   418→                            <input
+   419→                              type="text"
+   420→                              defaultValue={block.config.value}
+   421→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/40 w-28"
+   422→                              placeholder="Value..."
+   423→                            />
+   424→                          </div>
+   425→                        ) : (
+   426→                          <div className="flex items-center gap-2 flex-wrap">
+   427→                            <select
+   428→                              defaultValue={block.config.actionType}
+   429→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/40"
+   430→                            >
+   431→                              <option>Send Notification</option>
+   432→                              <option>Send Email</option>
+   433→                              <option>Flag Record</option>
+   434→                              <option>Set Priority</option>
+   435→                              <option>Add to Pool</option>
+   436→                              <option>Update Database</option>
+   437→                            </select>
+   438→                            <select
+   439→                              defaultValue={block.config.target}
+   440→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/40"
+   441→                            >
+   442→                              <option>Student</option>
+   443→                              <option>Student + HOD</option>
+   444→                              <option>Student + Parents</option>
+   445→                              <option>Faculty</option>
+   446→                              <option>Admin</option>
+   447→                              <option>Student Record</option>
+   448→                              <option>Complaint</option>
+   449→                              <option>Placement Pool</option>
+   450→                            </select>
+   451→                            <input
+   452→                              type="text"
+   453→                              defaultValue={block.config.message}
+   454→                              className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/40 flex-1 min-w-[120px]"
+   455→                              placeholder="Message..."
+   456→                            />
+   457→                          </div>
+   458→                        )}
+   459→                      </motion.div>
+   460→                    </div>
+   461→                  );
+   462→                })}
+   463→
+   464→                {/* Add Block Button */}
+   465→                <motion.button
+   466→                  whileHover={{ scale: 1.05 }}
+   467→                  whileTap={{ scale: 0.95 }}
+   468→                  onClick={() => {
+   469→                    if (!selectedWorkflow) return;
+   470→                    const newBlock: WorkflowBlock = {
+   471→                      id: `c${Date.now()}`,
+   472→                      type: 'chain',
+   473→                      label: 'AND',
+   474→                      config: { actionType: 'Send Notification', target: 'Student', message: '' },
+   475→                    };
+   476→                    const updated = { ...selectedWorkflow, blocks: [...selectedWorkflow.blocks, newBlock] };
+   477→                    setSelectedWorkflow(updated);
+   478→                    setWorkflows(prev => prev.map(w => w.id === updated.id ? updated : w));
+   479→                  }}
+   480→                  className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-dashed border-white/[0.1] text-xs text-gray-500 hover:text-green-400 hover:border-green-500/30 transition-all"
+   481→                >
+   482→                  <Plus className="w-3.5 h-3.5" /> Add Chain Action
+   483→                </motion.button>
+   484→              </div>
+   485→
+   486→              {/* Test Panel */}
+   487→              <GlassCard className="mt-4">
+   488→                <div className="flex items-center justify-between mb-3">
+   489→                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+   490→                    <Play className="w-4 h-4 text-green-400" /> Test Panel
+   491→                  </h3>
+   492→                  <motion.button
+   493→                    whileHover={{ scale: 1.05 }}
+   494→                    whileTap={{ scale: 0.95 }}
+   495→                    onClick={runTest}
+   496→                    disabled={testRunning}
+   497→                    className={cn(
+   498→                      "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+   499→                      testRunning
+   500→                        ? "bg-white/[0.03] text-gray-600 cursor-not-allowed"
+   501→                        : "bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20"
+   502→                    )}
+   503→                  >
+   504→                    {testRunning ? (
+   505→                      <>
+   506→                        <Loader2 className="w-4 h-4 animate-spin" /> Running...
+   507→                      </>
+   508→                    ) : (
+   509→                      <>
+   510→                        <Play className="w-4 h-4" /> Run Test
+   511→                      </>
+   512→                    )}
+   513→                  </motion.button>
+   514→                </div>
+   515→
+   516→                <AnimatePresence mode="wait">
+   517→                  {testRunning ? (
+   518→                    <motion.div
+   519→                      key="running"
+   520→                      initial={{ opacity: 0 }}
+   521→                      animate={{ opacity: 1 }}
+   522→                      exit={{ opacity: 0 }}
+   523→                      className="flex items-center justify-center py-8"
+   524→                    >
+   525→                      <div className="text-center">
+   526→                        <Loader2 className="w-8 h-8 text-green-400 animate-spin mx-auto mb-2" />
+   527→                        <p className="text-sm text-gray-400">Testing workflow...</p>
+   528→                        <p className="text-xs text-gray-600 mt-1">Simulating trigger and actions</p>
+   529→                      </div>
+   530→                    </motion.div>
+   531→                  ) : testResult ? (
+   532→                    <motion.div
+   533→                      key="result"
+   534→                      initial={{ opacity: 0, y: 10 }}
+   535→                      animate={{ opacity: 1, y: 0 }}
+   536→                      exit={{ opacity: 0 }}
+   537→                      className="p-4 rounded-xl bg-green-500/5 border border-green-500/20"
+   538→                    >
+   539→                      <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
+   540→                        {testResult}
+   541→                      </pre>
+   542→                    </motion.div>
+   543→                  ) : (
+   544→                    <motion.div
+   545→                      key="empty"
+   546→                      initial={{ opacity: 0 }}
+   547→                      animate={{ opacity: 1 }}
+   548→                      exit={{ opacity: 0 }}
+   549→                      className="flex flex-col items-center py-6 text-center"
+   550→                    >
+   551→                      <Sparkles className="w-8 h-8 text-gray-700 mb-2" />
+   552→                      <p className="text-xs text-gray-500">Click &quot;Run Test&quot; to simulate this workflow</p>
+   553→                      <p className="text-[10px] text-gray-700 mt-1">No real data will be affected</p>
+   554→                    </motion.div>
+   555→                  )}
+   556→                </AnimatePresence>
+   557→              </GlassCard>
+   558→            </div>
+   559→          </>
+   560→        ) : (
+   561→          <div className="flex-1 flex items-center justify-center">
+   562→            <div className="text-center">
+   563→              <GitBranch className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+   564→              <p className="text-gray-500">Select a workflow to edit</p>
+   565→              <p className="text-xs text-gray-700 mt-1">Or create a new one</p>
+   566→            </div>
+   567→          </div>
+   568→        )}
+   569→      </div>
+   570→    </div>
+   571→  );
+   572→}
+   573→

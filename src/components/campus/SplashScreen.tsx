@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface SplashScreenProps {
   onComplete: () => void;
 }
 
 // Floating particles for the background
-function SplashParticles() {
+function SplashParticles({ isDark }: { isDark: boolean }) {
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -30,11 +31,17 @@ function SplashParticles() {
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-            background: p.id % 3 === 0
-              ? 'rgba(139, 92, 246, 0.3)'
+            background: isDark
+              ? p.id % 3 === 0
+                ? 'rgba(139, 92, 246, 0.3)'
+                : p.id % 3 === 1
+                ? 'rgba(6, 182, 212, 0.3)'
+                : 'rgba(255, 255, 255, 0.15)'
+              : p.id % 3 === 0
+              ? 'rgba(124, 58, 237, 0.2)'
               : p.id % 3 === 1
-              ? 'rgba(6, 182, 212, 0.3)'
-              : 'rgba(255, 255, 255, 0.15)',
+              ? 'rgba(6, 182, 212, 0.2)'
+              : 'rgba(124, 58, 237, 0.1)',
           }}
           animate={{
             y: [0, -30, 0],
@@ -56,6 +63,8 @@ function SplashParticles() {
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     // Animate progress bar over 3 seconds
@@ -98,10 +107,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-          style={{ background: '#050510' }}
+          style={{
+            background: isDark
+              ? '#050510'
+              : 'linear-gradient(135deg, #f8fafc, #eef2ff, #f0fdfa, #faf5ff)',
+          }}
         >
           {/* Subtle particles */}
-          <SplashParticles />
+          <SplashParticles isDark={isDark} />
 
           {/* Center content */}
           <div className="relative flex flex-col items-center z-10">
@@ -120,11 +133,17 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               {/* Outer glow ring */}
               <motion.div
                 animate={{
-                  boxShadow: [
-                    '0 0 30px rgba(139,92,246,0.2), 0 0 60px rgba(6,182,212,0.1)',
-                    '0 0 50px rgba(139,92,246,0.4), 0 0 80px rgba(6,182,212,0.2)',
-                    '0 0 30px rgba(139,92,246,0.2), 0 0 60px rgba(6,182,212,0.1)',
-                  ],
+                  boxShadow: isDark
+                    ? [
+                        '0 0 30px rgba(139,92,246,0.2), 0 0 60px rgba(6,182,212,0.1)',
+                        '0 0 50px rgba(139,92,246,0.4), 0 0 80px rgba(6,182,212,0.2)',
+                        '0 0 30px rgba(139,92,246,0.2), 0 0 60px rgba(6,182,212,0.1)',
+                      ]
+                    : [
+                        '0 0 30px rgba(124,58,237,0.15), 0 0 60px rgba(6,182,212,0.08)',
+                        '0 0 50px rgba(124,58,237,0.25), 0 0 80px rgba(6,182,212,0.15)',
+                        '0 0 30px rgba(124,58,237,0.15), 0 0 60px rgba(6,182,212,0.08)',
+                      ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center"
@@ -153,7 +172,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               className="text-center"
             >
               <h1
-                className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-white to-cyan-400"
+                className={isDark
+                  ? 'text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-white to-cyan-400'
+                  : 'text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-[var(--text-primary)] to-cyan-600'
+                }
                 style={{ lineHeight: 1.2 }}
               >
                 CampusOS
@@ -166,7 +188,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.1 }}
             >
-              <span className="text-purple-400 text-lg font-medium tracking-wider">
+              <span className={isDark
+                ? 'text-purple-400 text-lg font-medium tracking-wider'
+                : 'text-purple-600 text-lg font-medium tracking-wider'
+              }>
                 AI v2.0
               </span>
             </motion.div>
@@ -186,8 +211,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ duration: 0.6, delay: 1.6 }}
               className="text-center"
             >
-              <p className="text-gray-500 text-sm font-light tracking-wide">
-                Made by <span className="text-gray-400 font-medium">Jai Samyukth Enterprises</span>
+              <p className="text-[var(--text-muted)] text-sm font-light tracking-wide">
+                Made by <span className="text-[var(--text-secondary)] font-medium">Jai Samyukth Enterprises</span>
               </p>
             </motion.div>
           </div>
@@ -198,7 +223,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.8 }}
-              className="h-1 rounded-full bg-white/[0.06] overflow-hidden"
+              className="h-1 rounded-full bg-[var(--bg-card)] overflow-hidden"
             >
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500"
@@ -210,7 +235,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2 }}
-              className="text-center text-[10px] text-gray-600 mt-2 tracking-widest uppercase"
+              className="text-center text-[10px] text-[var(--text-muted)] mt-2 tracking-widest uppercase"
             >
               Loading CampusOS
             </motion.p>

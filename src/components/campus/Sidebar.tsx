@@ -172,9 +172,9 @@ export default function Sidebar() {
 
   // Accent color based on role
   const accentColor = activeRole === 'faculty' ? 'cyan' : activeRole === 'admin' ? 'amber' : 'purple';
-  const accentBg = activeRole === 'faculty' ? 'bg-cyan-500/15 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]' : activeRole === 'admin' ? 'bg-amber-500/15 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'bg-purple-500/15 text-purple-400 shadow-[0_0_20px_rgba(139,92,246,0.2)]';
-  const accentIcon = activeRole === 'faculty' ? 'text-cyan-400' : activeRole === 'admin' ? 'text-amber-400' : 'text-purple-400';
-  const accentGlow = activeRole === 'faculty' ? 'shadow-[0_0_12px_rgba(6,182,212,0.6)] bg-cyan-400' : activeRole === 'admin' ? 'shadow-[0_0_12px_rgba(245,158,11,0.6)] bg-amber-400' : 'shadow-[0_0_12px_rgba(139,92,246,0.6)] bg-purple-400';
+  const accentBg = activeRole === 'faculty' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]' : activeRole === 'admin' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'bg-purple-500/15 text-purple-600 dark:text-purple-400 shadow-[0_0_20px_rgba(139,92,246,0.2)]';
+  const accentIcon = activeRole === 'faculty' ? 'text-cyan-600 dark:text-cyan-400' : activeRole === 'admin' ? 'text-amber-600 dark:text-amber-400' : 'text-purple-600 dark:text-purple-400';
+  const accentGlow = activeRole === 'faculty' ? 'shadow-[0_0_12px_rgba(6,182,212,0.6)] bg-cyan-500 dark:bg-cyan-400' : activeRole === 'admin' ? 'shadow-[0_0_12px_rgba(245,158,11,0.6)] bg-amber-500 dark:bg-amber-400' : 'shadow-[0_0_12px_rgba(139,92,246,0.6)] bg-purple-500 dark:bg-purple-400';
 
   return (
     <motion.aside
@@ -204,7 +204,7 @@ export default function Sidebar() {
               <div className="text-sm font-bold text-[var(--text-primary)]">CampusOS</div>
               <div className={cn(
                 "text-[10px] -mt-0.5",
-                activeRole === 'faculty' ? "text-cyan-400" : activeRole === 'admin' ? "text-amber-400" : "text-purple-400"
+                activeRole === 'faculty' ? "text-cyan-600 dark:text-cyan-400" : activeRole === 'admin' ? "text-amber-600 dark:text-amber-400" : "text-purple-600 dark:text-purple-400"
               )}>
                 AI v2.0 • {activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}
               </div>
@@ -272,8 +272,8 @@ export default function Sidebar() {
                     {item.badge && sidebarOpen && (
                       <span className={cn(
                         "ml-auto relative z-10 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
-                        activeRole === 'admin' ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" :
-                        "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                        activeRole === 'admin' ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30" :
+                        "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
                       )}>
                         {item.badge}
                       </span>
@@ -343,7 +343,7 @@ export default function Sidebar() {
           onClick={() => setCommandPaletteOpen(true)}
           className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--border-hover)] border border-[var(--border-color)] hover:border-[var(--border-hover)] transition-colors group"
         >
-          <Command className={cn("w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-400 transition-colors shrink-0", activeRole === 'faculty' && "group-hover:text-cyan-400", activeRole === 'admin' && "group-hover:text-amber-400")} />
+          <Command className={cn("w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors shrink-0", activeRole === 'faculty' && "group-hover:text-cyan-600 dark:group-hover:text-cyan-400", activeRole === 'admin' && "group-hover:text-amber-600 dark:group-hover:text-amber-400")} />
           <AnimatePresence>
             {sidebarOpen && (
               <motion.div
@@ -396,7 +396,7 @@ export default function Sidebar() {
                   (window as any).__campusLogout();
                 }
               }}
-              className="p-2 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+              className="p-2 rounded-lg text-[var(--text-muted)] hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
               title="Sign Out"
             >
               <LogOut className="w-4 h-4" />

@@ -17,9 +17,9 @@ import { toast } from 'sonner';
 
 // ─── Constants ────────────────────────────────────────────────────────
 const typeOptions = [
-  { value: 'info', label: 'Info', icon: Info, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', dot: 'bg-cyan-400' },
-  { value: 'warning', label: 'Warning', icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20', dot: 'bg-yellow-400' },
-  { value: 'urgent', label: 'Urgent', icon: Siren, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20', dot: 'bg-red-400' },
+  { value: 'info', label: 'Info', icon: Info, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', dot: 'bg-cyan-400' },
+  { value: 'warning', label: 'Warning', icon: AlertTriangle, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20', dot: 'bg-yellow-400' },
+  { value: 'urgent', label: 'Urgent', icon: Siren, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500/10 border-red-500/20', dot: 'bg-red-400' },
 ];
 
 const departments = [
@@ -95,7 +95,7 @@ export default function AdminNotificationBroadcaster() {
 
       toast.success('Notification Sent Successfully!', {
         description: `Reached ${result.notificationsCreated || result.targetUserCount || estimatedReach} users`,
-        icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
+        icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
         duration: 4000,
       });
 
@@ -123,8 +123,8 @@ export default function AdminNotificationBroadcaster() {
           <Radio className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">Notification Broadcaster</h2>
-          <p className="text-xs text-gray-500">Send targeted notifications to campus users</p>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Notification Broadcaster</h2>
+          <p className="text-xs text-[var(--text-muted)]">Send targeted notifications to campus users</p>
         </div>
       </div>
 
@@ -143,36 +143,36 @@ export default function AdminNotificationBroadcaster() {
 
             <div className="space-y-5">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-purple-400" />
-                <h3 className="text-sm font-semibold text-white">Compose Notification</h3>
+                <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Compose Notification</h3>
               </div>
 
               {/* Title */}
               <div>
-                <label className="text-xs text-gray-400 font-medium mb-1.5 block">Title</label>
+                <label className="text-xs text-[var(--text-secondary)] font-medium mb-1.5 block">Title</label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter notification title..."
-                  className="bg-white/[0.03] border-white/[0.08] text-white placeholder:text-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20 rounded-xl h-10"
+                  className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20 rounded-xl h-10"
                 />
               </div>
 
               {/* Message */}
               <div>
-                <label className="text-xs text-gray-400 font-medium mb-1.5 block">Message</label>
+                <label className="text-xs text-[var(--text-secondary)] font-medium mb-1.5 block">Message</label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Write your notification message..."
                   rows={4}
-                  className="bg-white/[0.03] border-white/[0.08] text-white placeholder:text-gray-600 focus:border-purple-500/50 focus:ring-purple-500/20 rounded-xl resize-none"
+                  className="bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-purple-500/50 focus:ring-purple-500/20 rounded-xl resize-none"
                 />
               </div>
 
               {/* Type Selector */}
               <div>
-                <label className="text-xs text-gray-400 font-medium mb-2 block">Notification Type</label>
+                <label className="text-xs text-[var(--text-secondary)] font-medium mb-2 block">Notification Type</label>
                 <div className="flex gap-2">
                   {typeOptions.map((opt) => (
                     <motion.button
@@ -184,7 +184,7 @@ export default function AdminNotificationBroadcaster() {
                         "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border",
                         type === opt.value
                           ? `${opt.bg} ${opt.color} border-current/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]`
-                          : 'bg-white/[0.02] text-gray-500 border-white/[0.06] hover:text-gray-300 hover:border-white/[0.1]'
+                          : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border-[var(--border-color)] hover:text-[var(--text-secondary)] hover:border-[var(--border-color)]'
                       )}
                     >
                       <opt.icon className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ export default function AdminNotificationBroadcaster() {
 
               {/* Target Selection */}
               <div>
-                <label className="text-xs text-gray-400 font-medium mb-2 block">Target Audience</label>
+                <label className="text-xs text-[var(--text-secondary)] font-medium mb-2 block">Target Audience</label>
                 <div className="space-y-3">
                   {/* Radio options */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -214,8 +214,8 @@ export default function AdminNotificationBroadcaster() {
                         className={cn(
                           "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border",
                           targetMode === opt.value
-                            ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
-                            : 'bg-white/[0.02] text-gray-500 border-white/[0.06] hover:text-gray-300 hover:border-white/[0.1]'
+                            ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30'
+                            : 'bg-[var(--glass-bg)] text-[var(--text-muted)] border-[var(--border-color)] hover:text-[var(--text-secondary)] hover:border-[var(--border-color)]'
                         )}
                       >
                         <opt.icon className="w-3.5 h-3.5" />
@@ -238,14 +238,14 @@ export default function AdminNotificationBroadcaster() {
                           <select
                             value={targetDepartment}
                             onChange={(e) => setTargetDepartment(e.target.value)}
-                            className="w-full appearance-none bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 pr-8 text-sm text-gray-300 hover:border-white/[0.12] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
+                            className="w-full appearance-none bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 pr-8 text-sm text-[var(--text-secondary)] hover:border-[var(--border-color)] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
                           >
-                            <option value="" className="bg-[#0a0a1a]">Select Department</option>
+                            <option value="" className="bg-[var(--bg-secondary)]">Select Department</option>
                             {departments.map((d) => (
-                              <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>
+                              <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                         </div>
                       </motion.div>
                     )}
@@ -264,14 +264,14 @@ export default function AdminNotificationBroadcaster() {
                           <select
                             value={targetSemester}
                             onChange={(e) => setTargetSemester(e.target.value)}
-                            className="w-full appearance-none bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 pr-8 text-sm text-gray-300 hover:border-white/[0.12] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
+                            className="w-full appearance-none bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 pr-8 text-sm text-[var(--text-secondary)] hover:border-[var(--border-color)] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
                           >
-                            <option value="" className="bg-[#0a0a1a]">Select Semester</option>
+                            <option value="" className="bg-[var(--bg-secondary)]">Select Semester</option>
                             {semesters.map((s) => (
-                              <option key={s} value={s.toString()} className="bg-[#0a0a1a]">Semester {s}</option>
+                              <option key={s} value={s.toString()} className="bg-[var(--bg-secondary)]">Semester {s}</option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                         </div>
                       </motion.div>
                     )}
@@ -280,12 +280,12 @@ export default function AdminNotificationBroadcaster() {
               </div>
 
               {/* Estimated Reach */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)]">
                 <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs text-gray-400">Estimated Reach</span>
+                  <Eye className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="text-xs text-[var(--text-secondary)]">Estimated Reach</span>
                 </div>
-                <span className="text-sm font-bold text-white">~{estimatedReach.toLocaleString()} users</span>
+                <span className="text-sm font-bold text-[var(--text-primary)]">~{estimatedReach.toLocaleString()} users</span>
               </div>
 
               {/* Send Button */}
@@ -298,7 +298,7 @@ export default function AdminNotificationBroadcaster() {
                   "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden",
                   isFormValid && !sending
                     ? "bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 text-white shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)]"
-                    : "bg-white/[0.04] text-gray-600 cursor-not-allowed"
+                    : "bg-[var(--glass-bg)] text-[var(--text-muted)] cursor-not-allowed"
                 )}
               >
                 {/* Shine animation */}
@@ -339,23 +339,23 @@ export default function AdminNotificationBroadcaster() {
         >
           <GlassCard className="relative">
             <div className="flex items-center gap-2 mb-4">
-              <Smartphone className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-400 font-medium">Live Preview</span>
+              <Smartphone className="w-4 h-4 text-[var(--text-secondary)]" />
+              <span className="text-xs text-[var(--text-secondary)] font-medium">Live Preview</span>
             </div>
 
             {/* Phone Mockup */}
             <div className="relative mx-auto w-full max-w-[280px]">
               {/* Phone frame */}
-              <div className="relative bg-[#0d0d1a] rounded-[2rem] border-2 border-white/[0.08] p-2 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+              <div className="relative bg-[var(--bg-secondary)] rounded-[2rem] border-2 border-[var(--border-color)] p-2 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
                 {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-[#0d0d1a] rounded-b-2xl z-10" />
-                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/[0.08] rounded-full z-20" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-[var(--bg-secondary)] rounded-b-2xl z-10" />
+                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-[var(--bg-card)] rounded-full z-20" />
 
                 {/* Screen */}
-                <div className="bg-[#080816] rounded-[1.5rem] p-4 pt-8 min-h-[380px]">
+                <div className="bg-[var(--bg-secondary)] rounded-[1.5rem] p-4 pt-8 min-h-[380px]">
                   {/* Time bar */}
                   <div className="flex items-center justify-between mb-6 px-1">
-                    <span className="text-[10px] text-gray-500 font-medium">9:41</span>
+                    <span className="text-[10px] text-[var(--text-muted)] font-medium">9:41</span>
                     <div className="flex items-center gap-1">
                       <div className="w-3.5 h-1.5 rounded-sm border border-gray-600 relative">
                         <div className="absolute inset-[1px] right-[2px] bg-emerald-400 rounded-[1px]" />
@@ -371,7 +371,7 @@ export default function AdminNotificationBroadcaster() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+                      className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
                     >
                       <div className="flex items-start gap-3">
                         <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center border shrink-0", typeConf.bg)}>
@@ -379,17 +379,17 @@ export default function AdminNotificationBroadcaster() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="text-xs font-semibold text-white truncate">
+                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
                               {title || 'Notification Title'}
                             </p>
                             <div className={cn("w-2 h-2 rounded-full shrink-0", typeConf.dot)} />
                           </div>
-                          <p className="text-[10px] text-gray-400 leading-relaxed line-clamp-4">
+                          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed line-clamp-4">
                             {message || 'Your notification message will appear here...'}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Clock className="w-2.5 h-2.5 text-gray-600" />
-                            <span className="text-[9px] text-gray-600">Just now</span>
+                            <Clock className="w-2.5 h-2.5 text-[var(--text-muted)]" />
+                            <span className="text-[9px] text-[var(--text-muted)]">Just now</span>
                           </div>
                         </div>
                       </div>
@@ -397,14 +397,14 @@ export default function AdminNotificationBroadcaster() {
                   </AnimatePresence>
 
                   {/* Mock older notification */}
-                  <div className="mt-3 bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 opacity-50">
+                  <div className="mt-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3 opacity-50">
                     <div className="flex items-start gap-2">
                       <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                        <Info className="w-3 h-3 text-cyan-400" />
+                        <Info className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-medium text-gray-400">Previous notification</p>
-                        <p className="text-[9px] text-gray-600">2 hours ago</p>
+                        <p className="text-[10px] font-medium text-[var(--text-secondary)]">Previous notification</p>
+                        <p className="text-[9px] text-[var(--text-muted)]">2 hours ago</p>
                       </div>
                     </div>
                   </div>
@@ -424,10 +424,10 @@ export default function AdminNotificationBroadcaster() {
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <h3 className="text-sm font-semibold text-white">Recent Broadcasts</h3>
+              <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Recent Broadcasts</h3>
             </div>
-            <span className="text-[10px] px-2 py-1 rounded-full bg-white/[0.04] text-gray-500 border border-white/[0.06]">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border-color)]">
               Last 7 days
             </span>
           </div>
@@ -443,18 +443,18 @@ export default function AdminNotificationBroadcaster() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + i * 0.05 }}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-transparent hover:border-white/[0.06] transition-all duration-200"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-transparent hover:border-[var(--border-color)] transition-all duration-200"
                 >
                   <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center border shrink-0", bType.bg)}>
                     <BIcon className={cn("w-4 h-4", bType.color)} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-white truncate">{broadcast.title}</p>
-                    <p className="text-[10px] text-gray-500">{broadcast.target} &middot; {broadcast.sentAt}</p>
+                    <p className="text-xs font-medium text-[var(--text-primary)] truncate">{broadcast.title}</p>
+                    <p className="text-[10px] text-[var(--text-muted)]">{broadcast.target} &middot; {broadcast.sentAt}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-semibold text-white">{broadcast.reach.toLocaleString()}</p>
-                    <p className="text-[9px] text-gray-600">users</p>
+                    <p className="text-xs font-semibold text-[var(--text-primary)]">{broadcast.reach.toLocaleString()}</p>
+                    <p className="text-[9px] text-[var(--text-muted)]">users</p>
                   </div>
                 </motion.div>
               );

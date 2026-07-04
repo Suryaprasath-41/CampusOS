@@ -5,6 +5,7 @@ import { useCampusStore } from '@/lib/store';
 import { Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function ThemeToggle() {
   const { theme, setTheme: setNextTheme } = useTheme();
@@ -18,7 +19,7 @@ export default function ThemeToggle() {
   if (!mounted) {
     // Return placeholder to avoid layout shift
     return (
-      <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08]" />
+      <div className="w-9 h-9 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)]" />
     );
   }
 
@@ -35,7 +36,12 @@ export default function ThemeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={handleToggle}
-      className="relative p-2.5 rounded-xl bg-white/[0.04] border border-[var(--border-color)] hover:bg-white/[0.08] hover:border-purple-500/20 transition-all group"
+      className={cn(
+        "relative p-2.5 rounded-xl border transition-all duration-300 group",
+        "bg-[var(--glass-bg)] border-[var(--glass-border)]",
+        "hover:bg-[var(--border-hover)] hover:border-purple-500/30",
+        "hover:shadow-[0_0_16px_rgba(139,92,246,0.1)]"
+      )}
       title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >
@@ -48,7 +54,7 @@ export default function ThemeToggle() {
             exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
           >
-            <Sun className="w-4 h-4 text-gray-400 group-hover:text-yellow-400 transition-colors" />
+            <Sun className="w-4 h-4 text-amber-400 group-hover:text-yellow-300 transition-colors" />
           </motion.div>
         ) : (
           <motion.div
@@ -58,7 +64,7 @@ export default function ThemeToggle() {
             exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
           >
-            <Moon className="w-4 h-4 text-gray-600 group-hover:text-purple-500 transition-colors" />
+            <Moon className="w-4 h-4 text-slate-500 group-hover:text-purple-500 transition-colors" />
           </motion.div>
         )}
       </AnimatePresence>

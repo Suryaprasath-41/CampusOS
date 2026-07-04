@@ -15,20 +15,20 @@ import { cn } from '@/lib/utils';
 
 // Grade color map
 const gradeColors: Record<string, string> = {
-  'A+': 'text-green-400 bg-green-500/15 border-green-500/30',
-  'A': 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30',
-  'B+': 'text-sky-400 bg-sky-500/15 border-sky-500/30',
-  'B': 'text-yellow-400 bg-yellow-500/15 border-yellow-500/30',
-  'C': 'text-red-400 bg-red-500/15 border-red-500/30',
-  'N/A': 'text-gray-500 bg-gray-500/15 border-gray-500/30',
+  'A+': 'text-green-600 dark:text-green-400 bg-green-500/15 border-green-500/30',
+  'A': 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/15 border-cyan-500/30',
+  'B+': 'text-sky-600 dark:text-sky-400 bg-sky-500/15 border-sky-500/30',
+  'B': 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 border-yellow-500/30',
+  'C': 'text-red-600 dark:text-red-400 bg-red-500/15 border-red-500/30',
+  'N/A': 'text-[var(--text-muted)] bg-[var(--bg-card)] border-[var(--border-color)]',
 };
 
 // Exam type chip color
 const examTypeColors: Record<string, string> = {
-  'Mid Semester': 'text-purple-400 bg-purple-500/10 border-purple-500/25',
-  'End Semester': 'text-cyan-400 bg-cyan-500/10 border-cyan-500/25',
-  'Quiz': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/25',
-  'Assignment': 'text-green-400 bg-green-500/10 border-green-500/25',
+  'Mid Semester': 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25',
+  'End Semester': 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/25',
+  'Quiz': 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/25',
+  'Assignment': 'text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/25',
 };
 
 function getDaysLeft(dateStr: string): number {
@@ -36,9 +36,9 @@ function getDaysLeft(dateStr: string): number {
 }
 
 function daysLeftColor(days: number): string {
-  if (days > 7) return 'text-green-400';
-  if (days >= 3) return 'text-yellow-400';
-  return 'text-red-400';
+  if (days > 7) return 'text-green-600 dark:text-green-400';
+  if (days >= 3) return 'text-yellow-600 dark:text-yellow-400';
+  return 'text-red-600 dark:text-red-400';
 }
 
 function prepBarColor(prep: number): string {
@@ -76,15 +76,15 @@ export default function ExamsSection() {
   if (loading) {
     return (
       <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="h-8 w-64 bg-white/[0.03] rounded-xl animate-pulse" />
+        <div className="h-8 w-64 bg-[var(--bg-card)] rounded-xl animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-white/[0.03] rounded-2xl animate-pulse" />
+            <div key={i} className="h-24 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
           ))}
         </div>
-        <div className="h-72 bg-white/[0.03] rounded-2xl animate-pulse" />
-        <div className="h-48 bg-white/[0.03] rounded-2xl animate-pulse" />
-        <div className="h-72 bg-white/[0.03] rounded-2xl animate-pulse" />
+        <div className="h-72 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+        <div className="h-48 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+        <div className="h-72 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
       </div>
     );
   }
@@ -95,13 +95,13 @@ export default function ExamsSection() {
       <div className="p-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
         <GlassCard className="text-center py-12">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-            <AlertTriangle className="w-7 h-7 text-red-400" />
+            <AlertTriangle className="w-7 h-7 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="text-white font-semibold mb-2">Unable to load exam data</h3>
-          <p className="text-sm text-gray-400 mb-4">{error}</p>
+          <h3 className="text-[var(--text-primary)] font-semibold mb-2">Unable to load exam data</h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">{error}</p>
           <button
             onClick={loadExams}
-            className="px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm hover:bg-purple-500/30 transition-colors"
+            className="px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-sm hover:bg-purple-500/30 transition-colors"
           >
             Try again
           </button>
@@ -115,10 +115,10 @@ export default function ExamsSection() {
   const { upcomingExams, pastResults, semesterPerformance, recommendations, summary } = data;
 
   const summaryChips = [
-    { label: 'Upcoming Exams', value: summary.totalUpcoming, icon: FileText, color: 'text-purple-400', bg: 'bg-purple-500/10', suffix: '' },
-    { label: 'Avg Prep', value: summary.avgPreparation, icon: Target, color: 'text-cyan-400', bg: 'bg-cyan-500/10', suffix: '%' },
-    { label: 'Best Subject', value: summary.bestSubject?.subjectName || 'N/A', icon: Award, color: 'text-green-400', bg: 'bg-green-500/10', isText: true },
-    { label: 'Weakest Subject', value: summary.weakestSubject?.subjectName || 'N/A', icon: TrendingUp, color: 'text-yellow-400', bg: 'bg-yellow-500/10', isText: true },
+    { label: 'Upcoming Exams', value: summary.totalUpcoming, icon: FileText, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10', suffix: '' },
+    { label: 'Avg Prep', value: summary.avgPreparation, icon: Target, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500/10', suffix: '%' },
+    { label: 'Best Subject', value: summary.bestSubject?.subjectName || 'N/A', icon: Award, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/10', isText: true },
+    { label: 'Weakest Subject', value: summary.weakestSubject?.subjectName || 'N/A', icon: TrendingUp, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10', isText: true },
   ];
 
   return (
@@ -139,13 +139,13 @@ export default function ExamsSection() {
           >
             <GlassCard className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500 uppercase tracking-wide">{chip.label}</span>
+                <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{chip.label}</span>
                 <div className={cn('p-1.5 rounded-lg', chip.bg)}>
                   <chip.icon className={cn('w-4 h-4', chip.color)} />
                 </div>
               </div>
               {chip.isText ? (
-                <p className="text-base font-bold text-white truncate" title={String(chip.value)}>
+                <p className="text-base font-bold text-[var(--text-primary)] truncate" title={String(chip.value)}>
                   {chip.value}
                 </p>
               ) : (
@@ -166,14 +166,14 @@ export default function ExamsSection() {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-purple-400" />
-            <h3 className="text-white font-semibold">Performance Trend</h3>
+            <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Performance Trend</h3>
           </div>
-          <span className="text-xs text-gray-500">Avg % across semesters</span>
+          <span className="text-xs text-[var(--text-muted)]">Avg % across semesters</span>
         </div>
 
         {semesterPerformance.length === 0 ? (
-          <p className="text-sm text-gray-500 italic text-center py-12">No performance data available yet.</p>
+          <p className="text-sm text-[var(--text-muted)] italic text-center py-12">No performance data available yet.</p>
         ) : (
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -188,27 +188,27 @@ export default function ExamsSection() {
                     <stop offset="100%" stopColor="#06b6d4" />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis
                   dataKey="semester"
                   tickFormatter={(v) => `Sem ${v}`}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                  axisLine={{ stroke: 'var(--border-color)' }}
                   tickLine={false}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: 'rgba(10,10,20,0.95)',
-                    border: '1px solid rgba(139,92,246,0.3)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '12px',
-                    color: '#fff',
+                    color: 'var(--text-primary)',
                   }}
                   labelFormatter={(v) => `Semester ${v}`}
                   formatter={(value: number, name: string) => {
@@ -223,7 +223,7 @@ export default function ExamsSection() {
                   strokeWidth={3}
                   fill="url(#perfGrad)"
                   dot={{ fill: '#a855f7', r: 5, strokeWidth: 0 }}
-                  activeDot={{ r: 7, fill: '#06b6d4', stroke: '#fff', strokeWidth: 2 }}
+                  activeDot={{ r: 7, fill: '#06b6d4', stroke: 'var(--text-primary)', strokeWidth: 2 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -237,8 +237,8 @@ export default function ExamsSection() {
 
         {upcomingExams.length === 0 ? (
           <GlassCard className="text-center py-8">
-            <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-green-400" />
-            <p className="text-gray-300">No upcoming exams scheduled.</p>
+            <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-green-600 dark:text-green-400" />
+            <p className="text-[var(--text-secondary)]">No upcoming exams scheduled.</p>
           </GlassCard>
         ) : (
           <div className="space-y-3">
@@ -255,29 +255,29 @@ export default function ExamsSection() {
                   <GlassCard className="p-0 overflow-hidden">
                     <button
                       onClick={() => setExpanded(isExpanded ? null : exam.id)}
-                      className="w-full text-left p-4 hover:bg-white/[0.02] transition-colors"
+                      className="w-full text-left p-4 hover:bg-[var(--bg-card)] transition-colors"
                     >
                       <div className="flex flex-col md:flex-row md:items-center gap-3">
                         {/* Subject code badge */}
                         <div className="shrink-0">
                           <div className="px-3 py-2 rounded-xl bg-purple-500/10 border border-purple-500/25 text-center min-w-[80px]">
-                            <div className="text-[10px] text-purple-400 uppercase tracking-wide">Code</div>
-                            <div className="text-sm font-mono font-bold text-white">{exam.subjectCode}</div>
+                            <div className="text-[10px] text-purple-600 dark:text-purple-400 uppercase tracking-wide">Code</div>
+                            <div className="text-sm font-mono font-bold text-[var(--text-primary)]">{exam.subjectCode}</div>
                           </div>
                         </div>
 
                         {/* Subject info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h4 className="text-white font-semibold truncate">{exam.subjectName}</h4>
+                            <h4 className="text-[var(--text-primary)] font-semibold truncate">{exam.subjectName}</h4>
                             <span className={cn(
                               'inline-block text-[10px] px-2 py-0.5 rounded-full border font-medium',
-                              examTypeColors[exam.examType] || 'text-gray-400 bg-gray-500/10 border-gray-500/25'
+                              examTypeColors[exam.examType] || 'text-[var(--text-secondary)] bg-[var(--bg-card)] border-[var(--border-color)]'
                             )}>
                               {exam.examType}
                             </span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               {new Date(exam.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -290,7 +290,7 @@ export default function ExamsSection() {
                               <MapPin className="w-3 h-3" />
                               {exam.venue}
                             </span>
-                            <span className="text-gray-600">Faculty: {exam.faculty}</span>
+                            <span className="text-[var(--text-muted)]">Faculty: {exam.faculty}</span>
                           </div>
                         </div>
 
@@ -299,19 +299,19 @@ export default function ExamsSection() {
                           <div className={cn('text-2xl font-bold', daysLeftColor(days))}>
                             {days}d
                           </div>
-                          <span className="text-[10px] text-gray-500 uppercase">left</span>
+                          <span className="text-[10px] text-[var(--text-muted)] uppercase">left</span>
                         </div>
 
                         <ChevronDown
                           className={cn(
-                            'w-5 h-5 text-gray-500 transition-transform shrink-0',
+                            'w-5 h-5 text-[var(--text-muted)] transition-transform shrink-0',
                             isExpanded && 'rotate-180'
                           )}
                         />
                       </div>
 
                       {/* Preparation bar */}
-                      <div className="mt-3 pt-3 border-t border-white/[0.04]">
+                      <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
                         <PredictionBar
                           label="Preparation"
                           value={exam.preparation}
@@ -327,21 +327,21 @@ export default function ExamsSection() {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="overflow-hidden border-t border-white/[0.06]"
+                          className="overflow-hidden border-t border-[var(--border-color)]"
                         >
-                          <div className="p-4 bg-white/[0.02]">
+                          <div className="p-4 bg-[var(--bg-card)]">
                             <div className="flex items-start gap-2 mb-3">
-                              <FileText className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
+                              <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
                               <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Syllabus</div>
-                                <p className="text-sm text-gray-300">{exam.syllabus}</p>
+                                <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-1">Syllabus</div>
+                                <p className="text-sm text-[var(--text-secondary)]">{exam.syllabus}</p>
                               </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                              <span>Max Marks: <span className="text-white font-semibold">{exam.maxMarks}</span></span>
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)]">
+                              <span>Max Marks: <span className="text-[var(--text-primary)] font-semibold">{exam.maxMarks}</span></span>
                               <button
                                 onClick={() => openChatWithContext(`Create a preparation plan for my upcoming ${exam.subjectName} (${exam.examType}) exam. The syllabus is: ${exam.syllabus}. My current preparation level is ${exam.preparation}%.`)}
-                                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-medium hover:bg-purple-500/25 transition-colors"
+                                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-xs font-medium hover:bg-purple-500/25 transition-colors"
                               >
                                 <Bot className="w-3.5 h-3.5" />
                                 Ask AI for prep plan
@@ -362,49 +362,49 @@ export default function ExamsSection() {
       {/* ============ PAST RESULTS TABLE ============ */}
       <GlassCard>
         <div className="flex items-center gap-2 mb-4">
-          <GraduationCap className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-white font-semibold">Past Results</h3>
-          <span className="text-xs text-gray-500 px-2 py-0.5 rounded-full bg-white/[0.04]">
+          <GraduationCap className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <h3 className="text-[var(--text-primary)] font-semibold">Past Results</h3>
+          <span className="text-xs text-[var(--text-muted)] px-2 py-0.5 rounded-full bg-[var(--bg-card)]">
             {pastResults.length} records
           </span>
         </div>
 
         {pastResults.length === 0 ? (
-          <p className="text-sm text-gray-500 italic text-center py-8">No past results yet.</p>
+          <p className="text-sm text-[var(--text-muted)] italic text-center py-8">No past results yet.</p>
         ) : (
-          <div className="rounded-xl overflow-hidden border border-white/[0.05]">
+          <div className="rounded-xl overflow-hidden border border-[var(--border-color)]">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/[0.06] hover:bg-transparent">
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide">Code</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide">Subject</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">Sem</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">T1</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">T2</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">A1</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">A2</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">Total</TableHead>
-                  <TableHead className="text-gray-500 text-xs uppercase tracking-wide text-center">Grade</TableHead>
+                <TableRow className="border-[var(--border-color)] hover:bg-transparent">
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide">Code</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide">Subject</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">Sem</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">T1</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">T2</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">A1</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">A2</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">Total</TableHead>
+                  <TableHead className="text-[var(--text-muted)] text-xs uppercase tracking-wide text-center">Grade</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pastResults.map((r: any) => (
                   <TableRow
                     key={r.id}
-                    className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                    className="border-[var(--border-color)] hover:bg-[var(--bg-card)] transition-colors"
                   >
-                    <TableCell className="font-mono text-xs text-purple-400">{r.subjectCode}</TableCell>
+                    <TableCell className="font-mono text-xs text-purple-600 dark:text-purple-400">{r.subjectCode}</TableCell>
                     <TableCell>
-                      <div className="text-sm text-white font-medium">{r.subjectName}</div>
+                      <div className="text-sm text-[var(--text-primary)] font-medium">{r.subjectName}</div>
                     </TableCell>
-                    <TableCell className="text-center text-sm text-gray-400">{r.semester}</TableCell>
-                    <TableCell className="text-center text-sm text-gray-300">{r.test1 ?? '-'}</TableCell>
-                    <TableCell className="text-center text-sm text-gray-300">{r.test2 ?? '-'}</TableCell>
-                    <TableCell className="text-center text-sm text-gray-300">{r.assignment1 ?? '-'}</TableCell>
-                    <TableCell className="text-center text-sm text-gray-300">{r.assignment2 ?? '-'}</TableCell>
+                    <TableCell className="text-center text-sm text-[var(--text-secondary)]">{r.semester}</TableCell>
+                    <TableCell className="text-center text-sm text-[var(--text-secondary)]">{r.test1 ?? '-'}</TableCell>
+                    <TableCell className="text-center text-sm text-[var(--text-secondary)]">{r.test2 ?? '-'}</TableCell>
+                    <TableCell className="text-center text-sm text-[var(--text-secondary)]">{r.assignment1 ?? '-'}</TableCell>
+                    <TableCell className="text-center text-sm text-[var(--text-secondary)]">{r.assignment2 ?? '-'}</TableCell>
                     <TableCell className="text-center">
-                      <span className="text-sm font-bold text-white">{r.total ?? '-'}</span>
-                      <span className="text-[10px] text-gray-600">/{r.maxMarks}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">{r.total ?? '-'}</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">/{r.maxMarks}</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
@@ -426,12 +426,12 @@ export default function ExamsSection() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <SectionTitle className="text-xl mb-0">AI Prep Recommendations</SectionTitle>
-          <Sparkles className="w-5 h-5 text-purple-400" />
+          <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         </div>
 
         {recommendations.length === 0 ? (
           <GlassCard className="text-center py-8">
-            <p className="text-gray-400 text-sm">No recommendations available.</p>
+            <p className="text-[var(--text-secondary)] text-sm">No recommendations available.</p>
           </GlassCard>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -446,13 +446,13 @@ export default function ExamsSection() {
                 <GlassCard className="p-5 h-full flex flex-col">
                   <div className="flex items-start justify-between mb-3">
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-white font-semibold truncate" title={rec.subject}>
+                      <h4 className="text-[var(--text-primary)] font-semibold truncate" title={rec.subject}>
                         {rec.subject}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={cn(
                           'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-                          daysLeftColor(rec.daysLeft) + ' bg-white/[0.04]'
+                          daysLeftColor(rec.daysLeft) + ' bg-[var(--bg-card)]'
                         )}>
                           <Calendar className="w-3 h-3" />
                           {rec.daysLeft} days left
@@ -462,17 +462,17 @@ export default function ExamsSection() {
                     <div className="shrink-0 ml-2">
                       <div className={cn(
                         'text-2xl font-bold',
-                        rec.currentPrep < 40 ? 'text-red-400' :
-                        rec.currentPrep <= 70 ? 'text-yellow-400' : 'text-green-400'
+                        rec.currentPrep < 40 ? 'text-red-600 dark:text-red-400' :
+                        rec.currentPrep <= 70 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
                       )}>
                         {rec.currentPrep}%
                       </div>
-                      <div className="text-[10px] text-gray-500 text-right">prep</div>
+                      <div className="text-[10px] text-[var(--text-muted)] text-right">prep</div>
                     </div>
                   </div>
 
                   {/* Mini progress bar */}
-                  <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mb-4">
+                  <div className="h-1.5 bg-[var(--bg-card)] rounded-full overflow-hidden mb-4">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${rec.currentPrep}%` }}
@@ -486,11 +486,11 @@ export default function ExamsSection() {
                   </div>
 
                   <div className="flex-1">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Recommended</div>
+                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-2">Recommended</div>
                     <ul className="space-y-2">
                       {rec.recommended.map((action: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
-                          <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                        <li key={idx} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                          <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" />
                           <span>{action}</span>
                         </li>
                       ))}
@@ -499,7 +499,7 @@ export default function ExamsSection() {
 
                   <button
                     onClick={() => openChatWithContext(`Help me prepare for ${rec.subject}. I have ${rec.daysLeft} days left and my current preparation is ${rec.currentPrep}%. Suggest a study plan.`)}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-500/15 to-cyan-500/15 border border-purple-500/25 text-purple-300 text-xs font-medium hover:from-purple-500/25 hover:to-cyan-500/25 transition-all"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-500/15 to-cyan-500/15 border border-purple-500/25 text-purple-600 dark:text-purple-300 text-xs font-medium hover:from-purple-500/25 hover:to-cyan-500/25 transition-all"
                   >
                     <Bot className="w-3.5 h-3.5" />
                     Ask AI for plan

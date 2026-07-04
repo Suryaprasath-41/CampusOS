@@ -1,0 +1,1666 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     7→  LineChart, Line, AreaChart, Area,
+     8→} from 'recharts';
+     9→import {
+    10→  LayoutDashboard, BookOpen, ClipboardCheck, FileText, FlaskConical,
+    11→  CalendarDays, Bot, Users, Clock, Sparkles, ChevronRight,
+    12→  TrendingUp, AlertTriangle, GraduationCap, Brain, Send,
+    13→  CheckCircle2, XCircle, Plus, Search, MessageSquare, Zap,
+    14→  Activity, Target, BarChart3, Filter, Calendar, Bell,
+    15→  ChevronDown, Eye, Edit3, Star, ExternalLink, Hash,
+    16→  ArrowUpRight, Lightbulb, FileQuestion, Mic, Bot as BotIcon,
+    17→  UserCheck, UserX, Save, RotateCcw
+    18→} from 'lucide-react';
+    19→import { cn } from '@/lib/utils';
+    20→import AnimatedCounter from './AnimatedCounter';
+    21→import WidgetCard, { GlassCard, SectionTitle, PredictionBar } from './WidgetCard';
+    22→import { useCampusStore } from '@/lib/store';
+    23→
+    24→// ─── Tab Configuration ───────────────────────────────────────────────
+    25→const tabs = [
+    26→  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    27→  { id: 'classes', label: 'My Classes', icon: BookOpen },
+    28→  { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
+    29→  { id: 'assignments', label: 'Assignments', icon: FileText },
+    30→  { id: 'research', label: 'Research', icon: FlaskConical },
+    31→  { id: 'schedule', label: 'Schedule', icon: CalendarDays },
+    32→  { id: 'ai-assistant', label: 'AI Assistant', icon: Bot },
+    33→] as const;
+    34→
+    35→type TabId = (typeof tabs)[number]['id'];
+    36→
+    37→// ─── Department Colors ────────────────────────────────────────────────
+    38→const deptColors: Record<string, { accent: string; bg: string; border: string; text: string; gradient: string }> = {
+    39→  CS: { accent: 'purple', bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', gradient: 'from-purple-500 to-violet-600' },
+    40→  IT: { accent: 'cyan', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', gradient: 'from-cyan-500 to-blue-600' },
+    41→  ECE: { accent: 'blue', bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', gradient: 'from-blue-500 to-indigo-600' },
+    42→  EEE: { accent: 'yellow', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-600' },
+    43→  ME: { accent: 'orange', bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', gradient: 'from-orange-500 to-red-600' },
+    44→  CE: { accent: 'green', bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400', gradient: 'from-green-500 to-emerald-600' },
+    45→};
+    46→
+    47→// ─── Mock Data ────────────────────────────────────────────────────────
+    48→const facultyProfile = {
+    49→  name: 'Dr. Priya Sharma',
+    50→  designation: 'Associate Professor',
+    51→  department: 'CS',
+    52→  facultyId: 'FAC2018012',
+    53→  email: 'priya.sharma@campus.edu',
+    54→  specializations: ['Machine Learning', 'Deep Learning', 'Computer Vision'],
+    55→  semester: 'Even 2025',
+    56→  experience: 7,
+    57→};
+    58→
+    59→const myClasses = [
+    60→  {
+    61→    id: 'CS601', name: 'Machine Learning', department: 'CS', semester: 6,
+    62→    students: 32, schedule: 'Mon/Wed 10:00-11:30', room: 'LH-201',
+    63→    avgAttendance: 87, avgPerformance: 76,
+    64→    studentsList: [
+    65→      { name: 'Aarav Patel', roll: 'CS2022030', attendance: 92, grade: 'A' },
+    66→      { name: 'Diya Sharma', roll: 'CS2022031', attendance: 88, grade: 'A-' },
+    67→      { name: 'Rohan Kumar', roll: 'CS2022032', attendance: 75, grade: 'B+' },
+    68→      { name: 'Ananya Singh', roll: 'CS2022033', attendance: 95, grade: 'A+' },
+    69→      { name: 'Vikram Reddy', roll: 'CS2022034', attendance: 68, grade: 'B' },
+    70→      { name: 'Priya Nair', roll: 'CS2022035', attendance: 82, grade: 'A-' },
+    71→      { name: 'Arjun Mehta', roll: 'CS2022036', attendance: 71, grade: 'B+' },
+    72→      { name: 'Kavya Iyer', roll: 'CS2022037', attendance: 90, grade: 'A' },
+    73→      { name: 'Rahul Verma', roll: 'CS2022038', attendance: 55, grade: 'C+' },
+    74→      { name: 'Sneha Das', roll: 'CS2022039', attendance: 85, grade: 'A-' },
+    75→      { name: 'Aditya Joshi', roll: 'CS2022040', attendance: 78, grade: 'B+' },
+    76→      { name: 'Meera Gupta', roll: 'CS2022041', attendance: 93, grade: 'A+' },
+    77→      { name: 'Karthik Rao', roll: 'CS2022042', attendance: 60, grade: 'C' },
+    78→      { name: 'Ishita Bansal', roll: 'CS2022043', attendance: 89, grade: 'A' },
+    79→      { name: 'Varun Pillai', roll: 'CS2022044', attendance: 73, grade: 'B' },
+    80→      { name: 'Neha Chauhan', roll: 'CS2022045', attendance: 86, grade: 'A-' },
+    81→    ],
+    82→  },
+    83→  {
+    84→    id: 'CS503', name: 'Probability & Statistics', department: 'CS', semester: 4,
+    85→    students: 28, schedule: 'Tue/Thu 09:00-10:30', room: 'LH-101',
+    86→    avgAttendance: 82, avgPerformance: 71,
+    87→    studentsList: [
+    88→      { name: 'Amit Tiwari', roll: 'CS2023010', attendance: 90, grade: 'A' },
+    89→      { name: 'Pooja Saxena', roll: 'CS2023011', attendance: 85, grade: 'B+' },
+    90→      { name: 'Siddharth Rao', roll: 'CS2023012', attendance: 78, grade: 'B' },
+    91→      { name: 'Ritu Sharma', roll: 'CS2023013', attendance: 92, grade: 'A+' },
+    92→      { name: 'Nikhil Jain', roll: 'CS2023014', attendance: 65, grade: 'C+' },
+    93→      { name: 'Tanvi Mishra', roll: 'CS2023015', attendance: 88, grade: 'A-' },
+    94→      { name: 'Deepak Yadav', roll: 'CS2023016', attendance: 70, grade: 'B' },
+    95→      { name: 'Shruti Pandey', roll: 'CS2023017', attendance: 94, grade: 'A+' },
+    96→      { name: 'Manish Kumar', roll: 'CS2023018', attendance: 58, grade: 'C' },
+    97→      { name: 'Anjali Dwivedi', roll: 'CS2023019', attendance: 83, grade: 'A-' },
+    98→      { name: 'Prateek Soni', roll: 'CS2023020', attendance: 76, grade: 'B+' },
+    99→      { name: 'Nisha Agarwal', roll: 'CS2023021', attendance: 87, grade: 'A' },
+   100→    ],
+   101→  },
+   102→  {
+   103→    id: 'CS702', name: 'Deep Learning', department: 'CS', semester: 8,
+   104→    students: 18, schedule: 'Wed/Fri 14:00-15:30', room: 'LH-301',
+   105→    avgAttendance: 91, avgPerformance: 79,
+   106→    studentsList: [
+   107→      { name: 'Harsh Vardhan', roll: 'CS2021005', attendance: 96, grade: 'A+' },
+   108→      { name: 'Swati Kumari', roll: 'CS2021006', attendance: 93, grade: 'A' },
+   109→      { name: 'Rajesh Singh', roll: 'CS2021007', attendance: 89, grade: 'A-' },
+   110→      { name: 'Pallavi Verma', roll: 'CS2021008', attendance: 91, grade: 'A' },
+   111→      { name: 'Suresh Reddy', roll: 'CS2021009', attendance: 85, grade: 'B+' },
+   112→      { name: 'Divya Sharma', roll: 'CS2021010', attendance: 88, grade: 'A-' },
+   113→      { name: 'Akhil Nair', roll: 'CS2021011', attendance: 94, grade: 'A+' },
+   114→      { name: 'Meghna Iyer', roll: 'CS2021012', attendance: 82, grade: 'B+' },
+   115→    ],
+   116→  },
+   117→];
+   118→
+   119→const todaySchedule = [
+   120→  { time: '09:00 AM', subject: 'Probability & Statistics', room: 'LH-101', duration: '1.5 hrs', status: 'completed' },
+   121→  { time: '10:00 AM', subject: 'Machine Learning', room: 'LH-201', duration: '1.5 hrs', status: 'ongoing' },
+   122→  { time: '02:00 PM', subject: 'Deep Learning', room: 'LH-301', duration: '1.5 hrs', status: 'upcoming' },
+   123→  { time: '04:00 PM', subject: 'ML Lab Session', room: 'Lab-3', duration: '2 hrs', status: 'upcoming' },
+   124→];
+   125→
+   126→const recentQueries = [
+   127→  { student: 'Aarav Patel', query: 'Can you explain the bias-variance tradeoff again?', time: '10 min ago', subject: 'ML' },
+   128→  { student: 'Diya Sharma', query: 'What is the difference between L1 and L2 regularization?', time: '25 min ago', subject: 'ML' },
+   129→  { student: 'Ritu Sharma', query: 'How to interpret confidence intervals?', time: '1 hr ago', subject: 'P&S' },
+   130→  { student: 'Harsh Vardhan', query: 'When should we use GANs vs VAEs?', time: '2 hrs ago', subject: 'DL' },
+   131→  { student: 'Sneha Das', query: 'Is the midterm covering Chapter 7?', time: '3 hrs ago', subject: 'ML' },
+   132→];
+   133→
+   134→const researchPapers = [
+   135→  { id: 1, title: 'Adaptive Learning Rate Scheduling for Transformer Models', journal: 'IEEE Trans. on Neural Networks', status: 'published', year: 2024, citations: 47, coAuthors: ['Dr. Rajesh Kumar', 'Dr. Meena Iyer'], doi: '10.1109/TNN.2024.001' },
+   136→  { id: 2, title: 'Federated Learning in Resource-Constrained Edge Devices', journal: 'ACM Computing Surveys', status: 'under_review', year: 2025, citations: 0, coAuthors: ['Dr. Amit Das', 'Prof. Lisa Chen'], doi: 'pending' },
+   137→  { id: 3, title: 'Explainable AI for Medical Image Classification', journal: 'Nature Machine Intelligence', status: 'published', year: 2023, citations: 124, coAuthors: ['Dr. Sunita Reddy', 'Dr. James Park'], doi: '10.1038/s42256-023.012' },
+   138→  { id: 4, title: 'Neural Architecture Search Using Evolutionary Algorithms', journal: 'CVPR 2025', status: 'accepted', year: 2025, citations: 0, coAuthors: ['Dr. Vikram Singh'], doi: '10.1109/CVPR.2025.045' },
+   139→  { id: 5, title: 'Attention Mechanisms in Graph Neural Networks', journal: 'ICLR 2024', status: 'published', year: 2024, citations: 89, coAuthors: ['Dr. Priyanka Patel', 'Dr. Wei Zhang'], doi: '10.48550/arXiv.2401.123' },
+   140→];
+   141→
+   142→const assignments = [
+   143→  {
+   144→    id: 1, title: 'Linear Regression Implementation', subject: 'Machine Learning', subjectCode: 'CS601',
+   145→    dueDate: '2025-03-15', maxMarks: 100, description: 'Implement linear regression from scratch using NumPy. Compare with scikit-learn implementation.',
+   146→    submissions: 28, totalStudents: 32, graded: 20,
+   147→    studentSubmissions: [
+   148→      { name: 'Aarav Patel', roll: 'CS2022030', submitted: true, date: '2025-03-14', score: 92, feedback: 'Excellent implementation and documentation.' },
+   149→      { name: 'Diya Sharma', roll: 'CS2022031', submitted: true, date: '2025-03-13', score: 88, feedback: 'Good work, minor issues with gradient calculation.' },
+   150→      { name: 'Rohan Kumar', roll: 'CS2022032', submitted: true, date: '2025-03-15', score: 75, feedback: 'Missing regularization implementation.' },
+   151→      { name: 'Ananya Singh', roll: 'CS2022033', submitted: true, date: '2025-03-12', score: 95, feedback: 'Outstanding! Extra credit for visualization.' },
+   152→      { name: 'Vikram Reddy', roll: 'CS2022034', submitted: true, date: '2025-03-15', score: 68, feedback: 'Basic implementation, needs better code structure.' },
+   153→      { name: 'Rahul Verma', roll: 'CS2022038', submitted: false, date: '-', score: 0, feedback: '' },
+   154→    ],
+   155→  },
+   156→  {
+   157→    id: 2, title: 'Bayesian Inference Problems', subject: 'Probability & Statistics', subjectCode: 'CS503',
+   158→    dueDate: '2025-03-20', maxMarks: 50, description: 'Solve 10 problems on Bayesian inference, posterior distributions, and conjugate priors.',
+   159→    submissions: 18, totalStudents: 28, graded: 10,
+   160→    studentSubmissions: [
+   161→      { name: 'Amit Tiwari', roll: 'CS2023010', submitted: true, date: '2025-03-18', score: 46, feedback: 'Very good understanding of conjugate priors.' },
+   162→      { name: 'Pooja Saxena', roll: 'CS2023011', submitted: true, date: '2025-03-19', score: 40, feedback: 'Good, review problem 7 solution.' },
+   163→      { name: 'Nikhil Jain', roll: 'CS2023014', submitted: false, date: '-', score: 0, feedback: '' },
+   164→    ],
+   165→  },
+   166→  {
+   167→    id: 3, title: 'CNN Architecture Comparison', subject: 'Deep Learning', subjectCode: 'CS702',
+   168→    dueDate: '2025-03-25', maxMarks: 100, description: 'Compare VGG, ResNet, and EfficientNet on CIFAR-10. Analyze performance and computational cost.',
+   169→    submissions: 8, totalStudents: 18, graded: 0,
+   170→    studentSubmissions: [
+   171→      { name: 'Harsh Vardhan', roll: 'CS2021005', submitted: true, date: '2025-03-22', score: 0, feedback: '' },
+   172→      { name: 'Swati Kumari', roll: 'CS2021006', submitted: true, date: '2025-03-23', score: 0, feedback: '' },
+   173→      { name: 'Akhil Nair', roll: 'CS2021011', submitted: true, date: '2025-03-24', score: 0, feedback: '' },
+   174→    ],
+   175→  },
+   176→];
+   177→
+   178→const weeklySchedule: Record<string, { time: string; subject: string; room: string; dept: string }[]> = {
+   179→  Mon: [
+   180→    { time: '09:00-10:30', subject: 'Probability & Statistics', room: 'LH-101', dept: 'CS' },
+   181→    { time: '10:00-11:30', subject: 'Machine Learning', room: 'LH-201', dept: 'CS' },
+   182→    { time: '14:00-15:30', subject: 'Deep Learning', room: 'LH-301', dept: 'CS' },
+   183→  ],
+   184→  Tue: [
+   185→    { time: '09:00-10:30', subject: 'Probability & Statistics', room: 'LH-101', dept: 'CS' },
+   186→    { time: '11:00-12:30', subject: 'ML Lab', room: 'Lab-3', dept: 'CS' },
+   187→  ],
+   188→  Wed: [
+   189→    { time: '10:00-11:30', subject: 'Machine Learning', room: 'LH-201', dept: 'CS' },
+   190→    { time: '14:00-15:30', subject: 'Deep Learning', room: 'LH-301', dept: 'CS' },
+   191→    { time: '16:00-17:00', subject: 'Office Hours', room: 'Cabin-12', dept: 'CS' },
+   192→  ],
+   193→  Thu: [
+   194→    { time: '09:00-10:30', subject: 'Probability & Statistics', room: 'LH-101', dept: 'CS' },
+   195→    { time: '14:00-16:00', subject: 'Research Meeting', room: 'Conf Room', dept: 'CS' },
+   196→  ],
+   197→  Fri: [
+   198→    { time: '10:00-11:30', subject: 'Machine Learning', room: 'LH-201', dept: 'CS' },
+   199→    { time: '14:00-15:30', subject: 'Deep Learning', room: 'LH-301', dept: 'CS' },
+   200→  ],
+   201→  Sat: [],
+   202→};
+   203→
+   204→const engagementData = [
+   205→  { week: 'W1', ml: 88, ps: 82, dl: 94 },
+   206→  { week: 'W2', ml: 85, ps: 79, dl: 91 },
+   207→  { week: 'W3', ml: 82, ps: 75, dl: 89 },
+   208→  { week: 'W4', ml: 86, ps: 80, dl: 92 },
+   209→  { week: 'W5', ml: 90, ps: 83, dl: 95 },
+   210→  { week: 'W6', ml: 87, ps: 81, dl: 93 },
+   211→  { week: 'W7', ml: 84, ps: 78, dl: 90 },
+   212→  { week: 'W8', ml: 89, ps: 85, dl: 96 },
+   213→];
+   214→
+   215→const citationData = [
+   216→  { month: 'Jan', citations: 12 },
+   217→  { month: 'Feb', citations: 18 },
+   218→  { month: 'Mar', citations: 15 },
+   219→  { month: 'Apr', citations: 22 },
+   220→  { month: 'May', citations: 28 },
+   221→  { month: 'Jun', citations: 35 },
+   222→  { month: 'Jul', citations: 31 },
+   223→  { month: 'Aug', citations: 40 },
+   224→  { month: 'Sep', citations: 38 },
+   225→  { month: 'Oct', citations: 45 },
+   226→  { month: 'Nov', citations: 52 },
+   227→  { month: 'Dec', citations: 60 },
+   228→];
+   229→
+   230→const aiAgents = [
+   231→  { id: 'teaching', name: 'Teaching Assistant', icon: GraduationCap, description: 'Help with lesson plans, quizzes, and content creation', active: true, tokens: 12450 },
+   232→  { id: 'grading', name: 'Grading Agent', icon: CheckCircle2, description: 'Auto-grade submissions and provide feedback', active: true, tokens: 8920 },
+   233→  { id: 'research', name: 'Research Assistant', icon: FlaskConical, description: 'Literature review, paper analysis, and citations', active: false, tokens: 3200 },
+   234→];
+   235→
+   236→const suggestedPrompts = [
+   237→  'Generate quiz questions for Machine Learning midterm',
+   238→  'Summarize student performance this semester',
+   239→  'Create a lesson plan for Convolutional Neural Networks',
+   240→  'Suggest improvements for low-attendance students',
+   241→  'Draft a research proposal on attention mechanisms',
+   242→  'Analyze assignment grade distribution',
+   243→];
+   244→
+   245→// ─── Custom Tooltip for Recharts ──────────────────────────────────────
+   246→const CustomTooltip = ({ active, payload, label }: any) => {
+   247→  if (!active || !payload) return null;
+   248→  return (
+   249→    <div className="bg-[#1a1a2e]/95 backdrop-blur-xl border border-white/[0.1] rounded-xl px-3 py-2 shadow-xl">
+   250→      <p className="text-xs text-gray-400 mb-1">{label}</p>
+   251→      {payload.map((entry: any, i: number) => (
+   252→        <p key={i} className="text-xs font-medium" style={{ color: entry.color }}>
+   253→          {entry.name}: {entry.value}%
+   254→        </p>
+   255→      ))}
+   256→    </div>
+   257→  );
+   258→};
+   259→
+   260→// ─── Main Component ───────────────────────────────────────────────────
+   261→// Map from store section IDs to FacultyPortal tab IDs
+   262→const sectionToTabMap: Record<string, TabId> = {
+   263→  dashboard: 'dashboard',
+   264→  'my-classes': 'classes',
+   265→  attendance: 'attendance',
+   266→  assignments: 'assignments',
+   267→  research: 'research',
+   268→  schedule: 'schedule',
+   269→  'ai-assistant': 'ai-assistant',
+   270→};
+   271→
+   272→export default function FacultyPortal() {
+   273→  const { activeSection, setActiveSection } = useCampusStore();
+   274→  const [activeTab, setActiveTab] = useState<TabId>(sectionToTabMap[activeSection] || 'dashboard');
+   275→  const [expandedClass, setExpandedClass] = useState<string | null>(null);
+   276→  const [selectedClass, setSelectedClass] = useState(myClasses[0]);
+   277→  const [attendanceDate, setAttendanceDate] = useState('2025-03-04');
+   278→  const [attendanceData, setAttendanceData] = useState<Record<string, boolean>>(
+   279→    () => Object.fromEntries(myClasses[0].studentsList.map(s => [s.roll, true]))
+   280→  );
+   281→  const [selectedAssignment, setSelectedAssignment] = useState<typeof assignments[0] | null>(null);
+   282→  const [showNewAssignment, setShowNewAssignment] = useState(false);
+   283→  const [showNewResearch, setShowNewResearch] = useState(false);
+   284→  const [chatInput, setChatInput] = useState('');
+   285→  const [chatMessages, setChatMessages] = useState<{ role: string; content: string; agent?: string }[]>([
+   286→    { role: 'assistant', content: 'Hello Dr. Sharma! I\'m your faculty AI assistant. I can help with teaching materials, grading, research, and student analytics. How can I assist you today?', agent: 'Teaching Assistant' },
+   287→  ]);
+   288→  const [selectedAgent, setSelectedAgent] = useState('teaching');
+   289→  const { setChatOpen } = useCampusStore();
+   290→
+   291→  // Sync tab with store's activeSection
+   292→  const handleTabChange = (tab: TabId) => {
+   293→    setActiveTab(tab);
+   294→    // Update store section so sidebar highlights correctly
+   295→    const tabToSection: Record<string, string> = {
+   296→      dashboard: 'dashboard',
+   297→      classes: 'my-classes',
+   298→      attendance: 'attendance',
+   299→      assignments: 'assignments',
+   300→      research: 'research',
+   301→      schedule: 'schedule',
+   302→      'ai-assistant': 'ai-assistant',
+   303→    };
+   304→    setActiveSection(tabToSection[tab] || 'dashboard');
+   305→  };
+   306→
+   307→  // Also sync when activeSection changes from sidebar
+   308→  const mappedTab = sectionToTabMap[activeSection];
+   309→  if (mappedTab && mappedTab !== activeTab) {
+   310→    setActiveTab(mappedTab);
+   311→  }
+   312→
+   313→  // Attendance stats
+   314→  const presentCount = Object.values(attendanceData).filter(v => v).length;
+   315→  const absentCount = Object.values(attendanceData).filter(v => !v).length;
+   316→  const attendancePct = Math.round((presentCount / (presentCount + absentCount)) * 100);
+   317→
+   318→  const toggleAllPresent = () => {
+   319→    const newData: Record<string, boolean> = {};
+   320→    selectedClass.studentsList.forEach(s => { newData[s.roll] = true; });
+   321→    setAttendanceData(newData);
+   322→  };
+   323→
+   324→  const toggleAllAbsent = () => {
+   325→    const newData: Record<string, boolean> = {};
+   326→    selectedClass.studentsList.forEach(s => { newData[s.roll] = false; });
+   327→    setAttendanceData(newData);
+   328→  };
+   329→
+   330→  const handleSendChat = () => {
+   331→    if (!chatInput.trim()) return;
+   332→    const agent = aiAgents.find(a => a.id === selectedAgent);
+   333→    setChatMessages(prev => [...prev, { role: 'user', content: chatInput }]);
+   334→    setTimeout(() => {
+   335→      setChatMessages(prev => [...prev, {
+   336→        role: 'assistant',
+   337→        content: `I'll help you with "${chatInput}". Let me analyze the data and generate the content for you. Based on your class records, I can see several patterns that would be useful for this request. Would you like me to provide more detailed results?`,
+   338→        agent: agent?.name || 'Teaching Assistant',
+   339→      }]);
+   340→    }, 800);
+   341→    setChatInput('');
+   342→  };
+   343→
+   344→  // ─── Dashboard Tab ──────────────────────────────────────────────────
+   345→  const DashboardTab = () => (
+   346→    <div className="space-y-6">
+   347→      {/* Welcome Banner */}
+   348→      <motion.div
+   349→        initial={{ opacity: 0, y: -10 }}
+   350→        animate={{ opacity: 1, y: 0 }}
+   351→        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-white/[0.08] p-6"
+   352→      >
+   353→        <span className="absolute inset-0 overflow-hidden rounded-3xl">
+   354→          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-[shimmer_4s_ease-in-out_infinite]" style={{ transform: 'translateX(-100%)' }} />
+   355→        </span>
+   356→        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.15),transparent_50%)]" />
+   357→        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+   358→          <div>
+   359→            <div className="flex items-center gap-2 mb-1">
+   360→              <Sparkles className="w-4 h-4 text-purple-400" />
+   361→              <span className="text-xs text-purple-300 uppercase tracking-wider">Faculty Portal</span>
+   362→            </div>
+   363→            <h2 className="text-2xl font-bold text-white mb-1">
+   364→              Welcome, <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{facultyProfile.name}</span> 👋
+   365→            </h2>
+   366→            <p className="text-sm text-gray-400">
+   367→              {facultyProfile.designation} • {facultyProfile.department} Department • {facultyProfile.semester} Semester
+   368→            </p>
+   369→          </div>
+   370→          <div className="flex gap-3">
+   371→            <motion.button
+   372→              whileHover={{ scale: 1.05 }}
+   373→              whileTap={{ scale: 0.95 }}
+   374→              onClick={() => handleTabChange('ai-assistant')}
+   375→              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_20px_rgba(139,92,246,0.3)] relative overflow-hidden group"
+   376→            >
+   377→              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+   378→              <Brain className="w-4 h-4 relative z-10" />
+   379→              <span className="relative z-10">AI Assistant</span>
+   380→            </motion.button>
+   381→            <motion.button
+   382→              whileHover={{ scale: 1.05 }}
+   383→              whileTap={{ scale: 0.95 }}
+   384→              onClick={() => handleTabChange('attendance')}
+   385→              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white text-sm font-medium hover:bg-white/[0.08] transition-colors"
+   386→            >
+   387→              <ClipboardCheck className="w-4 h-4 text-cyan-400" />
+   388→              Mark Attendance
+   389→            </motion.button>
+   390→          </div>
+   391→        </div>
+   392→      </motion.div>
+   393→
+   394→      {/* Stat Cards */}
+   395→      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+   396→        {[
+   397→          { title: 'My Classes', value: 3, icon: BookOpen, color: 'purple', suffix: '' },
+   398→          { title: 'Total Students', value: 78, icon: Users, color: 'cyan', suffix: '' },
+   399→          { title: "Today's Classes", value: 4, icon: Clock, color: 'green', suffix: '' },
+   400→          { title: 'Pending Reviews', value: 12, icon: AlertTriangle, color: 'yellow', suffix: '' },
+   401→          { title: 'Research Papers', value: 5, icon: FlaskConical, color: 'blue', suffix: '' },
+   402→          { title: 'AI Queries', value: 184, icon: Zap, color: 'orange', suffix: '' },
+   403→        ].map((stat, i) => (
+   404→          <motion.div
+   405→            key={stat.title}
+   406→            initial={{ opacity: 0, y: 20 }}
+   407→            animate={{ opacity: 1, y: 0 }}
+   408→            transition={{ delay: i * 0.05 }}
+   409→            className="relative group/card rounded-2xl p-[1px] bg-gradient-to-b from-transparent via-transparent to-transparent hover:from-purple-500/40 hover:via-cyan-500/20 hover:to-purple-500/40 transition-all duration-500"
+   410→          >
+   411→            <WidgetCard
+   412→              title={stat.title}
+   413→              value={<AnimatedCounter value={stat.value} suffix={stat.suffix} />}
+   414→              icon={<stat.icon className={cn('w-5 h-5', stat.color === 'purple' ? 'text-purple-400' : stat.color === 'cyan' ? 'text-cyan-400' : stat.color === 'green' ? 'text-green-400' : stat.color === 'yellow' ? 'text-yellow-400' : stat.color === 'blue' ? 'text-blue-400' : 'text-orange-400')} />}
+   415→            />
+   416→          </motion.div>
+   417→        ))}
+   418→      </div>
+   419→
+   420→      {/* Live Activity Ticker */}
+   421→      <motion.div
+   422→        initial={{ opacity: 0, y: 10 }}
+   423→        animate={{ opacity: 1, y: 0 }}
+   424→        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden"
+   425→      >
+   426→        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
+   427→          <span className="relative flex h-2 w-2">
+   428→            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+   429→            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+   430→          </span>
+   431→          <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
+   432→        </div>
+   433→        <div className="flex-1 overflow-hidden">
+   434→          <motion.div
+   435→            animate={{ x: ['0%', '-50%'] }}
+   436→            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+   437→            className="flex gap-8 whitespace-nowrap text-xs text-gray-400"
+   438→          >
+   439→            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> 3 new ML assignment submissions received</span>
+   440→            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-400" /> Deep Learning class attendance: 91%</span>
+   441→            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-400" /> Paper cited 3 times today</span>
+   442→            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> 2 students flagged for low attendance</span>
+   443→            <span className="flex items-center gap-1.5"><Brain className="w-3 h-3 text-blue-400" /> AI Grading Agent processed 15 submissions</span>
+   444→            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> 3 new ML assignment submissions received</span>
+   445→            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-400" /> Deep Learning class attendance: 91%</span>
+   446→            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-400" /> Paper cited 3 times today</span>
+   447→          </motion.div>
+   448→        </div>
+   449→      </motion.div>
+   450→
+   451→      {/* AI Predictions */}
+   452→      <GlassCard className="relative overflow-hidden">
+   453→        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+   454→        <div className="relative z-10">
+   455→          <div className="flex items-center justify-between mb-4">
+   456→            <div className="flex items-center gap-2">
+   457→              <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
+   458→                <Zap className="w-5 h-5 text-purple-400" />
+   459→              </motion.div>
+   460→              <h3 className="text-white font-semibold">AI Predictions</h3>
+   461→              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">Live</span>
+   462→            </div>
+   463→            <span className="text-xs text-gray-500">Updated 2 min ago</span>
+   464→          </div>
+   465→          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+   466→            <div>
+   467→              <div className="flex justify-between mb-1.5">
+   468→                <span className="text-gray-400 text-sm">Class Engagement</span>
+   469→                <span className="text-white text-sm font-semibold"><AnimatedCounter value={86} suffix="%" /></span>
+   470→              </div>
+   471→              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+   472→                <motion.div initial={{ width: 0 }} animate={{ width: '86%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
+   473→              </div>
+   474→            </div>
+   475→            <div>
+   476→              <div className="flex justify-between mb-1.5">
+   477→                <span className="text-gray-400 text-sm">Student Performance</span>
+   478→                <span className="text-white text-sm font-semibold"><AnimatedCounter value={78} suffix="%" /></span>
+   479→              </div>
+   480→              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+   481→                <motion.div initial={{ width: 0 }} animate={{ width: '78%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(34,211,238,0.4)]" />
+   482→              </div>
+   483→            </div>
+   484→            <div>
+   485→              <div className="flex justify-between mb-1.5">
+   486→                <span className="text-gray-400 text-sm">Workload Balance</span>
+   487→                <span className="text-white text-sm font-semibold"><AnimatedCounter value={65} suffix="%" /></span>
+   488→              </div>
+   489→              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+   490→                <motion.div initial={{ width: 0 }} animate={{ width: '65%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-600 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+   491→              </div>
+   492→            </div>
+   493→          </div>
+   494→        </div>
+   495→      </GlassCard>
+   496→
+   497→      {/* Quick Actions Grid */}
+   498→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   499→        {[
+   500→          { icon: ClipboardCheck, label: 'Mark Attendance', desc: 'Today\'s classes', color: 'purple', action: () => handleTabChange('attendance') },
+   501→          { icon: FileText, label: 'Grade Assignments', desc: '12 pending reviews', color: 'cyan', action: () => handleTabChange('assignments') },
+   502→          { icon: Bell, label: 'Send Notification', desc: 'To students', color: 'green', action: () => {} },
+   503→          { icon: Brain, label: 'AI Teaching Assistant', desc: 'Get AI help', color: 'blue', action: () => handleTabChange('ai-assistant') },
+   504→        ].map((qa, i) => (
+   505→          <motion.button
+   506→            key={i}
+   507→            initial={{ opacity: 0, y: 20 }}
+   508→            animate={{ opacity: 1, y: 0 }}
+   509→            transition={{ delay: i * 0.05 }}
+   510→            whileHover={{ scale: 1.02, y: -2 }}
+   511→            whileTap={{ scale: 0.98 }}
+   512→            onClick={qa.action}
+   513→            className="text-left p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all group"
+   514→          >
+   515→            <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-3',
+   516→              qa.color === 'purple' ? 'bg-purple-500/10 border border-purple-500/20' :
+   517→              qa.color === 'cyan' ? 'bg-cyan-500/10 border border-cyan-500/20' :
+   518→              qa.color === 'green' ? 'bg-green-500/10 border border-green-500/20' :
+   519→              'bg-blue-500/10 border border-blue-500/20'
+   520→            )}>
+   521→              <qa.icon className={cn('w-5 h-5',
+   522→                qa.color === 'purple' ? 'text-purple-400' :
+   523→                qa.color === 'cyan' ? 'text-cyan-400' :
+   524→                qa.color === 'green' ? 'text-green-400' : 'text-blue-400'
+   525→              )} />
+   526→            </div>
+   527→            <div className="text-sm text-white font-medium group-hover:text-purple-300 transition-colors">{qa.label}</div>
+   528→            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+   529→              {qa.desc}
+   530→              <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+   531→            </div>
+   532→          </motion.button>
+   533→        ))}
+   534→      </div>
+   535→
+   536→      {/* Schedule & Queries */}
+   537→      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+   538→        {/* Today's Schedule */}
+   539→        <GlassCard>
+   540→          <div className="flex items-center justify-between mb-4">
+   541→            <div className="flex items-center gap-2">
+   542→              <Clock className="w-5 h-5 text-cyan-400" />
+   543→              <h3 className="text-white font-semibold">Today&apos;s Schedule</h3>
+   544→            </div>
+   545→            <button onClick={() => handleTabChange('schedule')} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+   546→              View week <ChevronRight className="w-3 h-3" />
+   547→            </button>
+   548→          </div>
+   549→          <div className="space-y-3">
+   550→            {todaySchedule.map((item, i) => (
+   551→              <motion.div
+   552→                key={i}
+   553→                whileHover={{ x: 4 }}
+   554→                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all"
+   555→              >
+   556→                <div className={cn('w-1 h-10 rounded-full shrink-0',
+   557→                  item.status === 'completed' ? 'bg-green-500/60' :
+   558→                  item.status === 'ongoing' ? 'bg-gradient-to-b from-purple-500 to-cyan-500' :
+   559→                  'bg-gray-600'
+   560→                )} />
+   561→                <div className="text-xs text-purple-400 font-mono w-20 shrink-0">{item.time}</div>
+   562→                <div className="flex-1 min-w-0">
+   563→                  <div className="text-sm text-white">{item.subject}</div>
+   564→                  <div className="text-xs text-gray-500">{item.room} • {item.duration}</div>
+   565→                </div>
+   566→                <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium shrink-0',
+   567→                  item.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+   568→                  item.status === 'ongoing' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 animate-pulse' :
+   569→                  'bg-white/[0.04] text-gray-400 border-white/[0.08]'
+   570→                )}>
+   571→                  {item.status === 'completed' ? 'Done' : item.status === 'ongoing' ? 'Live' : 'Next'}
+   572→                </span>
+   573→              </motion.div>
+   574→            ))}
+   575→          </div>
+   576→        </GlassCard>
+   577→
+   578→        {/* Recent Queries */}
+   579→        <GlassCard>
+   580→          <div className="flex items-center justify-between mb-4">
+   581→            <div className="flex items-center gap-2">
+   582→              <MessageSquare className="w-5 h-5 text-purple-400" />
+   583→              <h3 className="text-white font-semibold">Recent Student Queries</h3>
+   584→            </div>
+   585→            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">5 new</span>
+   586→          </div>
+   587→          <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
+   588→            {recentQueries.map((q, i) => (
+   589→              <motion.div
+   590→                key={i}
+   591→                initial={{ opacity: 0, x: -10 }}
+   592→                animate={{ opacity: 1, x: 0 }}
+   593→                transition={{ delay: i * 0.05 }}
+   594→                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer border-l-2 border-l-purple-500/60"
+   595→              >
+   596→                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
+   597→                  {q.student[0]}
+   598→                </div>
+   599→                <div className="flex-1 min-w-0">
+   600→                  <div className="flex items-center gap-2">
+   601→                    <span className="text-sm text-white font-medium">{q.student}</span>
+   602→                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">{q.subject}</span>
+   603→                  </div>
+   604→                  <div className="text-xs text-gray-400 truncate">{q.query}</div>
+   605→                  <div className="text-[10px] text-gray-600 mt-0.5">{q.time}</div>
+   606→                </div>
+   607→              </motion.div>
+   608→            ))}
+   609→          </div>
+   610→        </GlassCard>
+   611→      </div>
+   612→
+   613→      {/* Engagement Chart */}
+   614→      <GlassCard>
+   615→        <div className="flex items-center justify-between mb-4">
+   616→          <div className="flex items-center gap-2">
+   617→            <BarChart3 className="w-5 h-5 text-cyan-400" />
+   618→            <h3 className="text-white font-semibold">Class Engagement Trend</h3>
+   619→          </div>
+   620→          <span className="text-xs text-gray-500">Last 8 weeks</span>
+   621→        </div>
+   622→        <div className="h-64">
+   623→          <ResponsiveContainer width="100%" height="100%">
+   624→            <LineChart data={engagementData}>
+   625→              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+   626→              <XAxis dataKey="week" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+   627→              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} domain={[60, 100]} />
+   628→              <Tooltip content={<CustomTooltip />} />
+   629→              <Line type="monotone" dataKey="ml" name="Machine Learning" stroke="#a855f7" strokeWidth={2} dot={{ r: 3, fill: '#a855f7' }} />
+   630→              <Line type="monotone" dataKey="ps" name="Probability & Stats" stroke="#06b6d4" strokeWidth={2} dot={{ r: 3, fill: '#06b6d4' }} />
+   631→              <Line type="monotone" dataKey="dl" name="Deep Learning" stroke="#22c55e" strokeWidth={2} dot={{ r: 3, fill: '#22c55e' }} />
+   632→            </LineChart>
+   633→          </ResponsiveContainer>
+   634→        </div>
+   635→      </GlassCard>
+   636→    </div>
+   637→  );
+   638→
+   639→  // ─── My Classes Tab ─────────────────────────────────────────────────
+   640→  const ClassesTab = () => (
+   641→    <div className="space-y-6">
+   642→      <div className="flex items-center gap-3 mb-2">
+   643→        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+   644→          <BookOpen className="w-5 h-5 text-white" />
+   645→        </div>
+   646→        <SectionTitle>My Classes</SectionTitle>
+   647→      </div>
+   648→
+   649→      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+   650→        {myClasses.map((cls, i) => {
+   651→          const colors = deptColors[cls.department] || deptColors.CS;
+   652→          const isExpanded = expandedClass === cls.id;
+   653→          return (
+   654→            <motion.div
+   655→              key={cls.id}
+   656→              initial={{ opacity: 0, y: 20 }}
+   657→              animate={{ opacity: 1, y: 0 }}
+   658→              transition={{ delay: i * 0.1 }}
+   659→              className="rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all overflow-hidden"
+   660→            >
+   661→              <div className="p-5">
+   662→                <div className="flex items-start justify-between mb-3">
+   663→                  <div>
+   664→                    <div className="flex items-center gap-2 mb-1">
+   665→                      <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium', colors.bg, colors.border, colors.text)}>
+   666→                        {cls.department}
+   667→                      </span>
+   668→                      <span className="text-[10px] text-gray-500">Sem {cls.semester}</span>
+   669→                    </div>
+   670→                    <h4 className="text-white font-semibold">{cls.name}</h4>
+   671→                    <p className="text-xs text-gray-500">{cls.id}</p>
+   672→                  </div>
+   673→                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', colors.bg, 'border', colors.border)}>
+   674→                    <BookOpen className={cn('w-5 h-5', colors.text)} />
+   675→                  </div>
+   676→                </div>
+   677→
+   678→                <div className="grid grid-cols-2 gap-3 mb-4">
+   679→                  <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+   680→                    <div className="text-[10px] text-gray-500">Students</div>
+   681→                    <div className="text-lg font-bold text-white">{cls.students}</div>
+   682→                  </div>
+   683→                  <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+   684→                    <div className="text-[10px] text-gray-500">Avg Attendance</div>
+   685→                    <div className="text-lg font-bold text-white">{cls.avgAttendance}%</div>
+   686→                  </div>
+   687→                </div>
+   688→
+   689→                <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+   690→                  <Clock className="w-3 h-3" />
+   691→                  <span>{cls.schedule}</span>
+   692→                </div>
+   693→                <div className="flex items-center gap-2 text-xs text-gray-400">
+   694→                  <Target className="w-3 h-3" />
+   695→                  <span>Room {cls.room}</span>
+   696→                </div>
+   697→              </div>
+   698→
+   699→              {/* Expand Button */}
+   700→              <button
+   701→                onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
+   702→                className="w-full flex items-center justify-center gap-2 py-2.5 border-t border-white/[0.06] text-xs text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors"
+   703→              >
+   704→                {isExpanded ? 'Hide' : 'View'} Students
+   705→                <ChevronDown className={cn('w-3 h-3 transition-transform', isExpanded && 'rotate-180')} />
+   706→              </button>
+   707→
+   708→              {/* Student List */}
+   709→              <AnimatePresence>
+   710→                {isExpanded && (
+   711→                  <motion.div
+   712→                    initial={{ height: 0, opacity: 0 }}
+   713→                    animate={{ height: 'auto', opacity: 1 }}
+   714→                    exit={{ height: 0, opacity: 0 }}
+   715→                    transition={{ duration: 0.3 }}
+   716→                    className="overflow-hidden"
+   717→                  >
+   718→                    <div className="max-h-64 overflow-y-auto custom-scrollbar p-4 pt-0 space-y-2">
+   719→                      {cls.studentsList.map((student, si) => (
+   720→                        <motion.div
+   721→                          key={student.roll}
+   722→                          initial={{ opacity: 0, x: -10 }}
+   723→                          animate={{ opacity: 1, x: 0 }}
+   724→                          transition={{ delay: si * 0.02 }}
+   725→                          className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+   726→                        >
+   727→                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center text-[10px] font-bold text-purple-300 shrink-0">
+   728→                            {student.name[0]}
+   729→                          </div>
+   730→                          <div className="flex-1 min-w-0">
+   731→                            <div className="text-xs text-white truncate">{student.name}</div>
+   732→                            <div className="text-[10px] text-gray-500">{student.roll}</div>
+   733→                          </div>
+   734→                          <div className="text-[10px] text-gray-500">Att: <span className={student.attendance < 70 ? 'text-red-400' : student.attendance < 80 ? 'text-yellow-400' : 'text-green-400'}>{student.attendance}%</span></div>
+   735→                          <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium',
+   736→                            student.grade.startsWith('A') ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+   737→                            student.grade.startsWith('B') ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+   738→                            'bg-red-500/10 text-red-400 border border-red-500/20'
+   739→                          )}>
+   740→                            {student.grade}
+   741→                          </span>
+   742→                        </motion.div>
+   743→                      ))}
+   744→                    </div>
+   745→                  </motion.div>
+   746→                )}
+   747→              </AnimatePresence>
+   748→            </motion.div>
+   749→          );
+   750→        })}
+   751→      </div>
+   752→    </div>
+   753→  );
+   754→
+   755→  // ─── Attendance Tab ─────────────────────────────────────────────────
+   756→  const AttendanceTab = () => (
+   757→    <div className="space-y-6">
+   758→      <div className="flex items-center gap-3 mb-2">
+   759→        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+   760→          <ClipboardCheck className="w-5 h-5 text-white" />
+   761→        </div>
+   762→        <SectionTitle>Mark Attendance</SectionTitle>
+   763→      </div>
+   764→
+   765→      {/* Class & Date Selector */}
+   766→      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   767→        <div className="md:col-span-2">
+   768→          <label className="text-xs text-gray-400 mb-1.5 block">Select Class</label>
+   769→          <div className="flex gap-3">
+   770→            {myClasses.map(cls => (
+   771→              <motion.button
+   772→                key={cls.id}
+   773→                whileHover={{ scale: 1.02 }}
+   774→                whileTap={{ scale: 0.98 }}
+   775→                onClick={() => {
+   776→                  setSelectedClass(cls);
+   777→                  setAttendanceData(Object.fromEntries(cls.studentsList.map(s => [s.roll, true])));
+   778→                }}
+   779→                className={cn(
+   780→                  'flex-1 p-3 rounded-xl border text-left transition-all',
+   781→                  selectedClass.id === cls.id
+   782→                    ? 'bg-purple-500/10 border-purple-500/30 text-white'
+   783→                    : 'bg-white/[0.03] border-white/[0.08] text-gray-400 hover:border-white/[0.15]'
+   784→                )}
+   785→              >
+   786→                <div className="text-sm font-medium">{cls.name}</div>
+   787→                <div className="text-[10px] text-gray-500">{cls.students} students</div>
+   788→              </motion.button>
+   789→            ))}
+   790→          </div>
+   791→        </div>
+   792→        <div>
+   793→          <label className="text-xs text-gray-400 mb-1.5 block">Date</label>
+   794→          <div className="relative">
+   795→            <input
+   796→              type="date"
+   797→              value={attendanceDate}
+   798→              onChange={e => setAttendanceDate(e.target.value)}
+   799→              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]"
+   800→            />
+   801→          </div>
+   802→        </div>
+   803→      </div>
+   804→
+   805→      {/* Summary Stats */}
+   806→      <div className="grid grid-cols-3 gap-4">
+   807→        <GlassCard className="text-center">
+   808→          <div className="text-2xl font-bold text-green-400"><AnimatedCounter value={presentCount} /></div>
+   809→          <div className="text-xs text-gray-400 mt-1">Present</div>
+   810→        </GlassCard>
+   811→        <GlassCard className="text-center">
+   812→          <div className="text-2xl font-bold text-red-400"><AnimatedCounter value={absentCount} /></div>
+   813→          <div className="text-xs text-gray-400 mt-1">Absent</div>
+   814→        </GlassCard>
+   815→        <GlassCard className="text-center">
+   816→          <div className="text-2xl font-bold text-cyan-400"><AnimatedCounter value={attendancePct} suffix="%" /></div>
+   817→          <div className="text-xs text-gray-400 mt-1">Percentage</div>
+   818→        </GlassCard>
+   819→      </div>
+   820→
+   821→      {/* AI Anomaly Alert */}
+   822→      <motion.div
+   823→        initial={{ opacity: 0, y: -5 }}
+   824→        animate={{ opacity: 1, y: 0 }}
+   825→        className="flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20"
+   826→      >
+   827→        <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+   828→        <div>
+   829→          <div className="text-sm text-yellow-300 font-medium">AI Anomaly Alert</div>
+   830→          <div className="text-xs text-yellow-400/70">3 students marked present but were absent in previous class: Rahul Verma (CS2022038), Karthik Rao (CS2022042), Deepak Yadav (CS2023016)</div>
+   831→        </div>
+   832→      </motion.div>
+   833→
+   834→      {/* Action Buttons */}
+   835→      <div className="flex gap-3">
+   836→        <motion.button
+   837→          whileHover={{ scale: 1.02 }}
+   838→          whileTap={{ scale: 0.98 }}
+   839→          onClick={toggleAllPresent}
+   840→          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors"
+   841→        >
+   842→          <UserCheck className="w-4 h-4" /> Mark All Present
+   843→        </motion.button>
+   844→        <motion.button
+   845→          whileHover={{ scale: 1.02 }}
+   846→          whileTap={{ scale: 0.98 }}
+   847→          onClick={toggleAllAbsent}
+   848→          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+   849→        >
+   850→          <UserX className="w-4 h-4" /> Mark All Absent
+   851→        </motion.button>
+   852→      </div>
+   853→
+   854→      {/* Student List with Toggle */}
+   855→      <GlassCard>
+   856→        <div className="flex items-center justify-between mb-4">
+   857→          <div className="flex items-center gap-2">
+   858→            <Users className="w-5 h-5 text-cyan-400" />
+   859→            <h3 className="text-white font-semibold">{selectedClass.name} - Attendance</h3>
+   860→          </div>
+   861→          <span className="text-xs text-gray-500">{selectedClass.studentsList.length} students</span>
+   862→        </div>
+   863→        <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+   864→          {selectedClass.studentsList.map((student, i) => (
+   865→            <motion.div
+   866→              key={student.roll}
+   867→              initial={{ opacity: 0, x: -10 }}
+   868→              animate={{ opacity: 1, x: 0 }}
+   869→              transition={{ delay: i * 0.02 }}
+   870→              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all"
+   871→            >
+   872→              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
+   873→                {student.name[0]}
+   874→              </div>
+   875→              <div className="flex-1 min-w-0">
+   876→                <div className="text-sm text-white">{student.name}</div>
+   877→                <div className="text-[10px] text-gray-500">{student.roll}</div>
+   878→              </div>
+   879→              <div className="text-[10px] text-gray-500 mr-2">Prev: <span className={student.attendance < 75 ? 'text-red-400' : 'text-green-400'}>{student.attendance}%</span></div>
+   880→              {/* Toggle Switch */}
+   881→              <button
+   882→                onClick={() => setAttendanceData(prev => ({ ...prev, [student.roll]: !prev[student.roll] }))}
+   883→                className={cn(
+   884→                  'relative w-12 h-6 rounded-full transition-colors duration-300 shrink-0',
+   885→                  attendanceData[student.roll] ? 'bg-green-500/40' : 'bg-red-500/40'
+   886→                )}
+   887→              >
+   888→                <motion.div
+   889→                  animate={{ x: attendanceData[student.roll] ? 24 : 2 }}
+   890→                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+   891→                  className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-md"
+   892→                />
+   893→                <span className={cn('absolute text-[8px] font-bold top-1 transition-opacity',
+   894→                  attendanceData[student.roll] ? 'left-1.5 text-green-900 opacity-100' : 'left-6 text-red-900 opacity-100'
+   895→                )}>
+   896→                  {attendanceData[student.roll] ? 'P' : 'A'}
+   897→                </span>
+   898→              </button>
+   899→            </motion.div>
+   900→          ))}
+   901→        </div>
+   902→      </GlassCard>
+   903→
+   904→      {/* Save Button */}
+   905→      <div className="flex justify-end">
+   906→        <motion.button
+   907→          whileHover={{ scale: 1.02 }}
+   908→          whileTap={{ scale: 0.98 }}
+   909→          onClick={() => {
+   910→            // Mock save - show toast-like feedback
+   911→            const btn = document.getElementById('save-attendance-btn');
+   912→            if (btn) {
+   913→              btn.textContent = '✓ Saved Successfully!';
+   914→              btn.classList.add('bg-green-500/20', 'border-green-500/30', 'text-green-400');
+   915→              setTimeout(() => {
+   916→                btn.innerHTML = '<span class="flex items-center gap-2"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Submit</span>';
+   917→                btn.classList.remove('bg-green-500/20', 'border-green-500/30', 'text-green-400');
+   918→              }, 2000);
+   919→            }
+   920→          }}
+   921→          id="save-attendance-btn"
+   922→          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+   923→        >
+   924→          <Save className="w-4 h-4" /> Save & Submit
+   925→        </motion.button>
+   926→      </div>
+   927→    </div>
+   928→  );
+   929→
+   930→  // ─── Assignments Tab ────────────────────────────────────────────────
+   931→  const AssignmentsTab = () => (
+   932→    <div className="space-y-6">
+   933→      <div className="flex items-center justify-between">
+   934→        <div className="flex items-center gap-3">
+   935→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+   936→            <FileText className="w-5 h-5 text-white" />
+   937→          </div>
+   938→          <SectionTitle>Assignments</SectionTitle>
+   939→        </div>
+   940→        <motion.button
+   941→          whileHover={{ scale: 1.05 }}
+   942→          whileTap={{ scale: 0.95 }}
+   943→          onClick={() => setShowNewAssignment(!showNewAssignment)}
+   944→          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+   945→        >
+   946→          <Plus className="w-4 h-4" /> New Assignment
+   947→        </motion.button>
+   948→      </div>
+   949→
+   950→      {/* New Assignment Form */}
+   951→      <AnimatePresence>
+   952→        {showNewAssignment && (
+   953→          <motion.div
+   954→            initial={{ opacity: 0, height: 0 }}
+   955→            animate={{ opacity: 1, height: 'auto' }}
+   956→            exit={{ opacity: 0, height: 0 }}
+   957→            className="overflow-hidden"
+   958→          >
+   959→            <GlassCard>
+   960→              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+   961→                <Plus className="w-4 h-4 text-purple-400" /> Create New Assignment
+   962→              </h3>
+   963→              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   964→                <div>
+   965→                  <label className="text-xs text-gray-400 mb-1.5 block">Title</label>
+   966→                  <input type="text" placeholder="Assignment title" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+   967→                </div>
+   968→                <div>
+   969→                  <label className="text-xs text-gray-400 mb-1.5 block">Subject</label>
+   970→                  <select className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
+   971→                    <option value="CS601">Machine Learning (CS601)</option>
+   972→                    <option value="CS503">Probability & Statistics (CS503)</option>
+   973→                    <option value="CS702">Deep Learning (CS702)</option>
+   974→                  </select>
+   975→                </div>
+   976→                <div>
+   977→                  <label className="text-xs text-gray-400 mb-1.5 block">Due Date</label>
+   978→                  <input type="date" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]" />
+   979→                </div>
+   980→                <div>
+   981→                  <label className="text-xs text-gray-400 mb-1.5 block">Max Marks</label>
+   982→                  <input type="number" placeholder="100" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+   983→                </div>
+   984→                <div className="md:col-span-2">
+   985→                  <label className="text-xs text-gray-400 mb-1.5 block">Description</label>
+   986→                  <textarea placeholder="Assignment description..." rows={3} className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors resize-none placeholder:text-gray-600" />
+   987→                </div>
+   988→              </div>
+   989→              <div className="flex justify-end gap-3 mt-4">
+   990→                <button onClick={() => setShowNewAssignment(false)} className="px-4 py-2 rounded-xl text-gray-400 text-sm hover:text-white transition-colors">Cancel</button>
+   991→                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+   992→                  <Save className="w-4 h-4" /> Create Assignment
+   993→                </motion.button>
+   994→              </div>
+   995→            </GlassCard>
+   996→          </motion.div>
+   997→        )}
+   998→      </AnimatePresence>
+   999→
+  1000→      {/* Assignment List */}
+  1001→      {selectedAssignment ? (
+  1002→        /* Assignment Detail / Grading View */
+  1003→        <div>
+  1004→          <button onClick={() => setSelectedAssignment(null)} className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 mb-4">
+  1005→            <ChevronRight className="w-3 h-3 rotate-180" /> Back to Assignments
+  1006→          </button>
+  1007→          <GlassCard>
+  1008→            <div className="flex items-start justify-between mb-4">
+  1009→              <div>
+  1010→                <h3 className="text-white font-semibold text-lg">{selectedAssignment.title}</h3>
+  1011→                <p className="text-xs text-gray-500">{selectedAssignment.subject} • Due: {selectedAssignment.dueDate} • Max: {selectedAssignment.maxMarks} marks</p>
+  1012→              </div>
+  1013→              <motion.button
+  1014→                whileHover={{ scale: 1.05 }}
+  1015→                whileTap={{ scale: 0.95 }}
+  1016→                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-medium hover:bg-purple-500/25 transition-colors"
+  1017→              >
+  1018→                <Sparkles className="w-3 h-3" /> AI Auto-Grade
+  1019→              </motion.button>
+  1020→            </div>
+  1021→            <p className="text-sm text-gray-400 mb-4">{selectedAssignment.description}</p>
+  1022→
+  1023→            <div className="grid grid-cols-3 gap-4 mb-4">
+  1024→              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+  1025→                <div className="text-lg font-bold text-white">{selectedAssignment.submissions}/{selectedAssignment.totalStudents}</div>
+  1026→                <div className="text-[10px] text-gray-500">Submitted</div>
+  1027→              </div>
+  1028→              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+  1029→                <div className="text-lg font-bold text-green-400">{selectedAssignment.graded}</div>
+  1030→                <div className="text-[10px] text-gray-500">Graded</div>
+  1031→              </div>
+  1032→              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+  1033→                <div className="text-lg font-bold text-yellow-400">{selectedAssignment.submissions - selectedAssignment.graded}</div>
+  1034→                <div className="text-[10px] text-gray-500">Pending</div>
+  1035→              </div>
+  1036→            </div>
+  1037→
+  1038→            <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+  1039→              {selectedAssignment.studentSubmissions.map((sub, i) => (
+  1040→                <motion.div
+  1041→                  key={sub.roll}
+  1042→                  initial={{ opacity: 0, x: -10 }}
+  1043→                  animate={{ opacity: 1, x: 0 }}
+  1044→                  transition={{ delay: i * 0.03 }}
+  1045→                  className={cn('flex items-center gap-3 p-3 rounded-xl border transition-colors',
+  1046→                    sub.submitted ? 'bg-white/[0.02] border-white/[0.04]' : 'bg-red-500/[0.03] border-red-500/10'
+  1047→                  )}
+  1048→                >
+  1049→                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
+  1050→                    {sub.name[0]}
+  1051→                  </div>
+  1052→                  <div className="flex-1 min-w-0">
+  1053→                    <div className="text-sm text-white">{sub.name}</div>
+  1054→                    <div className="text-[10px] text-gray-500">{sub.roll} • Submitted: {sub.date}</div>
+  1055→                  </div>
+  1056→                  {sub.submitted ? (
+  1057→                    <>
+  1058→                      <div className="flex items-center gap-2">
+  1059→                        <input
+  1060→                          type="number"
+  1061→                          defaultValue={sub.score || ''}
+  1062→                          placeholder="Score"
+  1063→                          className="w-16 px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs text-center focus:outline-none focus:border-purple-500/50"
+  1064→                        />
+  1065→                        <span className="text-[10px] text-gray-500">/{selectedAssignment.maxMarks}</span>
+  1066→                      </div>
+  1067→                      <input
+  1068→                        type="text"
+  1069→                        defaultValue={sub.feedback}
+  1070→                        placeholder="Feedback"
+  1071→                        className="w-40 px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-purple-500/50 placeholder:text-gray-600"
+  1072→                      />
+  1073→                    </>
+  1074→                  ) : (
+  1075→                    <span className="text-xs text-red-400 font-medium">Not Submitted</span>
+  1076→                  )}
+  1077→                </motion.div>
+  1078→              ))}
+  1079→            </div>
+  1080→          </GlassCard>
+  1081→        </div>
+  1082→      ) : (
+  1083→        /* Assignment Cards */
+  1084→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  1085→          {assignments.map((asgn, i) => (
+  1086→            <motion.div
+  1087→              key={asgn.id}
+  1088→              initial={{ opacity: 0, y: 20 }}
+  1089→              animate={{ opacity: 1, y: 0 }}
+  1090→              transition={{ delay: i * 0.1 }}
+  1091→              whileHover={{ y: -4 }}
+  1092→              onClick={() => setSelectedAssignment(asgn)}
+  1093→              className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all cursor-pointer group"
+  1094→            >
+  1095→              <div className="flex items-start justify-between mb-3">
+  1096→                <div>
+  1097→                  <h4 className="text-white font-medium text-sm group-hover:text-purple-300 transition-colors">{asgn.title}</h4>
+  1098→                  <p className="text-[10px] text-gray-500">{asgn.subject} • {asgn.subjectCode}</p>
+  1099→                </div>
+  1100→                <FileText className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors" />
+  1101→              </div>
+  1102→              <p className="text-xs text-gray-500 mb-3 line-clamp-2">{asgn.description}</p>
+  1103→              <div className="grid grid-cols-3 gap-2 mb-3">
+  1104→                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+  1105→                  <div className="text-sm font-bold text-white">{asgn.submissions}/{asgn.totalStudents}</div>
+  1106→                  <div className="text-[9px] text-gray-500">Submitted</div>
+  1107→                </div>
+  1108→                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+  1109→                  <div className="text-sm font-bold text-green-400">{asgn.graded}</div>
+  1110→                  <div className="text-[9px] text-gray-500">Graded</div>
+  1111→                </div>
+  1112→                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+  1113→                  <div className="text-sm font-bold text-cyan-400">{asgn.maxMarks}</div>
+  1114→                  <div className="text-[9px] text-gray-500">Max Marks</div>
+  1115→                </div>
+  1116→              </div>
+  1117→              <div className="flex items-center justify-between">
+  1118→                <span className="text-xs text-gray-500">Due: {asgn.dueDate}</span>
+  1119→                <ChevronRight className="w-3 h-3 text-gray-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+  1120→              </div>
+  1121→            </motion.div>
+  1122→          ))}
+  1123→        </div>
+  1124→      )}
+  1125→    </div>
+  1126→  );
+  1127→
+  1128→  // ─── Research Tab ───────────────────────────────────────────────────
+  1129→  const ResearchTab = () => (
+  1130→    <div className="space-y-6">
+  1131→      <div className="flex items-center justify-between">
+  1132→        <div className="flex items-center gap-3">
+  1133→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+  1134→            <FlaskConical className="w-5 h-5 text-white" />
+  1135→          </div>
+  1136→          <SectionTitle>Research</SectionTitle>
+  1137→        </div>
+  1138→        <motion.button
+  1139→          whileHover={{ scale: 1.05 }}
+  1140→          whileTap={{ scale: 0.95 }}
+  1141→          onClick={() => setShowNewResearch(!showNewResearch)}
+  1142→          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+  1143→        >
+  1144→          <Plus className="w-4 h-4" /> Add Paper
+  1145→        </motion.button>
+  1146→      </div>
+  1147→
+  1148→      {/* Research Stats */}
+  1149→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  1150→        {[
+  1151→          { label: 'Total Papers', value: 5, icon: FileText, color: 'purple' },
+  1152→          { label: 'Published', value: 3, icon: CheckCircle2, color: 'green' },
+  1153→          { label: 'Total Citations', value: 260, icon: TrendingUp, color: 'cyan' },
+  1154→          { label: 'H-Index', value: 4, icon: Star, color: 'yellow' },
+  1155→        ].map((stat, i) => (
+  1156→          <motion.div
+  1157→            key={stat.label}
+  1158→            initial={{ opacity: 0, y: 20 }}
+  1159→            animate={{ opacity: 1, y: 0 }}
+  1160→            transition={{ delay: i * 0.05 }}
+  1161→            className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08]"
+  1162→          >
+  1163→            <div className="flex items-center gap-2 mb-2">
+  1164→              <stat.icon className={cn('w-4 h-4',
+  1165→                stat.color === 'purple' ? 'text-purple-400' :
+  1166→                stat.color === 'green' ? 'text-green-400' :
+  1167→                stat.color === 'cyan' ? 'text-cyan-400' : 'text-yellow-400'
+  1168→              )} />
+  1169→              <span className="text-xs text-gray-400">{stat.label}</span>
+  1170→            </div>
+  1171→            <div className="text-2xl font-bold text-white"><AnimatedCounter value={stat.value} /></div>
+  1172→          </motion.div>
+  1173→        ))}
+  1174→      </div>
+  1175→
+  1176→      {/* Citation Chart */}
+  1177→      <GlassCard>
+  1178→        <div className="flex items-center justify-between mb-4">
+  1179→          <div className="flex items-center gap-2">
+  1180→            <TrendingUp className="w-5 h-5 text-cyan-400" />
+  1181→            <h3 className="text-white font-semibold">Citation Tracker</h3>
+  1182→          </div>
+  1183→          <span className="text-xs text-gray-500">Last 12 months</span>
+  1184→        </div>
+  1185→        <div className="h-48">
+  1186→          <ResponsiveContainer width="100%" height="100%">
+  1187→            <AreaChart data={citationData}>
+  1188→              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+  1189→              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+  1190→              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+  1191→              <Tooltip content={<CustomTooltip />} />
+  1192→              <defs>
+  1193→                <linearGradient id="citationGrad" x1="0" y1="0" x2="0" y2="1">
+  1194→                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+  1195→                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+  1196→                </linearGradient>
+  1197→              </defs>
+  1198→              <Area type="monotone" dataKey="citations" name="Citations" stroke="#06b6d4" fill="url(#citationGrad)" strokeWidth={2} />
+  1199→            </AreaChart>
+  1200→          </ResponsiveContainer>
+  1201→        </div>
+  1202→      </GlassCard>
+  1203→
+  1204→      {/* New Research Form */}
+  1205→      <AnimatePresence>
+  1206→        {showNewResearch && (
+  1207→          <motion.div
+  1208→            initial={{ opacity: 0, height: 0 }}
+  1209→            animate={{ opacity: 1, height: 'auto' }}
+  1210→            exit={{ opacity: 0, height: 0 }}
+  1211→            className="overflow-hidden"
+  1212→          >
+  1213→            <GlassCard>
+  1214→              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+  1215→                <Plus className="w-4 h-4 text-purple-400" /> Add Research Paper
+  1216→              </h3>
+  1217→              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  1218→                <div className="md:col-span-2">
+  1219→                  <label className="text-xs text-gray-400 mb-1.5 block">Title</label>
+  1220→                  <input type="text" placeholder="Paper title" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+  1221→                </div>
+  1222→                <div>
+  1223→                  <label className="text-xs text-gray-400 mb-1.5 block">Journal / Conference</label>
+  1224→                  <input type="text" placeholder="Journal name" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+  1225→                </div>
+  1226→                <div>
+  1227→                  <label className="text-xs text-gray-400 mb-1.5 block">Status</label>
+  1228→                  <select className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
+  1229→                    <option value="draft">Draft</option>
+  1230→                    <option value="under_review">Under Review</option>
+  1231→                    <option value="accepted">Accepted</option>
+  1232→                    <option value="published">Published</option>
+  1233→                  </select>
+  1234→                </div>
+  1235→                <div className="md:col-span-2">
+  1236→                  <label className="text-xs text-gray-400 mb-1.5 block">Co-Authors</label>
+  1237→                  <input type="text" placeholder="Comma separated names" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+  1238→                </div>
+  1239→              </div>
+  1240→              <div className="flex justify-end gap-3 mt-4">
+  1241→                <button onClick={() => setShowNewResearch(false)} className="px-4 py-2 rounded-xl text-gray-400 text-sm hover:text-white transition-colors">Cancel</button>
+  1242→                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+  1243→                  <Save className="w-4 h-4" /> Add Paper
+  1244→                </motion.button>
+  1245→              </div>
+  1246→            </GlassCard>
+  1247→          </motion.div>
+  1248→        )}
+  1249→      </AnimatePresence>
+  1250→
+  1251→      {/* Papers List */}
+  1252→      <div className="space-y-3">
+  1253→        {researchPapers.map((paper, i) => (
+  1254→          <motion.div
+  1255→            key={paper.id}
+  1256→            initial={{ opacity: 0, x: -10 }}
+  1257→            animate={{ opacity: 1, x: 0 }}
+  1258→            transition={{ delay: i * 0.05 }}
+  1259→            className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all"
+  1260→          >
+  1261→            <div className="flex items-start justify-between mb-2">
+  1262→              <div className="flex-1 min-w-0">
+  1263→                <h4 className="text-white font-medium text-sm">{paper.title}</h4>
+  1264→                <p className="text-xs text-gray-500 mt-0.5">{paper.journal} • {paper.year}</p>
+  1265→              </div>
+  1266→              <span className={cn('text-[10px] px-2.5 py-1 rounded-full border font-medium shrink-0 ml-3',
+  1267→                paper.status === 'published' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+  1268→                paper.status === 'accepted' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+  1269→                paper.status === 'under_review' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+  1270→                'bg-gray-500/10 text-gray-400 border-gray-500/20'
+  1271→              )}>
+  1272→                {paper.status.replace('_', ' ').toUpperCase()}
+  1273→              </span>
+  1274→            </div>
+  1275→            <div className="flex items-center gap-4 text-xs text-gray-400">
+  1276→              <span className="flex items-center gap-1">
+  1277→                <Users className="w-3 h-3" />
+  1278→                {paper.coAuthors.join(', ')}
+  1279→              </span>
+  1280→              {paper.citations > 0 && (
+  1281→                <span className="flex items-center gap-1 text-cyan-400">
+  1282→                  <Hash className="w-3 h-3" />
+  1283→                  {paper.citations} citations
+  1284→                </span>
+  1285→              )}
+  1286→              {paper.doi !== 'pending' && (
+  1287→                <span className="flex items-center gap-1">
+  1288→                  <ExternalLink className="w-3 h-3" />
+  1289→                  DOI: {paper.doi}
+  1290→                </span>
+  1291→              )}
+  1292→            </div>
+  1293→          </motion.div>
+  1294→        ))}
+  1295→      </div>
+  1296→
+  1297→      {/* AI Research Assistant */}
+  1298→      <motion.button
+  1299→        whileHover={{ scale: 1.02, y: -2 }}
+  1300→        whileTap={{ scale: 0.98 }}
+  1301→        onClick={() => { handleTabChange('ai-assistant'); setSelectedAgent('research'); }}
+  1302→        className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-cyan-500/5 border border-white/[0.08] hover:border-purple-500/30 transition-all group"
+  1303→      >
+  1304→        <FlaskConical className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+  1305→        <span className="text-sm text-white font-medium group-hover:text-purple-300 transition-colors">Chat with AI Research Assistant</span>
+  1306→        <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+  1307→      </motion.button>
+  1308→    </div>
+  1309→  );
+  1310→
+  1311→  // ─── Schedule Tab ───────────────────────────────────────────────────
+  1312→  const ScheduleTab = () => {
+  1313→    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  1314→    const timeSlots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'];
+  1315→
+  1316→    const getClassForSlot = (day: string, time: string) => {
+  1317→      const daySchedule = weeklySchedule[day] || [];
+  1318→      return daySchedule.find(cls => {
+  1319→        const [start] = cls.time.split('-');
+  1320→        return start.trim() === time;
+  1321→      });
+  1322→    };
+  1323→
+  1324→    return (
+  1325→      <div className="space-y-6">
+  1326→        <div className="flex items-center justify-between">
+  1327→          <div className="flex items-center gap-3">
+  1328→            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+  1329→              <CalendarDays className="w-5 h-5 text-white" />
+  1330→            </div>
+  1331→            <SectionTitle>Weekly Schedule</SectionTitle>
+  1332→          </div>
+  1333→          <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+  1334→            Even Semester 2025
+  1335→          </span>
+  1336→        </div>
+  1337→
+  1338→        {/* Weekly Grid */}
+  1339→        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+  1340→          {/* Header */}
+  1341→          <div className="grid grid-cols-7 border-b border-white/[0.06]">
+  1342→            <div className="p-3 text-xs text-gray-500 font-medium text-center border-r border-white/[0.06]">Time</div>
+  1343→            {days.map(day => (
+  1344→              <div key={day} className={cn('p-3 text-xs font-medium text-center border-r border-white/[0.06] last:border-r-0',
+  1345→                day === 'Wed' ? 'text-purple-400' : 'text-gray-400'
+  1346→              )}>
+  1347→                {day}
+  1348→              </div>
+  1349→            ))}
+  1350→          </div>
+  1351→
+  1352→          {/* Time Slots */}
+  1353→          {timeSlots.map((time, ti) => (
+  1354→            <div key={time} className={cn('grid grid-cols-7', ti < timeSlots.length - 1 && 'border-b border-white/[0.04]')}>
+  1355→              <div className="p-2 text-[10px] text-gray-600 font-mono text-center border-r border-white/[0.06] flex items-center justify-center">
+  1356→                {time}
+  1357→              </div>
+  1358→              {days.map(day => {
+  1359→                const cls = getClassForSlot(day, time);
+  1360→                const colors = cls ? (deptColors[cls.dept] || deptColors.CS) : null;
+  1361→                return (
+  1362→                  <div key={`${day}-${time}`} className={cn(
+  1363→                    'p-1 border-r border-white/[0.06] last:border-r-0 min-h-[48px]',
+  1364→                    !cls && 'bg-white/[0.01]'
+  1365→                  )}>
+  1366→                    {cls ? (
+  1367→                      <motion.div
+  1368→                        initial={{ opacity: 0, scale: 0.9 }}
+  1369→                        animate={{ opacity: 1, scale: 1 }}
+  1370→                        whileHover={{ scale: 1.05 }}
+  1371→                        className={cn(
+  1372→                          'h-full p-1.5 rounded-lg border text-[10px] cursor-pointer transition-all',
+  1373→                          colors?.bg, colors?.border
+  1374→                        )}
+  1375→                        title={`${cls.subject} - ${cls.room}`}
+  1376→                      >
+  1377→                        <div className={cn('font-medium truncate', colors?.text)}>{cls.subject}</div>
+  1378→                        <div className="text-gray-500 truncate">{cls.room}</div>
+  1379→                      </motion.div>
+  1380→                    ) : (
+  1381→                      <div className="h-full flex items-center justify-center">
+  1382→                        <span className="text-[8px] text-gray-700">Free</span>
+  1383→                      </div>
+  1384→                    )}
+  1385→                  </div>
+  1386→                );
+  1387→              })}
+  1388→            </div>
+  1389→          ))}
+  1390→        </div>
+  1391→
+  1392→        {/* Class Legend */}
+  1393→        <div className="flex flex-wrap gap-3">
+  1394→          {Object.entries({
+  1395→            'Machine Learning': 'CS',
+  1396→            'Probability & Statistics': 'CS',
+  1397→            'Deep Learning': 'CS',
+  1398→            'ML Lab': 'CS',
+  1399→            'Office Hours': 'CS',
+  1400→            'Research Meeting': 'CS',
+  1401→          }).map(([name, dept]) => {
+  1402→            const colors = deptColors[dept];
+  1403→            return (
+  1404→              <div key={name} className="flex items-center gap-2 text-xs text-gray-400">
+  1405→                <div className={cn('w-3 h-3 rounded', colors.bg, 'border', colors.border)} />
+  1406→                <span>{name}</span>
+  1407→              </div>
+  1408→            );
+  1409→          })}
+  1410→        </div>
+  1411→
+  1412→        {/* Next Week Preview */}
+  1413→        <GlassCard>
+  1414→          <div className="flex items-center justify-between mb-3">
+  1415→            <div className="flex items-center gap-2">
+  1416→              <Calendar className="w-5 h-5 text-purple-400" />
+  1417→              <h3 className="text-white font-semibold">Next Week Preview</h3>
+  1418→            </div>
+  1419→            <span className="text-xs text-gray-500">Mar 10 - Mar 15</span>
+  1420→          </div>
+  1421→          <div className="space-y-2">
+  1422→            {[
+  1423→              { day: 'Monday', events: '3 classes + 1 lab session', highlight: 'ML Mid-semester review' },
+  1424→              { day: 'Tuesday', events: '2 classes', highlight: 'P&S Assignment due' },
+  1425→              { day: 'Wednesday', events: '2 classes + Office Hours', highlight: 'DL Project presentation' },
+  1426→              { day: 'Thursday', events: '1 class + Research Meeting', highlight: 'Paper review submission' },
+  1427→              { day: 'Friday', events: '2 classes', highlight: 'ML Lab evaluation' },
+  1428→            ].map((day, i) => (
+  1429→              <div key={day.day} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+  1430→                <div className="w-1 h-8 rounded-full bg-gradient-to-b from-purple-500 to-cyan-500 shrink-0" />
+  1431→                <div className="w-20 shrink-0 text-xs text-purple-400 font-medium">{day.day}</div>
+  1432→                <div className="flex-1 text-xs text-gray-400">{day.events}</div>
+  1433→                <div className="text-[10px] text-cyan-400 flex items-center gap-1">
+  1434→                  <Sparkles className="w-3 h-3" /> {day.highlight}
+  1435→                </div>
+  1436→              </div>
+  1437→            ))}
+  1438→          </div>
+  1439→        </GlassCard>
+  1440→      </div>
+  1441→    );
+  1442→  };
+  1443→
+  1444→  // ─── AI Assistant Tab ───────────────────────────────────────────────
+  1445→  const AIAssistantTab = () => {
+  1446→    const currentAgent = aiAgents.find(a => a.id === selectedAgent);
+  1447→    const totalTokens = aiAgents.reduce((sum, a) => sum + a.tokens, 0);
+  1448→
+  1449→    return (
+  1450→      <div className="space-y-6">
+  1451→        <div className="flex items-center gap-3 mb-2">
+  1452→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+  1453→            <Brain className="w-5 h-5 text-white" />
+  1454→          </div>
+  1455→          <SectionTitle>AI Assistant</SectionTitle>
+  1456→        </div>
+  1457→
+  1458→        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  1459→          {/* Agent Selector & Token Usage */}
+  1460→          <div className="space-y-4">
+  1461→            <GlassCard>
+  1462→              <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+  1463→                <BotIcon className="w-4 h-4 text-purple-400" /> Select Agent
+  1464→              </h3>
+  1465→              <div className="space-y-2">
+  1466→                {aiAgents.map(agent => (
+  1467→                  <motion.button
+  1468→                    key={agent.id}
+  1469→                    whileHover={{ x: 4 }}
+  1470→                    onClick={() => setSelectedAgent(agent.id)}
+  1471→                    className={cn(
+  1472→                      'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all',
+  1473→                      selectedAgent === agent.id
+  1474→                        ? 'bg-purple-500/10 border-purple-500/30'
+  1475→                        : 'bg-white/[0.02] border-white/[0.04] hover:border-white/[0.1]'
+  1476→                    )}
+  1477→                  >
+  1478→                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center',
+  1479→                      selectedAgent === agent.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/[0.04]'
+  1480→                    )}>
+  1481→                      <agent.icon className={cn('w-4 h-4', selectedAgent === agent.id ? 'text-purple-400' : 'text-gray-400')} />
+  1482→                    </div>
+  1483→                    <div className="flex-1 min-w-0">
+  1484→                      <div className={cn('text-sm font-medium', selectedAgent === agent.id ? 'text-purple-300' : 'text-white')}>{agent.name}</div>
+  1485→                      <div className="text-[10px] text-gray-500 truncate">{agent.description}</div>
+  1486→                    </div>
+  1487→                    <div className={cn('w-2 h-2 rounded-full', agent.active ? 'bg-green-400' : 'bg-gray-600')} />
+  1488→                  </motion.button>
+  1489→                ))}
+  1490→              </div>
+  1491→            </GlassCard>
+  1492→
+  1493→            {/* Token Usage */}
+  1494→            <GlassCard>
+  1495→              <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+  1496→                <Zap className="w-4 h-4 text-cyan-400" /> Token Usage
+  1497→              </h3>
+  1498→              <div className="text-center mb-3">
+  1499→                <div className="text-3xl font-bold text-white"><AnimatedCounter value={totalTokens} /></div>
+  1500→                <div className="text-xs text-gray-500">tokens used today</div>
+  1501→              </div>
+  1502→              <div className="space-y-2">
+  1503→                {aiAgents.map(agent => (
+  1504→                  <div key={agent.id}>
+  1505→                    <div className="flex justify-between text-[10px] mb-1">
+  1506→                      <span className="text-gray-400">{agent.name}</span>
+  1507→                      <span className="text-gray-500">{agent.tokens.toLocaleString()}</span>
+  1508→                    </div>
+  1509→                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+  1510→                      <div
+  1511→                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500"
+  1512→                        style={{ width: `${(agent.tokens / totalTokens) * 100}%` }}
+  1513→                      />
+  1514→                    </div>
+  1515→                  </div>
+  1516→                ))}
+  1517→              </div>
+  1518→            </GlassCard>
+  1519→          </div>
+  1520→
+  1521→          {/* Chat Interface */}
+  1522→          <div className="md:col-span-2 flex flex-col">
+  1523→            <GlassCard className="flex-1 flex flex-col">
+  1524→              {/* Chat Header */}
+  1525→              <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+  1526→                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+  1527→                  {currentAgent && <currentAgent.icon className="w-4 h-4 text-purple-400" />}
+  1528→                </div>
+  1529→                <div>
+  1530→                  <div className="text-sm text-white font-medium">{currentAgent?.name}</div>
+  1531→                  <div className="text-[10px] text-gray-500 flex items-center gap-1">
+  1532→                    <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Active
+  1533→                  </div>
+  1534→                </div>
+  1535→              </div>
+  1536→
+  1537→              {/* Chat Messages */}
+  1538→              <div className="flex-1 max-h-96 overflow-y-auto custom-scrollbar py-4 space-y-3">
+  1539→                {chatMessages.map((msg, i) => (
+  1540→                  <motion.div
+  1541→                    key={i}
+  1542→                    initial={{ opacity: 0, y: 10 }}
+  1543→                    animate={{ opacity: 1, y: 0 }}
+  1544→                    className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}
+  1545→                  >
+  1546→                    <div className={cn(
+  1547→                      'max-w-[80%] rounded-2xl px-4 py-3',
+  1548→                      msg.role === 'user'
+  1549→                        ? 'bg-purple-500/15 border border-purple-500/20 text-white'
+  1550→                        : 'bg-white/[0.03] border border-white/[0.06] text-gray-300'
+  1551→                    )}>
+  1552→                      {msg.agent && (
+  1553→                        <div className="text-[10px] text-purple-400 font-medium mb-1">{msg.agent}</div>
+  1554→                      )}
+  1555→                      <p className="text-sm leading-relaxed">{msg.content}</p>
+  1556→                    </div>
+  1557→                  </motion.div>
+  1558→                ))}
+  1559→              </div>
+  1560→
+  1561→              {/* Suggested Prompts */}
+  1562→              <div className="py-2 border-t border-white/[0.06]">
+  1563→                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3">
+  1564→                  {suggestedPrompts.map((prompt, i) => (
+  1565→                    <motion.button
+  1566→                      key={i}
+  1567→                      whileHover={{ scale: 1.02 }}
+  1568→                      whileTap={{ scale: 0.98 }}
+  1569→                      onClick={() => { setChatInput(prompt); }}
+  1570→                      className="shrink-0 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs text-gray-400 hover:text-white hover:border-purple-500/20 transition-colors whitespace-nowrap"
+  1571→                    >
+  1572→                      {prompt}
+  1573→                    </motion.button>
+  1574→                  ))}
+  1575→                </div>
+  1576→              </div>
+  1577→
+  1578→              {/* Chat Input */}
+  1579→              <div className="flex gap-3 pt-3 border-t border-white/[0.06]">
+  1580→                <input
+  1581→                  type="text"
+  1582→                  value={chatInput}
+  1583→                  onChange={e => setChatInput(e.target.value)}
+  1584→                  onKeyDown={e => e.key === 'Enter' && handleSendChat()}
+  1585→                  placeholder="Ask your AI assistant..."
+  1586→                  className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600"
+  1587→                />
+  1588→                <motion.button
+  1589→                  whileHover={{ scale: 1.05 }}
+  1590→                  whileTap={{ scale: 0.95 }}
+  1591→                  onClick={handleSendChat}
+  1592→                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+  1593→                >
+  1594→                  <Send className="w-4 h-4" />
+  1595→                </motion.button>
+  1596→              </div>
+  1597→            </GlassCard>
+  1598→          </div>
+  1599→        </div>
+  1600→      </div>
+  1601→    );
+  1602→  };
+  1603→
+  1604→  // ─── Tab Content Renderer ───────────────────────────────────────────
+  1605→  const renderTabContent = () => {
+  1606→    switch (activeTab) {
+  1607→      case 'dashboard': return <DashboardTab />;
+  1608→      case 'classes': return <ClassesTab />;
+  1609→      case 'attendance': return <AttendanceTab />;
+  1610→      case 'assignments': return <AssignmentsTab />;
+  1611→      case 'research': return <ResearchTab />;
+  1612→      case 'schedule': return <ScheduleTab />;
+  1613→      case 'ai-assistant': return <AIAssistantTab />;
+  1614→      default: return <DashboardTab />;
+  1615→    }
+  1616→  };
+  1617→
+  1618→  // ─── Main Render ────────────────────────────────────────────────────
+  1619→  return (
+  1620→    <motion.div
+  1621→      initial={{ opacity: 0 }}
+  1622→      animate={{ opacity: 1 }}
+  1623→      transition={{ duration: 0.4 }}
+  1624→      className="h-full flex flex-col"
+  1625→    >
+  1626→      {/* Tab Navigation */}
+  1627→      <div className="px-6 pt-4 pb-0">
+  1628→        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.02] border border-white/[0.06] overflow-x-auto">
+  1629→          {tabs.map(tab => (
+  1630→            <motion.button
+  1631→              key={tab.id}
+  1632→              whileHover={{ scale: 1.02 }}
+  1633→              whileTap={{ scale: 0.98 }}
+  1634→              onClick={() => handleTabChange(tab.id)}
+  1635→              className={cn(
+  1636→                'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap',
+  1637→                activeTab === tab.id
+  1638→                  ? 'bg-purple-500/15 text-purple-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+  1639→                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/[0.03]'
+  1640→              )}
+  1641→            >
+  1642→              <tab.icon className="w-4 h-4" />
+  1643→              <span className="hidden sm:inline">{tab.label}</span>
+  1644→            </motion.button>
+  1645→          ))}
+  1646→        </div>
+  1647→      </div>
+  1648→
+  1649→      {/* Tab Content */}
+  1650→      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+  1651→        <AnimatePresence mode="wait">
+  1652→          <motion.div
+  1653→            key={activeTab}
+  1654→            initial={{ opacity: 0, y: 10 }}
+  1655→            animate={{ opacity: 1, y: 0 }}
+  1656→            exit={{ opacity: 0, y: -10 }}
+  1657→            transition={{ duration: 0.2 }}
+  1658→          >
+  1659→            {renderTabContent()}
+  1660→          </motion.div>
+  1661→        </AnimatePresence>
+  1662→      </div>
+  1663→    </motion.div>
+  1664→  );
+  1665→}
+  1666→

@@ -1,0 +1,1159 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  BookOpen, Search, Plus, Pencil, LayoutGrid, List,
+     7→  ChevronRight, X, AlertTriangle, Star, Clock, Users,
+     8→  CheckCircle2, GraduationCap, Calendar, User, Eye,
+     9→  BarChart3, BookMarked, Hash
+    10→} from 'lucide-react';
+    11→import { cn } from '@/lib/utils';
+    12→import { fetchAPI, postAPI } from '@/lib/store';
+    13→import {
+    14→  Dialog, DialogContent, DialogHeader, DialogTitle,
+    15→  DialogDescription, DialogFooter,
+    16→} from '@/components/ui/dialog';
+    17→import { Badge } from '@/components/ui/badge';
+    18→
+    19→// ─── Types ────────────────────────────────────────────────────────────────
+    20→interface FacultyInfo {
+    21→  id: string;
+    22→  name: string;
+    23→  email: string;
+    24→  designation: string;
+    25→}
+    26→
+    27→interface Subject {
+    28→  id: string;
+    29→  code: string;
+    30→  name: string;
+    31→  department: string;
+    32→  semester: number;
+    33→  credits: number;
+    34→  schedule: string | null;
+    35→  facultyId: string;
+    36→  faculty: FacultyInfo;
+    37→  enrollmentCount: number;
+    38→}
+    39→
+    40→interface SubjectsResponse {
+    41→  subjects: Subject[];
+    42→  total: number;
+    43→  page: number;
+    44→  limit: number;
+    45→}
+    46→
+    47→interface FacultyOption {
+    48→  id: string;
+    49→  department: string;
+    50→  designation: string;
+    51→  user: {
+    52→    id: string;
+    53→    name: string;
+    54→    email: string;
+    55→  };
+    56→  subjectCount: number;
+    57→}
+    58→
+    59→// ─── Constants ────────────────────────────────────────────────────────────
+    60→const DEPARTMENTS = ['CS', 'IT', 'ECE', 'EEE', 'ME', 'CE'];
+    61→const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+    62→const CREDITS = [1, 2, 3, 4, 5];
+    63→
+    64→const DEPT_COLORS: Record<string, string> = {
+    65→  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    66→  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    67→  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    68→  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+    69→  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
+    70→  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    71→};
+    72→
+    73→const DEPT_ACCENT: Record<string, string> = {
+    74→  CS: 'border-t-purple-500',
+    75→  IT: 'border-t-cyan-500',
+    76→  ECE: 'border-t-blue-500',
+    77→  EEE: 'border-t-yellow-500',
+    78→  ME: 'border-t-orange-500',
+    79→  CE: 'border-t-emerald-500',
+    80→};
+    81→
+    82→const DEPT_GLOW: Record<string, string> = {
+    83→  CS: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]',
+    84→  IT: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]',
+    85→  ECE: 'hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]',
+    86→  EEE: 'hover:shadow-[0_0_30px_rgba(234,179,8,0.15)]',
+    87→  ME: 'hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]',
+    88→  CE: 'hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]',
+    89→};
+    90→
+    91→const DEPT_TOP_LINE: Record<string, string> = {
+    92→  CS: 'from-purple-500 to-violet-600',
+    93→  IT: 'from-cyan-500 to-blue-600',
+    94→  ECE: 'from-blue-500 to-indigo-600',
+    95→  EEE: 'from-yellow-500 to-amber-600',
+    96→  ME: 'from-orange-500 to-red-600',
+    97→  CE: 'from-emerald-500 to-teal-600',
+    98→};
+    99→
+   100→// ─── Form State ───────────────────────────────────────────────────────────
+   101→interface SubjectForm {
+   102→  name: string;
+   103→  code: string;
+   104→  department: string;
+   105→  semester: number;
+   106→  credits: number;
+   107→  facultyId: string;
+   108→  schedule: string;
+   109→}
+   110→
+   111→const emptyForm: SubjectForm = {
+   112→  name: '', code: '', department: 'CS',
+   113→  semester: 1, credits: 3, facultyId: '', schedule: '',
+   114→};
+   115→
+   116→// ═══════════════════════════════════════════════════════════════════════════
+   117→// Main Component
+   118→// ═══════════════════════════════════════════════════════════════════════════
+   119→export default function AdminCourseManager() {
+   120→  // ─── State ────────────────────────────────────────────────────────────
+   121→  const [subjects, setSubjects] = useState<Subject[]>([]);
+   122→  const [total, setTotal] = useState(0);
+   123→  const [page, setPage] = useState(1);
+   124→  const [limit] = useState(20);
+   125→  const [loading, setLoading] = useState(true);
+   126→  const [search, setSearch] = useState('');
+   127→  const [debouncedSearch, setDebouncedSearch] = useState('');
+   128→  const [filterDept, setFilterDept] = useState('');
+   129→  const [filterSemester, setFilterSemester] = useState('');
+   130→  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+   131→  const [form, setForm] = useState<SubjectForm>(emptyForm);
+   132→  const [dialogOpen, setDialogOpen] = useState(false);
+   133→  const [detailSubject, setDetailSubject] = useState<Subject | null>(null);
+   134→  const [submitting, setSubmitting] = useState(false);
+   135→  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+   136→  const [facultyList, setFacultyList] = useState<FacultyOption[]>([]);
+   137→
+   138→  // ─── Debounced search ─────────────────────────────────────────────────
+   139→  useEffect(() => {
+   140→    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+   141→    return () => clearTimeout(timer);
+   142→  }, [search]);
+   143→
+   144→  // ─── Fetch subjects ────────────────────────────────────────────────────
+   145→  const loadSubjects = useCallback(async () => {
+   146→    setLoading(true);
+   147→    try {
+   148→      const params = new URLSearchParams();
+   149→      params.set('page', String(page));
+   150→      params.set('limit', String(limit));
+   151→      if (debouncedSearch) params.set('search', debouncedSearch);
+   152→      if (filterDept) params.set('department', filterDept);
+   153→      if (filterSemester) params.set('semester', filterSemester);
+   154→      const data = await fetchAPI(`/admin/subjects?${params.toString()}`);
+   155→      setSubjects(data.subjects || []);
+   156→      setTotal(data.total || 0);
+   157→    } catch (err) {
+   158→      console.error('Failed to load subjects:', err);
+   159→      showToast('Failed to load subjects', 'error');
+   160→    } finally {
+   161→      setLoading(false);
+   162→    }
+   163→  }, [page, limit, debouncedSearch, filterDept, filterSemester]);
+   164→
+   165→  useEffect(() => { loadSubjects(); }, [loadSubjects]);
+   166→
+   167→  // ─── Fetch faculty for dropdown ────────────────────────────────────────
+   168→  useEffect(() => {
+   169→    const loadFaculty = async () => {
+   170→      try {
+   171→        const data = await fetchAPI('/admin/faculty?limit=100');
+   172→        setFacultyList(data.faculty || []);
+   173→      } catch (err) {
+   174→        console.error('Failed to load faculty list:', err);
+   175→      }
+   176→    };
+   177→    loadFaculty();
+   178→  }, []);
+   179→
+   180→  // ─── Toast ────────────────────────────────────────────────────────────
+   181→  const showToast = (msg: string, type: 'success' | 'error') => {
+   182→    setToast({ msg, type });
+   183→    setTimeout(() => setToast(null), 3500);
+   184→  };
+   185→
+   186→  // ─── Form handlers ────────────────────────────────────────────────────
+   187→  const openAdd = () => {
+   188→    setForm(emptyForm);
+   189→    setDialogOpen(true);
+   190→  };
+   191→
+   192→  const handleSubmit = async () => {
+   193→    if (!form.name || !form.code || !form.department || !form.semester || !form.facultyId) {
+   194→      showToast('Please fill all required fields', 'error');
+   195→      return;
+   196→    }
+   197→    setSubmitting(true);
+   198→    try {
+   199→      const payload = {
+   200→        name: form.name,
+   201→        code: form.code.toUpperCase(),
+   202→        department: form.department,
+   203→        semester: form.semester,
+   204→        credits: form.credits,
+   205→        facultyId: form.facultyId,
+   206→        schedule: form.schedule || null,
+   207→      };
+   208→      await postAPI('/admin/subjects', payload);
+   209→      showToast('Subject added successfully', 'success');
+   210→      setDialogOpen(false);
+   211→      loadSubjects();
+   212→    } catch (err: any) {
+   213→      const msg = err?.message || 'Operation failed';
+   214→      if (msg.includes('409')) {
+   215→        showToast('Subject code already exists', 'error');
+   216→      } else {
+   217→        showToast(msg, 'error');
+   218→      }
+   219→    } finally {
+   220→      setSubmitting(false);
+   221→    }
+   222→  };
+   223→
+   224→  // ─── Pagination ───────────────────────────────────────────────────────
+   225→  const totalPages = Math.ceil(total / limit);
+   226→  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+   227→    const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+   228→    return start + i;
+   229→  }).filter(p => p >= 1 && p <= totalPages);
+   230→
+   231→  // ─── Stats ────────────────────────────────────────────────────────────
+   232→  const departments = [...new Set(subjects.map(s => s.department))];
+   233→  const avgCredits = subjects.length > 0
+   234→    ? (subjects.reduce((sum, s) => sum + s.credits, 0) / subjects.length).toFixed(1)
+   235→    : '0';
+   236→  const totalEnrollments = subjects.reduce((sum, s) => sum + s.enrollmentCount, 0);
+   237→
+   238→  // ─── Filtered faculty for selected department ──────────────────────────
+   239→  const filteredFaculty = form.department
+   240→    ? facultyList.filter(f => f.department === form.department || f.department === '')
+   241→    : facultyList;
+   242→
+   243→  // ═════════════════════════════════════════════════════════════════════
+   244→  // Render
+   245→  // ═════════════════════════════════════════════════════════════════════
+   246→  return (
+   247→    <div className="space-y-4 pt-2">
+   248→      {/* ─── Toast ──────────────────────────────────────────────────── */}
+   249→      <AnimatePresence>
+   250→        {toast && (
+   251→          <motion.div
+   252→            initial={{ opacity: 0, y: -20 }}
+   253→            animate={{ opacity: 1, y: 0 }}
+   254→            exit={{ opacity: 0, y: -20 }}
+   255→            className={cn(
+   256→              "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
+   257→              toast.type === 'success'
+   258→                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+   259→                : "bg-red-500/10 border-red-500/30 text-red-400"
+   260→            )}
+   261→          >
+   262→            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+   263→            <span className="text-sm font-medium">{toast.msg}</span>
+   264→          </motion.div>
+   265→        )}
+   266→      </AnimatePresence>
+   267→
+   268→      {/* ─── Header ──────────────────────────────────────────────────── */}
+   269→      <motion.div
+   270→        initial={{ opacity: 0, y: 20 }}
+   271→        animate={{ opacity: 1, y: 0 }}
+   272→        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+   273→      >
+   274→        <div className="flex items-center gap-3">
+   275→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+   276→            <BookOpen className="w-5 h-5 text-white" />
+   277→          </div>
+   278→          <div>
+   279→            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+   280→              Course & Subject Management
+   281→              <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] px-2">
+   282→                {total} total
+   283→              </Badge>
+   284→            </h2>
+   285→            <p className="text-xs text-gray-500">Manage courses, subjects, schedules & curriculum</p>
+   286→          </div>
+   287→        </div>
+   288→
+   289→        <div className="flex items-center gap-2">
+   290→          {/* View Toggle */}
+   291→          <div className="flex items-center rounded-xl bg-white/[0.03] border border-white/[0.08] p-0.5">
+   292→            <button
+   293→              onClick={() => setViewMode('grid')}
+   294→              className={cn(
+   295→                "p-1.5 rounded-lg transition-all duration-200",
+   296→                viewMode === 'grid' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+   297→              )}
+   298→            >
+   299→              <LayoutGrid className="w-4 h-4" />
+   300→            </button>
+   301→            <button
+   302→              onClick={() => setViewMode('table')}
+   303→              className={cn(
+   304→                "p-1.5 rounded-lg transition-all duration-200",
+   305→                viewMode === 'table' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+   306→              )}
+   307→            >
+   308→              <List className="w-4 h-4" />
+   309→            </button>
+   310→          </div>
+   311→
+   312→          <motion.button
+   313→            whileHover={{ scale: 1.03 }}
+   314→            whileTap={{ scale: 0.97 }}
+   315→            onClick={openAdd}
+   316→            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300"
+   317→          >
+   318→            <Plus className="w-4 h-4" />
+   319→            Add Subject
+   320→          </motion.button>
+   321→        </div>
+   322→      </motion.div>
+   323→
+   324→      {/* ─── Stats Cards ────────────────────────────────────────────── */}
+   325→      <motion.div
+   326→        initial={{ opacity: 0, y: 15 }}
+   327→        animate={{ opacity: 1, y: 0 }}
+   328→        transition={{ delay: 0.05 }}
+   329→        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+   330→      >
+   331→        {[
+   332→          { label: 'Total Subjects', value: total, icon: BookMarked, color: 'emerald', gradient: 'from-emerald-500 to-teal-600', glow: 'rgba(16,185,129,0.3)' },
+   333→          { label: 'Departments', value: departments.length, icon: BarChart3, color: 'purple', gradient: 'from-purple-500 to-violet-600', glow: 'rgba(168,85,247,0.3)' },
+   334→          { label: 'Avg Credits', value: avgCredits, icon: Star, color: 'yellow', gradient: 'from-yellow-500 to-amber-600', glow: 'rgba(234,179,8,0.3)' },
+   335→          { label: 'Total Enrollments', value: totalEnrollments, icon: Users, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.3)' },
+   336→        ].map((stat) => (
+   337→          <div
+   338→            key={stat.label}
+   339→            className="relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 group hover:border-white/[0.15] transition-all duration-300"
+   340→          >
+   341→            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl opacity-5 rounded-full -translate-y-6 translate-x-6 group-hover:opacity-10 transition-opacity" style={{ background: `radial-gradient(circle, ${stat.glow}, transparent)` }} />
+   342→            <div className="flex items-center gap-3">
+   343→              <div className={cn("w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg shrink-0", stat.gradient)} style={{ boxShadow: `0 0 15px ${stat.glow}` }}>
+   344→                <stat.icon className="w-4 h-4 text-white" />
+   345→              </div>
+   346→              <div>
+   347→                <p className="text-lg font-bold text-white">{stat.value}</p>
+   348→                <p className="text-[11px] text-gray-500">{stat.label}</p>
+   349→              </div>
+   350→            </div>
+   351→          </div>
+   352→        ))}
+   353→      </motion.div>
+   354→
+   355→      {/* ─── Search & Filters ────────────────────────────────────────── */}
+   356→      <motion.div
+   357→        initial={{ opacity: 0, y: 15 }}
+   358→        animate={{ opacity: 1, y: 0 }}
+   359→        transition={{ delay: 0.1 }}
+   360→        className="flex flex-col sm:flex-row gap-3"
+   361→      >
+   362→        <div className="relative flex-1">
+   363→          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+   364→          <input
+   365→            type="text"
+   366→            placeholder="Search by name, code, or faculty..."
+   367→            value={search}
+   368→            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+   369→            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+   370→          />
+   371→          {search && (
+   372→            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+   373→              <X className="w-4 h-4" />
+   374→            </button>
+   375→          )}
+   376→        </div>
+   377→
+   378→        <div className="relative">
+   379→          <select
+   380→            value={filterDept}
+   381→            onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
+   382→            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
+   383→          >
+   384→            <option value="" className="bg-[#0a0a1a]">All Departments</option>
+   385→            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   386→          </select>
+   387→          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+   388→        </div>
+   389→
+   390→        <div className="relative">
+   391→          <select
+   392→            value={filterSemester}
+   393→            onChange={(e) => { setFilterSemester(e.target.value); setPage(1); }}
+   394→            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 cursor-pointer"
+   395→          >
+   396→            <option value="" className="bg-[#0a0a1a]">All Semesters</option>
+   397→            {SEMESTERS.map(s => <option key={s} value={String(s)} className="bg-[#0a0a1a]">Sem {s}</option>)}
+   398→          </select>
+   399→          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+   400→        </div>
+   401→      </motion.div>
+   402→
+   403→      {/* ─── Content ─────────────────────────────────────────────────── */}
+   404→      <AnimatePresence mode="wait">
+   405→        {viewMode === 'grid' ? (
+   406→          <motion.div
+   407→            key="grid"
+   408→            initial={{ opacity: 0, y: 15 }}
+   409→            animate={{ opacity: 1, y: 0 }}
+   410→            exit={{ opacity: 0, y: -15 }}
+   411→            transition={{ delay: 0.15 }}
+   412→          >
+   413→            {loading ? (
+   414→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+   415→                {Array.from({ length: 8 }).map((_, i) => (
+   416→                  <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 animate-pulse">
+   417→                    <div className="h-3 bg-white/[0.04] rounded w-1/3 mb-3" />
+   418→                    <div className="h-5 bg-white/[0.04] rounded w-3/4 mb-2" />
+   419→                    <div className="h-3 bg-white/[0.04] rounded w-1/2 mb-4" />
+   420→                    <div className="flex gap-2">
+   421→                      <div className="h-6 bg-white/[0.04] rounded-full w-14" />
+   422→                      <div className="h-6 bg-white/[0.04] rounded-full w-14" />
+   423→                    </div>
+   424→                  </div>
+   425→                ))}
+   426→              </div>
+   427→            ) : subjects.length === 0 ? (
+   428→              <EmptyState onAdd={openAdd} />
+   429→            ) : (
+   430→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+   431→                {subjects.map((subject, idx) => (
+   432→                  <SubjectCard
+   433→                    key={subject.id}
+   434→                    subject={subject}
+   435→                    index={idx}
+   436→                    onViewDetail={() => setDetailSubject(subject)}
+   437→                    onEdit={() => {
+   438→                      setForm({
+   439→                        name: subject.name,
+   440→                        code: subject.code,
+   441→                        department: subject.department,
+   442→                        semester: subject.semester,
+   443→                        credits: subject.credits,
+   444→                        facultyId: subject.facultyId,
+   445→                        schedule: subject.schedule || '',
+   446→                      });
+   447→                      setDialogOpen(true);
+   448→                    }}
+   449→                  />
+   450→                ))}
+   451→              </div>
+   452→            )}
+   453→          </motion.div>
+   454→        ) : (
+   455→          <motion.div
+   456→            key="table"
+   457→            initial={{ opacity: 0, y: 15 }}
+   458→            animate={{ opacity: 1, y: 0 }}
+   459→            exit={{ opacity: 0, y: -15 }}
+   460→            transition={{ delay: 0.15 }}
+   461→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+   462→          >
+   463→            <div className="overflow-x-auto">
+   464→              <table className="w-full">
+   465→                <thead>
+   466→                  <tr className="border-b border-white/[0.06]">
+   467→                    {['Code', 'Name', 'Department', 'Semester', 'Credits', 'Faculty', 'Schedule', 'Enrollment', 'Actions'].map(h => (
+   468→                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+   469→                        {h}
+   470→                      </th>
+   471→                    ))}
+   472→                  </tr>
+   473→                </thead>
+   474→                <tbody>
+   475→                  {loading ? (
+   476→                    Array.from({ length: 5 }).map((_, i) => (
+   477→                      <tr key={i} className="border-b border-white/[0.04]">
+   478→                        {Array.from({ length: 9 }).map((_, j) => (
+   479→                          <td key={j} className="px-4 py-3">
+   480→                            <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+   481→                          </td>
+   482→                        ))}
+   483→                      </tr>
+   484→                    ))
+   485→                  ) : subjects.length === 0 ? (
+   486→                    <tr>
+   487→                      <td colSpan={9} className="px-4 py-12 text-center">
+   488→                        <BookOpen className="w-10 h-10 text-gray-700 mx-auto mb-3" />
+   489→                        <p className="text-gray-500 text-sm">No subjects found</p>
+   490→                        <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+   491→                      </td>
+   492→                    </tr>
+   493→                  ) : (
+   494→                    subjects.map((subject, idx) => (
+   495→                      <motion.tr
+   496→                        key={subject.id}
+   497→                        initial={{ opacity: 0, x: -10 }}
+   498→                        animate={{ opacity: 1, x: 0 }}
+   499→                        transition={{ delay: idx * 0.03 }}
+   500→                        className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+   501→                      >
+   502→                        {/* Code */}
+   503→                        <td className="px-4 py-3">
+   504→                          <span className="text-sm font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+   505→                            {subject.code}
+   506→                          </span>
+   507→                        </td>
+   508→                        {/* Name */}
+   509→                        <td className="px-4 py-3">
+   510→                          <p className="text-sm font-medium text-white max-w-[200px] truncate">{subject.name}</p>
+   511→                        </td>
+   512→                        {/* Department */}
+   513→                        <td className="px-4 py-3">
+   514→                          <span className={cn(
+   515→                            "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
+   516→                            DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+   517→                          )}>
+   518→                            {subject.department}
+   519→                          </span>
+   520→                        </td>
+   521→                        {/* Semester */}
+   522→                        <td className="px-4 py-3">
+   523→                          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-white/[0.04] text-gray-300 border-white/[0.1]">
+   524→                            <Calendar className="w-3 h-3" />
+   525→                            Sem {subject.semester}
+   526→                          </span>
+   527→                        </td>
+   528→                        {/* Credits */}
+   529→                        <td className="px-4 py-3">
+   530→                          <div className="flex items-center gap-1">
+   531→                            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+   532→                            <span className="text-sm font-medium text-white">{subject.credits}</span>
+   533→                          </div>
+   534→                        </td>
+   535→                        {/* Faculty */}
+   536→                        <td className="px-4 py-3">
+   537→                          <p className="text-sm text-gray-300">{subject.faculty.name}</p>
+   538→                          <p className="text-[11px] text-gray-600">{subject.faculty.designation}</p>
+   539→                        </td>
+   540→                        {/* Schedule */}
+   541→                        <td className="px-4 py-3">
+   542→                          <span className="text-xs text-gray-400">
+   543→                            {subject.schedule || '—'}
+   544→                          </span>
+   545→                        </td>
+   546→                        {/* Enrollment */}
+   547→                        <td className="px-4 py-3">
+   548→                          <div className="flex items-center gap-1.5 text-sm text-gray-300">
+   549→                            <Users className="w-3.5 h-3.5 text-gray-500" />
+   550→                            {subject.enrollmentCount}
+   551→                          </div>
+   552→                        </td>
+   553→                        {/* Actions */}
+   554→                        <td className="px-4 py-3">
+   555→                          <div className="flex items-center gap-1">
+   556→                            <button
+   557→                              onClick={() => setDetailSubject(subject)}
+   558→                              className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-emerald-400 transition-all duration-200"
+   559→                              title="View Details"
+   560→                            >
+   561→                              <Eye className="w-4 h-4" />
+   562→                            </button>
+   563→                            <button
+   564→                              onClick={() => {
+   565→                                setForm({
+   566→                                  name: subject.name,
+   567→                                  code: subject.code,
+   568→                                  department: subject.department,
+   569→                                  semester: subject.semester,
+   570→                                  credits: subject.credits,
+   571→                                  facultyId: subject.facultyId,
+   572→                                  schedule: subject.schedule || '',
+   573→                                });
+   574→                                setDialogOpen(true);
+   575→                              }}
+   576→                              className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-cyan-400 transition-all duration-200"
+   577→                              title="Edit"
+   578→                            >
+   579→                              <Pencil className="w-4 h-4" />
+   580→                            </button>
+   581→                          </div>
+   582→                        </td>
+   583→                      </motion.tr>
+   584→                    ))
+   585→                  )}
+   586→                </tbody>
+   587→              </table>
+   588→            </div>
+   589→
+   590→            {/* Pagination */}
+   591→            {totalPages > 1 && (
+   592→              <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
+   593→                <p className="text-xs text-gray-500">
+   594→                  Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}
+   595→                </p>
+   596→                <div className="flex items-center gap-1">
+   597→                  <button
+   598→                    onClick={() => setPage(p => Math.max(1, p - 1))}
+   599→                    disabled={page === 1}
+   600→                    className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+   601→                  >
+   602→                    <ChevronRight className="w-4 h-4 rotate-180" />
+   603→                  </button>
+   604→                  {pageNumbers.map(p => (
+   605→                    <button
+   606→                      key={p}
+   607→                      onClick={() => setPage(p)}
+   608→                      className={cn(
+   609→                        "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
+   610→                        p === page ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+   611→                      )}
+   612→                    >
+   613→                      {p}
+   614→                    </button>
+   615→                  ))}
+   616→                  <button
+   617→                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+   618→                    disabled={page === totalPages}
+   619→                    className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+   620→                  >
+   621→                    <ChevronRight className="w-4 h-4" />
+   622→                  </button>
+   623→                </div>
+   624→              </div>
+   625→            )}
+   626→          </motion.div>
+   627→        )}
+   628→      </AnimatePresence>
+   629→
+   630→      {/* Grid Pagination */}
+   631→      {viewMode === 'grid' && totalPages > 1 && (
+   632→        <motion.div
+   633→          initial={{ opacity: 0 }}
+   634→          animate={{ opacity: 1 }}
+   635→          className="flex items-center justify-center gap-1 pt-2"
+   636→        >
+   637→          <button
+   638→            onClick={() => setPage(p => Math.max(1, p - 1))}
+   639→            disabled={page === 1}
+   640→            className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+   641→          >
+   642→            <ChevronRight className="w-4 h-4 rotate-180" />
+   643→          </button>
+   644→          {pageNumbers.map(p => (
+   645→            <button
+   646→              key={p}
+   647→              onClick={() => setPage(p)}
+   648→              className={cn(
+   649→                "w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
+   650→                p === page ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+   651→              )}
+   652→            >
+   653→              {p}
+   654→            </button>
+   655→          ))}
+   656→          <button
+   657→            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+   658→            disabled={page === totalPages}
+   659→            className="p-1.5 rounded-lg hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors disabled:opacity-30"
+   660→          >
+   661→            <ChevronRight className="w-4 h-4" />
+   662→          </button>
+   663→        </motion.div>
+   664→      )}
+   665→
+   666→      {/* ─── Add Subject Dialog ──────────────────────────────────────── */}
+   667→      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+   668→        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-white/[0.1] text-white max-w-lg">
+   669→          <DialogHeader>
+   670→            <DialogTitle className="text-white flex items-center gap-2">
+   671→              <BookOpen className="w-5 h-5 text-emerald-400" />
+   672→              Add New Subject
+   673→            </DialogTitle>
+   674→            <DialogDescription className="text-gray-500">
+   675→              Create a new subject entry for the curriculum.
+   676→            </DialogDescription>
+   677→          </DialogHeader>
+   678→
+   679→          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+   680→            {/* Name */}
+   681→            <div className="space-y-1.5">
+   682→              <label className="text-xs font-medium text-gray-400">Subject Name *</label>
+   683→              <input
+   684→                type="text"
+   685→                value={form.name}
+   686→                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+   687→                placeholder="e.g. Data Structures & Algorithms"
+   688→                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+   689→              />
+   690→            </div>
+   691→
+   692→            {/* Code */}
+   693→            <div className="space-y-1.5">
+   694→              <label className="text-xs font-medium text-gray-400">Subject Code *</label>
+   695→              <input
+   696→                type="text"
+   697→                value={form.code}
+   698→                onChange={(e) => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+   699→                placeholder="e.g. CS301"
+   700→                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 font-mono"
+   701→              />
+   702→            </div>
+   703→
+   704→            {/* Department & Semester */}
+   705→            <div className="grid grid-cols-2 gap-3">
+   706→              <div className="space-y-1.5">
+   707→                <label className="text-xs font-medium text-gray-400">Department *</label>
+   708→                <select
+   709→                  value={form.department}
+   710→                  onChange={(e) => setForm(f => ({ ...f, department: e.target.value, facultyId: '' }))}
+   711→                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+   712→                >
+   713→                  {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+   714→                </select>
+   715→              </div>
+   716→              <div className="space-y-1.5">
+   717→                <label className="text-xs font-medium text-gray-400">Semester *</label>
+   718→                <select
+   719→                  value={form.semester}
+   720→                  onChange={(e) => setForm(f => ({ ...f, semester: parseInt(e.target.value) }))}
+   721→                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+   722→                >
+   723→                  {SEMESTERS.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">Semester {s}</option>)}
+   724→                </select>
+   725→              </div>
+   726→            </div>
+   727→
+   728→            {/* Credits & Faculty */}
+   729→            <div className="grid grid-cols-2 gap-3">
+   730→              <div className="space-y-1.5">
+   731→                <label className="text-xs font-medium text-gray-400">Credits</label>
+   732→                <select
+   733→                  value={form.credits}
+   734→                  onChange={(e) => setForm(f => ({ ...f, credits: parseInt(e.target.value) }))}
+   735→                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+   736→                >
+   737→                  {CREDITS.map(c => (
+   738→                    <option key={c} value={c} className="bg-[#0a0a1a]">
+   739→                      {c} {c === 1 ? 'Credit' : 'Credits'}
+   740→                    </option>
+   741→                  ))}
+   742→                </select>
+   743→              </div>
+   744→              <div className="space-y-1.5">
+   745→                <label className="text-xs font-medium text-gray-400">Faculty *</label>
+   746→                <select
+   747→                  value={form.facultyId}
+   748→                  onChange={(e) => setForm(f => ({ ...f, facultyId: e.target.value }))}
+   749→                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-all duration-300 cursor-pointer appearance-none"
+   750→                >
+   751→                  <option value="" className="bg-[#0a0a1a]">Select Faculty</option>
+   752→                  {filteredFaculty.map(f => (
+   753→                    <option key={f.id} value={f.id} className="bg-[#0a0a1a]">
+   754→                      {f.user.name} ({f.department})
+   755→                    </option>
+   756→                  ))}
+   757→                </select>
+   758→              </div>
+   759→            </div>
+   760→
+   761→            {/* Schedule */}
+   762→            <div className="space-y-1.5">
+   763→              <label className="text-xs font-medium text-gray-400">Schedule</label>
+   764→              <input
+   765→                type="text"
+   766→                value={form.schedule}
+   767→                onChange={(e) => setForm(f => ({ ...f, schedule: e.target.value }))}
+   768→                placeholder="e.g. Mon/Wed 10:00-11:30"
+   769→                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+   770→              />
+   771→            </div>
+   772→          </div>
+   773→
+   774→          <DialogFooter className="pt-2">
+   775→            <button
+   776→              onClick={() => setDialogOpen(false)}
+   777→              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/[0.05] transition-all duration-200"
+   778→            >
+   779→              Cancel
+   780→            </button>
+   781→            <motion.button
+   782→              whileHover={{ scale: 1.03 }}
+   783→              whileTap={{ scale: 0.97 }}
+   784→              onClick={handleSubmit}
+   785→              disabled={submitting}
+   786→              className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300 disabled:opacity-50"
+   787→            >
+   788→              {submitting ? (
+   789→                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+   790→              ) : (
+   791→                <Plus className="w-4 h-4" />
+   792→              )}
+   793→              Add Subject
+   794→            </motion.button>
+   795→          </DialogFooter>
+   796→        </DialogContent>
+   797→      </Dialog>
+   798→
+   799→      {/* ─── Subject Detail Dialog ────────────────────────────────────── */}
+   800→      <Dialog open={!!detailSubject} onOpenChange={() => setDetailSubject(null)}>
+   801→        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-white/[0.1] text-white max-w-2xl">
+   802→          {detailSubject && (
+   803→            <>
+   804→              <DialogHeader>
+   805→                <DialogTitle className="text-white flex items-center gap-3">
+   806→                  <div className={cn(
+   807→                    "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg",
+   808→                    DEPT_TOP_LINE[detailSubject.department] || 'from-gray-500 to-gray-600'
+   809→                  )}>
+   810→                    <BookOpen className="w-5 h-5 text-white" />
+   811→                  </div>
+   812→                  <div>
+   813→                    <span>{detailSubject.name}</span>
+   814→                    <p className="text-xs text-gray-500 font-normal mt-0.5 font-mono">{detailSubject.code}</p>
+   815→                  </div>
+   816→                </DialogTitle>
+   817→                <DialogDescription className="text-gray-500">
+   818→                  Complete subject details and enrollment information
+   819→                </DialogDescription>
+   820→              </DialogHeader>
+   821→
+   822→              <div className="space-y-5 py-2 max-h-[65vh] overflow-y-auto pr-1 custom-scrollbar">
+   823→                {/* Key Info Grid */}
+   824→                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   825→                  <InfoCard
+   826→                    icon={Hash}
+   827→                    label="Code"
+   828→                    value={detailSubject.code}
+   829→                    mono
+   830→                  />
+   831→                  <InfoCard
+   832→                    icon={BarChart3}
+   833→                    label="Department"
+   834→                    value={detailSubject.department}
+   835→                    badge
+   836→                    badgeClass={DEPT_COLORS[detailSubject.department]}
+   837→                  />
+   838→                  <InfoCard
+   839→                    icon={Calendar}
+   840→                    label="Semester"
+   841→                    value={`Sem ${detailSubject.semester}`}
+   842→                  />
+   843→                  <InfoCard
+   844→                    icon={Star}
+   845→                    label="Credits"
+   846→                    value={String(detailSubject.credits)}
+   847→                    accent
+   848→                  />
+   849→                </div>
+   850→
+   851→                {/* Faculty Details */}
+   852→                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
+   853→                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+   854→                    <GraduationCap className="w-3.5 h-3.5" />
+   855→                    Faculty Details
+   856→                  </h4>
+   857→                  <div className="flex items-center gap-3">
+   858→                    <div className={cn(
+   859→                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shrink-0",
+   860→                      DEPT_TOP_LINE[detailSubject.department] || 'from-gray-500 to-gray-600'
+   861→                    )}>
+   862→                      {detailSubject.faculty.name.charAt(0)}
+   863→                    </div>
+   864→                    <div className="flex-1 min-w-0">
+   865→                      <p className="text-sm font-medium text-white">{detailSubject.faculty.name}</p>
+   866→                      <p className="text-xs text-gray-500">{detailSubject.faculty.designation} • {detailSubject.faculty.email}</p>
+   867→                    </div>
+   868→                  </div>
+   869→                </div>
+   870→
+   871→                {/* Schedule */}
+   872→                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
+   873→                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+   874→                    <Clock className="w-3.5 h-3.5" />
+   875→                    Schedule
+   876→                  </h4>
+   877→                  {detailSubject.schedule ? (
+   878→                    <div className="flex items-center gap-2">
+   879→                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+   880→                      <span className="text-sm text-gray-300">{detailSubject.schedule}</span>
+   881→                    </div>
+   882→                  ) : (
+   883→                    <p className="text-sm text-gray-600 italic">No schedule assigned</p>
+   884→                  )}
+   885→                </div>
+   886→
+   887→                {/* Enrollment Summary */}
+   888→                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
+   889→                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+   890→                    <Users className="w-3.5 h-3.5" />
+   891→                    Enrollment Summary
+   892→                  </h4>
+   893→                  <div className="flex items-center gap-4">
+   894→                    <div className="flex items-center gap-2">
+   895→                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+   896→                        <Users className="w-5 h-5 text-emerald-400" />
+   897→                      </div>
+   898→                      <div>
+   899→                        <p className="text-xl font-bold text-white">{detailSubject.enrollmentCount}</p>
+   900→                        <p className="text-[11px] text-gray-500">Students Enrolled</p>
+   901→                      </div>
+   902→                    </div>
+   903→                    <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
+   904→                      <div
+   905→                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700"
+   906→                        style={{ width: `${Math.min(100, detailSubject.enrollmentCount * 5)}%` }}
+   907→                      />
+   908→                    </div>
+   909→                  </div>
+   910→                </div>
+   911→
+   912→                {/* Attendance Summary */}
+   913→                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
+   914→                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+   915→                    <BarChart3 className="w-3.5 h-3.5" />
+   916→                    Attendance Overview
+   917→                  </h4>
+   918→                  <div className="grid grid-cols-3 gap-3">
+   919→                    <div className="text-center p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+   920→                      <p className="text-lg font-bold text-emerald-400">89%</p>
+   921→                      <p className="text-[10px] text-gray-500">Avg Attendance</p>
+   922→                    </div>
+   923→                    <div className="text-center p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/10">
+   924→                      <p className="text-lg font-bold text-cyan-400">{detailSubject.enrollmentCount}</p>
+   925→                      <p className="text-[10px] text-gray-500">Active Students</p>
+   926→                    </div>
+   927→                    <div className="text-center p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10">
+   928→                      <p className="text-lg font-bold text-yellow-400">24</p>
+   929→                      <p className="text-[10px] text-gray-500">Sessions Held</p>
+   930→                    </div>
+   931→                  </div>
+   932→                </div>
+   933→              </div>
+   934→
+   935→              <DialogFooter className="pt-2">
+   936→                <button
+   937→                  onClick={() => setDetailSubject(null)}
+   938→                  className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/[0.05] transition-all duration-200"
+   939→                >
+   940→                  Close
+   941→                </button>
+   942→                <motion.button
+   943→                  whileHover={{ scale: 1.03 }}
+   944→                  whileTap={{ scale: 0.97 }}
+   945→                  onClick={() => {
+   946→                    setForm({
+   947→                      name: detailSubject.name,
+   948→                      code: detailSubject.code,
+   949→                      department: detailSubject.department,
+   950→                      semester: detailSubject.semester,
+   951→                      credits: detailSubject.credits,
+   952→                      facultyId: detailSubject.facultyId,
+   953→                      schedule: detailSubject.schedule || '',
+   954→                    });
+   955→                    setDetailSubject(null);
+   956→                    setDialogOpen(true);
+   957→                  }}
+   958→                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition-all duration-300"
+   959→                >
+   960→                  <Pencil className="w-4 h-4" />
+   961→                  Edit Subject
+   962→                </motion.button>
+   963→              </DialogFooter>
+   964→            </>
+   965→          )}
+   966→        </DialogContent>
+   967→      </Dialog>
+   968→    </div>
+   969→  );
+   970→}
+   971→
+   972→// ═══════════════════════════════════════════════════════════════════════════
+   973→// Sub-Components
+   974→// ═══════════════════════════════════════════════════════════════════════════
+   975→
+   976→// ─── Subject Card (Grid View) ──────────────────────────────────────────
+   977→function SubjectCard({
+   978→  subject,
+   979→  index,
+   980→  onViewDetail,
+   981→  onEdit,
+   982→}: {
+   983→  subject: Subject;
+   984→  index: number;
+   985→  onViewDetail: () => void;
+   986→  onEdit: () => void;
+   987→}) {
+   988→  const topBorderClass = DEPT_ACCENT[subject.department] || 'border-t-gray-500';
+   989→  const glowClass = DEPT_GLOW[subject.department] || '';
+   990→  const topLineGradient = DEPT_TOP_LINE[subject.department] || 'from-gray-500 to-gray-600';
+   991→
+   992→  return (
+   993→    <motion.div
+   994→      initial={{ opacity: 0, y: 20 }}
+   995→      animate={{ opacity: 1, y: 0 }}
+   996→      transition={{ delay: index * 0.04 }}
+   997→      whileHover={{ y: -4 }}
+   998→      className={cn(
+   999→        "relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] border-t-2 rounded-2xl p-5 group hover:border-white/[0.15] transition-all duration-300",
+  1000→        topBorderClass,
+  1001→        glowClass
+  1002→      )}
+  1003→    >
+  1004→      {/* Top accent line */}
+  1005→      <div className={cn("absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r opacity-60", topLineGradient)} />
+  1006→
+  1007→      {/* Subject Code */}
+  1008→      <div className="flex items-start justify-between mb-3">
+  1009→        <span className="font-mono text-sm font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+  1010→          {subject.code}
+  1011→        </span>
+  1012→        <span className={cn(
+  1013→          "text-[10px] px-2 py-0.5 rounded-full border font-medium",
+  1014→          DEPT_COLORS[subject.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+  1015→        )}>
+  1016→          {subject.department}
+  1017→        </span>
+  1018→      </div>
+  1019→
+  1020→      {/* Subject Name */}
+  1021→      <h3 className="text-sm font-semibold text-white mb-2 line-clamp-2 leading-snug">
+  1022→        {subject.name}
+  1023→      </h3>
+  1024→
+  1025→      {/* Semester Pill */}
+  1026→      <div className="flex items-center gap-2 mb-3">
+  1027→        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border bg-white/[0.04] text-gray-400 border-white/[0.1]">
+  1028→          <Calendar className="w-3 h-3" />
+  1029→          Sem {subject.semester}
+  1030→        </span>
+  1031→      </div>
+  1032→
+  1033→      {/* Credits with stars */}
+  1034→      <div className="flex items-center gap-1 mb-3">
+  1035→        {Array.from({ length: 5 }).map((_, i) => (
+  1036→          <Star
+  1037→            key={i}
+  1038→            className={cn(
+  1039→              "w-3.5 h-3.5 transition-colors",
+  1040→              i < subject.credits ? "text-yellow-500 fill-yellow-500" : "text-gray-700"
+  1041→            )}
+  1042→          />
+  1043→        ))}
+  1044→        <span className="text-xs text-gray-500 ml-1">{subject.credits} credits</span>
+  1045→      </div>
+  1046→
+  1047→      {/* Faculty */}
+  1048→      <div className="flex items-center gap-2 mb-3">
+  1049→        <User className="w-3.5 h-3.5 text-gray-600" />
+  1050→        <span className="text-xs text-gray-400 truncate">{subject.faculty.name}</span>
+  1051→      </div>
+  1052→
+  1053→      {/* Schedule */}
+  1054→      {subject.schedule && (
+  1055→        <div className="flex items-center gap-2 mb-3">
+  1056→          <Clock className="w-3.5 h-3.5 text-gray-600" />
+  1057→          <span className="text-xs text-gray-500 truncate">{subject.schedule}</span>
+  1058→        </div>
+  1059→      )}
+  1060→
+  1061→      {/* Enrollment Count */}
+  1062→      <div className="flex items-center gap-2 mb-4">
+  1063→        <Users className="w-3.5 h-3.5 text-gray-600" />
+  1064→        <span className="text-xs text-gray-500">{subject.enrollmentCount} enrolled</span>
+  1065→        <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+  1066→          <div
+  1067→            className="h-full bg-gradient-to-r from-emerald-500/50 to-teal-500/50 rounded-full"
+  1068→            style={{ width: `${Math.min(100, subject.enrollmentCount * 5)}%` }}
+  1069→          />
+  1070→        </div>
+  1071→      </div>
+  1072→
+  1073→      {/* Quick Actions */}
+  1074→      <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+  1075→        <button
+  1076→          onClick={onViewDetail}
+  1077→          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all duration-200"
+  1078→        >
+  1079→          <Eye className="w-3.5 h-3.5" />
+  1080→          Details
+  1081→        </button>
+  1082→        <button
+  1083→          onClick={onEdit}
+  1084→          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all duration-200"
+  1085→        >
+  1086→          <Pencil className="w-3.5 h-3.5" />
+  1087→          Edit
+  1088→        </button>
+  1089→      </div>
+  1090→    </motion.div>
+  1091→  );
+  1092→}
+  1093→
+  1094→// ─── Info Card (Detail Dialog) ─────────────────────────────────────────
+  1095→function InfoCard({
+  1096→  icon: Icon,
+  1097→  label,
+  1098→  value,
+  1099→  mono,
+  1100→  badge,
+  1101→  badgeClass,
+  1102→  accent,
+  1103→}: {
+  1104→  icon: any;
+  1105→  label: string;
+  1106→  value: string;
+  1107→  mono?: boolean;
+  1108→  badge?: boolean;
+  1109→  badgeClass?: string;
+  1110→  accent?: boolean;
+  1111→}) {
+  1112→  return (
+  1113→    <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 text-center">
+  1114→      <Icon className={cn("w-4 h-4 mx-auto mb-1.5", accent ? "text-yellow-400" : "text-gray-500")} />
+  1115→      <p className="text-[10px] text-gray-600 mb-1">{label}</p>
+  1116→      {badge ? (
+  1117→        <span className={cn(
+  1118→          "inline-flex items-center text-xs px-2.5 py-0.5 rounded-full border font-medium",
+  1119→          badgeClass || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+  1120→        )}>
+  1121→          {value}
+  1122→        </span>
+  1123→      ) : (
+  1124→        <p className={cn("text-sm font-semibold", mono ? "font-mono text-emerald-400" : "text-white", accent && "text-yellow-400")}>
+  1125→          {value}
+  1126→        </p>
+  1127→      )}
+  1128→    </div>
+  1129→  );
+  1130→}
+  1131→
+  1132→// ─── Empty State ───────────────────────────────────────────────────────
+  1133→function EmptyState({ onAdd }: { onAdd: () => void }) {
+  1134→  return (
+  1135→    <motion.div
+  1136→      initial={{ opacity: 0, scale: 0.95 }}
+  1137→      animate={{ opacity: 1, scale: 1 }}
+  1138→      className="flex flex-col items-center justify-center py-16 bg-white/[0.02] border border-white/[0.06] rounded-2xl"
+  1139→    >
+  1140→      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center mb-4">
+  1141→        <BookOpen className="w-8 h-8 text-emerald-500/50" />
+  1142→      </div>
+  1143→      <h3 className="text-lg font-semibold text-gray-400 mb-1">No subjects found</h3>
+  1144→      <p className="text-sm text-gray-600 mb-6 text-center max-w-xs">
+  1145→        Start building your curriculum by adding the first subject
+  1146→      </p>
+  1147→      <motion.button
+  1148→        whileHover={{ scale: 1.03 }}
+  1149→        whileTap={{ scale: 0.97 }}
+  1150→        onClick={onAdd}
+  1151→        className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300"
+  1152→      >
+  1153→        <Plus className="w-4 h-4" />
+  1154→        Add Your First Subject
+  1155→      </motion.button>
+  1156→    </motion.div>
+  1157→  );
+  1158→}
+  1159→

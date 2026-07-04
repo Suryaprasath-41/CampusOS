@@ -1,0 +1,1220 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useEffect, useMemo } from 'react';
+     4→     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→     5→import {
+     6→     6→  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     7→     7→  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+     8→     8→} from 'recharts';
+     9→     9→import {
+    10→    10→  LayoutDashboard, Users, GraduationCap, BookOpen, AlertTriangle,
+    11→    11→  Bell, Bot, Search, Shield, Activity, Cpu, HardDrive, Zap,
+    12→    12→  Database, Plus, Send, FileBarChart, Settings, Download,
+    13→    13→  Clock, TrendingUp, TrendingDown, Brain, Sparkles, Server,
+    14→    14→  CheckCircle2, XCircle, AlertCircle, Info, ChevronRight,
+    15→    15→  Monitor, MemoryStick, Globe, HeartPulse, ArrowUpRight,
+    16→    16→  Layers
+    17→    17→} from 'lucide-react';
+    18→    18→import { cn } from '@/lib/utils';
+    19→    19→import AnimatedCounter from './AnimatedCounter';
+    20→    20→import WidgetCard, { GlassCard, SectionTitle, PredictionBar } from './WidgetCard';
+    21→    21→import { fetchAPI, useCampusStore } from '@/lib/store';
+    22→    22→import AdminAIPlayground from './AdminAIPlayground';
+    23→    23→import AdminSmartSearch from './AdminSmartSearch';
+    24→    24→import AdminComplaintManager from './AdminComplaintManager';
+    25→    25→import AdminNotificationBroadcaster from './AdminNotificationBroadcaster';
+    26→    26→import AdminStudentManager from './AdminStudentManager';
+    27→    27→import AdminFacultyManager from './AdminFacultyManager';
+    28→    28→import AdminCourseManager from './AdminCourseManager';
+    29→    29→import AdminKnowledgeBase from './AdminKnowledgeBase';
+    30→    30→import AdminAutomationBuilder from './AdminAutomationBuilder';
+    31→    31→import AdminUserManager from './AdminUserManager';
+    32→    32→
+    33→    33→// ─── Tab Configuration ───────────────────────────────────────────────
+    34→    34→const tabs = [
+    35→    35→  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    36→    36→  { id: 'students', label: 'Students', icon: Users },
+    37→    37→  { id: 'faculty', label: 'Faculty', icon: GraduationCap },
+    38→    38→  { id: 'courses', label: 'Courses', icon: BookOpen },
+    39→    39→  { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
+    40→    40→  { id: 'users', label: 'User Accounts', icon: Shield },
+    41→    41→  { id: 'notifications', label: 'Notifications', icon: Bell },
+    42→    42→  { id: 'ai-playground', label: 'AI Playground', icon: Bot },
+    43→    43→  { id: 'search', label: 'Search', icon: Search },
+    44→    44→  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database },
+    45→    45→  { id: 'automations', label: 'Automations', icon: Layers },
+    46→    46→] as const;
+    47→    47→
+    48→    48→type TabId = (typeof tabs)[number]['id'];
+    49→    49→
+    50→    50→// ─── Stat Card Data ──────────────────────────────────────────────────
+    51→    51→const statCards = [
+    52→    52→  { label: 'Students', value: 2451, icon: Users, color: 'purple', gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-400', tab: 'students' as TabId },
+    53→    53→  { label: 'Faculty', value: 168, icon: GraduationCap, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.3)', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-400', tab: 'faculty' as TabId },
+    54→    54→  { label: 'Departments', value: 11, icon: Shield, color: 'blue', gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.3)', bg: 'bg-blue-500/10 border-blue-500/20', textColor: 'text-blue-400', tab: 'courses' as TabId },
+    55→    55→  { label: 'Attendance Today', value: 91.2, decimals: 1, suffix: '%', icon: Activity, color: 'green', gradient: 'from-green-500 to-emerald-600', glow: 'rgba(34,197,94,0.3)', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-400', tab: 'dashboard' as TabId },
+    56→    56→  { label: 'Library Books', value: 54120, icon: BookOpen, color: 'orange', gradient: 'from-orange-500 to-red-600', glow: 'rgba(249,115,22,0.3)', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-400', tab: 'dashboard' as TabId },
+    57→    57→  { label: 'Pending Complaints', value: 12, icon: AlertTriangle, color: 'red', gradient: 'from-red-500 to-rose-600', glow: 'rgba(239,68,68,0.3)', bg: 'bg-red-500/10 border-red-500/20', textColor: 'text-red-400', tab: 'complaints' as TabId },
+    58→    58→  { label: 'Upcoming Events', value: 7, icon: Clock, color: 'yellow', gradient: 'from-yellow-500 to-amber-600', glow: 'rgba(234,179,8,0.3)', bg: 'bg-yellow-500/10 border-yellow-500/20', textColor: 'text-yellow-400', tab: 'dashboard' as TabId },
+    59→    59→  { label: 'AI Requests Today', value: 18420, icon: Zap, color: 'violet', gradient: 'from-violet-500 to-purple-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-violet-500/10 border-violet-500/20', textColor: 'text-violet-400', tab: 'ai-playground' as TabId },
+    60→    60→  { label: 'System Health', value: 99.98, decimals: 2, suffix: '%', icon: HeartPulse, color: 'emerald', gradient: 'from-emerald-500 to-teal-600', glow: 'rgba(16,185,129,0.3)', bg: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-400', tab: 'dashboard' as TabId },
+    61→    61→];
+    62→    62→
+    63→    63→// ─── System Health Data ──────────────────────────────────────────────
+    64→    64→const systemMetrics = [
+    65→    65→  { label: 'CPU Usage', value: 67, color: 'purple' },
+    66→    66→  { label: 'Memory Usage', value: 54, color: 'cyan' },
+    67→    67→  { label: 'API Response Time', value: 45, max: 200, unit: 'ms', displayValue: '45ms', color: 'green' },
+    68→    68→  { label: 'Database Health', value: 99.9, decimals: 1, color: 'emerald' },
+    69→    69→];
+    70→    70→
+    71→    71→// ─── Quick Actions ───────────────────────────────────────────────────
+    72→    72→const quickActions = [
+    73→    73→  { label: 'Add Student', icon: Plus, gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.2)', tab: 'students' as TabId },
+    74→    74→  { label: 'Add Faculty', icon: GraduationCap, gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.2)', tab: 'faculty' as TabId },
+    75→    75→  { label: 'Create Account', icon: Shield, gradient: 'from-amber-500 to-orange-600', glow: 'rgba(245,158,11,0.2)', tab: 'users' as TabId },
+    76→    76→  { label: 'Send Notification', icon: Send, gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.2)', tab: 'notifications' as TabId },
+    77→    77→  { label: 'AI Settings', icon: Settings, gradient: 'from-orange-500 to-amber-600', glow: 'rgba(249,115,22,0.2)', tab: 'ai-playground' as TabId },
+    78→    78→  { label: 'Export Data', icon: Download, gradient: 'from-pink-500 to-rose-600', glow: 'rgba(236,72,153,0.2)', tab: 'search' as TabId },
+    79→    79→];
+    80→    80→
+    81→    81→// ─── Recent Activity Data ────────────────────────────────────────────
+    82→    82→const recentActivity = [
+    83→    83→  { message: 'New student enrollment: Aarav Sharma (CS2024045)', type: 'enrollment', time: '2 min ago' },
+    84→    84→  { message: 'Complaint #128 resolved by Admin', type: 'complaint', time: '15 min ago' },
+    85→    85→  { message: 'Faculty Dr. Meera posted CS301 grades', type: 'academic', time: '32 min ago' },
+    86→    86→  { message: 'System backup completed successfully', type: 'system', time: '1 hr ago' },
+    87→    87→  { message: 'Event "Tech Fest 2025" registration opened', type: 'event', time: '2 hrs ago' },
+    88→    88→  { message: 'AI Agent processed 1,240 chat requests', type: 'ai', time: '3 hrs ago' },
+    89→    89→  { message: 'Fee payment received: ₹45,000 (Rahul K.)', type: 'fee', time: '4 hrs ago' },
+    90→    90→  { message: 'Library: 23 books overdue — reminders sent', type: 'library', time: '5 hrs ago' },
+    91→    91→];
+    92→    92→
+    93→    93→// ─── AI Insights ─────────────────────────────────────────────────────
+    94→    94→const aiInsights = [
+    95→    95→  { text: 'CS department attendance dropped 12% this week — likely due to severe weather warnings in the region', severity: 'warning', icon: TrendingDown },
+    96→    96→  { text: 'Library book returns improved 8% after automated reminder system deployment', severity: 'success', icon: TrendingUp },
+    97→    97→  { text: 'Peak AI chat usage detected between 9-11 AM — consider scaling resources during morning hours', severity: 'info', icon: Brain },
+    98→    98→  { text: '3 faculty members haven\'t posted grades for mid-semester exams yet', severity: 'warning', icon: AlertCircle },
+    99→    99→];
+   100→   100→
+   101→   101→// ═══════════════════════════════════════════════════════════════════════
+   102→   102→// AdminPortal section-to-tab sync map
+   103→   103→const adminSectionToTabMap: Record<string, TabId> = {
+   104→   104→  dashboard: 'dashboard',
+   105→   105→  admin: 'dashboard',
+   106→   106→  students: 'students',
+   107→   107→  faculty: 'faculty',
+   108→   108→  courses: 'courses',
+   109→   109→  complaints: 'complaints',
+   110→   110→  'admin-users': 'users',
+   111→   111→  'admin-students': 'students',
+   112→   112→  'admin-faculty': 'faculty',
+   113→   113→  'admin-courses': 'courses',
+   114→   114→  'admin-complaints': 'complaints',
+   115→   115→  'admin-notifications': 'notifications',
+   116→   116→  'admin-ai-playground': 'ai-playground',
+   117→   117→  'admin-search': 'search',
+   118→   118→  'admin-knowledge': 'knowledge-base',
+   119→   119→  'admin-automations': 'automations',
+   120→   120→  notifications: 'notifications',
+   121→   121→  'ai-playground': 'ai-playground',
+   122→   122→  search: 'search',
+   123→   123→  'knowledge-base': 'knowledge-base',
+   124→   124→  automations: 'automations',
+   125→   125→};
+   126→   126→
+   127→   127→// Main Component
+   128→   128→// ═══════════════════════════════════════════════════════════════════════
+   129→   129→export default function AdminPortal() {
+   130→   130→  const { activeSection, setActiveSection, currentUser, setActiveRole } = useCampusStore();
+   131→   131→  const [activeTab, setActiveTab] = useState<TabId>(adminSectionToTabMap[activeSection] || 'dashboard');
+   132→   132→
+   133→   133→  // Sync tab with store's activeSection for sidebar navigation
+   134→   134→  const handleTabChange = (tab: TabId) => {
+   135→   135→    setActiveTab(tab);
+   136→   136→    setActiveSection(tab === 'dashboard' ? 'admin' : tab);
+   137→   137→  };
+   138→   138→
+   139→   139→  // Also sync when activeSection changes from sidebar
+   140→   140→  const mappedTab = adminSectionToTabMap[activeSection];
+   141→   141→  if (mappedTab && mappedTab !== activeTab) {
+   142→   142→    setActiveTab(mappedTab);
+   143→   143→  }
+   144→   144→
+   145→   145→  // Role guard: Only admin can access this portal
+   146→   146→  if (currentUser && currentUser.role !== 'admin') {
+   147→   147→    return (
+   148→   148→      <div className="h-full flex items-center justify-center">
+   149→   149→        <div className="text-center space-y-3">
+   150→   150→          <Shield className="w-12 h-12 text-amber-400 mx-auto" />
+   151→   151→          <h2 className="text-lg font-bold text-[var(--text-primary)]">Access Denied</h2>
+   152→   152→          <p className="text-sm text-[var(--text-muted)]">This portal is only available to administrators.</p>
+   153→   153→          <button
+   154→   154→            onClick={() => { setActiveRole((currentUser?.role as 'student' | 'faculty' | 'admin') || 'student'); setActiveSection('dashboard'); }}
+   155→   155→            className="px-4 py-2 rounded-xl bg-purple-500/15 text-purple-400 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+   156→   156→          >
+   157→   157→            Go to My Dashboard
+   158→   158→          </button>
+   159→   159→        </div>
+   160→   160→      </div>
+   161→   161→    );
+   162→   162→  }
+   163→   163→
+   164→   164→  return (
+   165→   165→    <div className="h-full flex flex-col">
+   166→   166→      {/* ─── Top Bar ─────────────────────────────────────────── */}
+   167→   167→      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+   168→   168→        <div className="flex items-center gap-3">
+   169→   169→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+   170→   170→            <Shield className="w-5 h-5 text-white" />
+   171→   171→          </div>
+   172→   172→          <div>
+   173→   173→            <h1 className="text-lg font-bold text-white">CampusOS Control Center</h1>
+   174→   174→            <p className="text-[11px] text-gray-500">System Administration & AI Operations</p>
+   175→   175→          </div>
+   176→   176→        </div>
+   177→   177→        <div className="flex items-center gap-3">
+   178→   178→          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+   179→   179→            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+   180→   180→            <span className="text-xs text-emerald-400 font-medium">All Systems Operational</span>
+   181→   181→          </div>
+   182→   182→          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+   183→   183→            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">
+   184→   184→              A
+   185→   185→            </div>
+   186→   186→            <span className="text-xs text-gray-300 font-medium hidden sm:inline">Admin</span>
+   187→   187→          </div>
+   188→   188→        </div>
+   189→   189→      </div>
+   190→   190→
+   191→   191→      {/* ─── Tab Bar ─────────────────────────────────────────── */}
+   192→   192→      <div className="px-4 pt-3 pb-2">
+   193→   193→        <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   194→   194→          {tabs.map((tab) => {
+   195→   195→            const isActive = activeTab === tab.id;
+   196→   196→            return (
+   197→   197→              <motion.button
+   198→   198→                key={tab.id}
+   199→   199→                onClick={() => handleTabChange(tab.id)}
+   200→   200→                whileHover={{ scale: 1.03 }}
+   201→   201→                whileTap={{ scale: 0.97 }}
+   202→   202→                className={cn(
+   203→   203→                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 shrink-0",
+   204→   204→                  isActive
+   205→   205→                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+   206→   206→                    : "bg-white/[0.02] text-gray-500 border border-white/[0.06] hover:text-gray-300 hover:bg-white/[0.04] hover:border-white/[0.1]"
+   207→   207→                )}
+   208→   208→              >
+   209→   209→                <tab.icon className={cn("w-4 h-4", isActive && "text-purple-400")} />
+   210→   210→                <span>{tab.label}</span>
+   211→   211→                {isActive && <Sparkles className="w-3 h-3 text-purple-400" />}
+   212→   212→              </motion.button>
+   213→   213→            );
+   214→   214→          })}
+   215→   215→        </div>
+   216→   216→      </div>
+   217→   217→
+   218→   218→      {/* ─── Content Area ─────────────────────────────────────── */}
+   219→   219→      <div className="flex-1 overflow-y-auto px-4 pb-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   220→   220→        <AnimatePresence mode="wait">
+   221→   221→          <motion.div
+   222→   222→            key={activeTab}
+   223→   223→            initial={{ opacity: 0, y: 12 }}
+   224→   224→            animate={{ opacity: 1, y: 0 }}
+   225→   225→            exit={{ opacity: 0, y: -12 }}
+   226→   226→            transition={{ duration: 0.25 }}
+   227→   227→          >
+   228→   228→            {activeTab === 'dashboard' && <DashboardTab onNavigate={handleTabChange} />}
+   229→   229→            {activeTab === 'students' && <AdminStudentManager />}
+   230→   230→            {activeTab === 'faculty' && <AdminFacultyManager />}
+   231→   231→            {activeTab === 'courses' && <AdminCourseManager />}
+   232→   232→            {activeTab === 'complaints' && <AdminComplaintManager />}
+   233→   233→            {activeTab === 'notifications' && <AdminNotificationBroadcaster />}
+   234→   234→            {activeTab === 'ai-playground' && <AdminAIPlayground />}
+   235→   235→            {activeTab === 'search' && <AdminSmartSearch />}
+   236→   236→            {activeTab === 'knowledge-base' && <AdminKnowledgeBase />}
+   237→   237→            {activeTab === 'automations' && <AdminAutomationBuilder />}
+   238→   238→            {activeTab === 'users' && <AdminUserManager />}
+   239→   239→          </motion.div>
+   240→   240→        </AnimatePresence>
+   241→   241→      </div>
+   242→   242→    </div>
+   243→   243→  );
+   244→   244→}
+   245→   245→
+   246→   246→// ═══════════════════════════════════════════════════════════════════════
+   247→   247→// Dashboard Tab (Control Center) — The Hero Section
+   248→   248→// ═══════════════════════════════════════════════════════════════════════
+   249→   249→function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+   250→   250→  const [adminData, setAdminData] = useState<any>(null);
+   251→   251→  const [loading, setLoading] = useState(true);
+   252→   252→
+   253→   253→  useEffect(() => {
+   254→   254→    fetchAPI('/admin').then((data) => {
+   255→   255→      setAdminData(data);
+   256→   256→    }).catch(console.error).finally(() => setLoading(false));
+   257→   257→  }, []);
+   258→   258→
+   259→   259→  // Merge API data with stat cards
+   260→   260→  const liveStatCards = statCards.map(card => {
+   261→   261→    if (!adminData?.stats) return card;
+   262→   262→    const s = adminData.stats;
+   263→   263→    const mapping: Record<string, number> = {
+   264→   264→      'Students': s.totalStudents || 0,
+   265→   265→      'Faculty': s.totalFaculty || 0,
+   266→   266→      'Departments': s.totalDepartments || 0,
+   267→   267→      'Attendance Today': s.avgAttendance || 0,
+   268→   268→      'Library Books': s.totalBooks || 0,
+   269→   269→      'Pending Complaints': s.pendingComplaints || 0,
+   270→   270→      'Upcoming Events': s.upcomingEvents || 0,
+   271→   271→    };
+   272→   272→    if (mapping[card.label] !== undefined) {
+   273→   273→      return { ...card, value: mapping[card.label] };
+   274→   274→    }
+   275→   275→    return card;
+   276→   276→  });
+   277→   277→
+   278→   278→  // Merge API recent activity
+   279→   279→  const liveActivity = adminData?.recentActivity?.length > 0
+   280→   280→    ? adminData.recentActivity.map((a: any) => ({
+   281→   281→        message: a.message,
+   282→   282→        type: a.type,
+   283→   283→        time: a.time,
+   284→   284→      }))
+   285→   285→    : recentActivity;
+   286→   286→
+   287→   287→  if (loading) {
+   288→   288→    return (
+   289→   289→      <div className="space-y-6 pt-2">
+   290→   290→        <div className="h-40 bg-white/[0.03] rounded-2xl animate-pulse" />
+   291→   291→        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
+   292→   292→          {[...Array(9)].map((_, i) => (
+   293→   293→            <div key={i} className="h-28 bg-white/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+   294→   294→          ))}
+   295→   295→        </div>
+   296→   296→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   297→   297→          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+   298→   298→          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+   299→   299→        </div>
+   300→   300→      </div>
+   301→   301→    );
+   302→   302→  }
+   303→   303→
+   304→   304→  return (
+   305→   305→    <div className="space-y-6 pt-2">
+   306→   306→      {/* ─── Hero Banner ────────────────────────────────────── */}
+   307→   307→      <motion.div
+   308→   308→        initial={{ opacity: 0, y: 20 }}
+   309→   309→        animate={{ opacity: 1, y: 0 }}
+   310→   310→        transition={{ duration: 0.6 }}
+   311→   311→        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+   312→   312→      >
+   313→   313→        {/* Animated gradient background */}
+   314→   314→        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-cyan-500/10" />
+   315→   315→        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+   316→   316→
+   317→   317→        {/* Animated border glow */}
+   318→   318→        <motion.div
+   319→   319→          className="absolute inset-0 rounded-2xl"
+   320→   320→          style={{
+   321→   321→            background: 'linear-gradient(90deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3), rgba(139,92,246,0.3))',
+   322→   322→            backgroundSize: '200% 100%',
+   323→   323→          }}
+   324→   324→          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+   325→   325→          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+   326→   326→        >
+   327→   327→          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+   328→   328→        </motion.div>
+   329→   329→
+   330→   330→        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+   331→   331→          <div>
+   332→   332→            <motion.div
+   333→   333→              initial={{ opacity: 0, x: -20 }}
+   334→   334→              animate={{ opacity: 1, x: 0 }}
+   335→   335→              transition={{ delay: 0.2 }}
+   336→   336→              className="flex items-center gap-2 mb-2"
+   337→   337→            >
+   338→   338→              <Sparkles className="w-5 h-5 text-purple-400" />
+   339→   339→              <span className="text-xs text-purple-400 font-medium uppercase tracking-wider">AI-Powered Administration</span>
+   340→   340→            </motion.div>
+   341→   341→            <motion.h1
+   342→   342→              initial={{ opacity: 0, x: -20 }}
+   343→   343→              animate={{ opacity: 1, x: 0 }}
+   344→   344→              transition={{ delay: 0.3 }}
+   345→   345→              className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-300 to-cyan-400 mb-2"
+   346→   346→            >
+   347→   347→              CampusOS Control Center
+   348→   348→            </motion.h1>
+   349→   349→            <motion.p
+   350→   350→              initial={{ opacity: 0, x: -20 }}
+   351→   351→              animate={{ opacity: 1, x: 0 }}
+   352→   352→              transition={{ delay: 0.4 }}
+   353→   353→              className="text-gray-400 text-sm max-w-lg"
+   354→   354→            >
+   355→   355→              Real-time campus monitoring, AI-driven insights, and complete administrative control at your fingertips.
+   356→   356→            </motion.p>
+   357→   357→          </div>
+   358→   358→          <motion.div
+   359→   359→            initial={{ opacity: 0, scale: 0.9 }}
+   360→   360→            animate={{ opacity: 1, scale: 1 }}
+   361→   361→            transition={{ delay: 0.5 }}
+   362→   362→            className="flex items-center gap-3"
+   363→   363→          >
+   364→   364→            <div className="text-right hidden sm:block">
+   365→   365→              <p className="text-xs text-gray-500">Last synced</p>
+   366→   366→              <p className="text-sm text-gray-300 font-medium">Just now</p>
+   367→   367→            </div>
+   368→   368→            <motion.div
+   369→   369→              whileHover={{ scale: 1.05 }}
+   370→   370→              whileTap={{ scale: 0.95 }}
+   371→   371→              className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+   372→   372→            >
+   373→   373→              <Server className="w-5 h-5 text-purple-400" />
+   374→   374→            </motion.div>
+   375→   375→          </motion.div>
+   376→   376→        </div>
+   377→   377→      </motion.div>
+   378→   378→
+   379→   379→      {/* ─── Stat Cards Grid ─────────────────────────────────── */}
+   380→   380→      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
+   381→   381→        {liveStatCards.map((card, i) => (
+   382→   382→          <motion.div
+   383→   383→            key={card.label}
+   384→   384→            initial={{ opacity: 0, y: 20 }}
+   385→   385→            animate={{ opacity: 1, y: 0 }}
+   386→   386→            transition={{ delay: 0.1 + i * 0.05 }}
+   387→   387→            whileHover={{ scale: 1.03, y: -3 }}
+   388→   388→            onClick={() => onNavigate(card.tab)}
+   389→   389→            className={cn(
+   390→   390→              "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4",
+   391→   391→              "hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300 cursor-pointer",
+   392→   392→              "group"
+   393→   393→            )}
+   394→   394→          >
+   395→   395→            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3 border", card.bg)}>
+   396→   396→              <card.icon className={cn("w-4.5 h-4.5", card.textColor)} />
+   397→   397→            </div>
+   398→   398→            <div className="text-2xl font-bold text-white mb-0.5">
+   399→   399→              <AnimatedCounter
+   400→   400→                value={card.value}
+   401→   401→                decimals={card.decimals || 0}
+   402→   402→                suffix={card.suffix || ''}
+   403→   403→                duration={1.5}
+   404→   404→              />
+   405→   405→            </div>
+   406→   406→            <p className="text-[11px] text-gray-500 truncate">{card.label}</p>
+   407→   407→          </motion.div>
+   408→   408→        ))}
+   409→   409→      </div>
+   410→   410→
+   411→   411→      {/* ─── System Health + Quick Actions Row ────────────── */}
+   412→   412→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   413→   413→        {/* System Health Widget */}
+   414→   414→        <motion.div
+   415→   415→          initial={{ opacity: 0, x: -20 }}
+   416→   416→          animate={{ opacity: 1, x: 0 }}
+   417→   417→          transition={{ delay: 0.4 }}
+   418→   418→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   419→   419→        >
+   420→   420→          <div className="flex items-center justify-between mb-5">
+   421→   421→            <div className="flex items-center gap-2">
+   422→   422→              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+   423→   423→                <HeartPulse className="w-4 h-4 text-emerald-400" />
+   424→   424→              </div>
+   425→   425→              <h3 className="text-white font-semibold">System Health</h3>
+   426→   426→            </div>
+   427→   427→            <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+   428→   428→              HEALTHY
+   429→   429→            </span>
+   430→   430→          </div>
+   431→   431→
+   432→   432→          <div className="space-y-4">
+   433→   433→            {systemMetrics.map((metric, i) => (
+   434→   434→              <motion.div
+   435→   435→                key={metric.label}
+   436→   436→                initial={{ opacity: 0, x: -10 }}
+   437→   437→                animate={{ opacity: 1, x: 0 }}
+   438→   438→                transition={{ delay: 0.5 + i * 0.1 }}
+   439→   439→              >
+   440→   440→                <div className="flex justify-between mb-1.5">
+   441→   441→                  <div className="flex items-center gap-2">
+   442→   442→                    {metric.label === 'CPU Usage' && <Cpu className="w-3.5 h-3.5 text-gray-500" />}
+   443→   443→                    {metric.label === 'Memory Usage' && <HardDrive className="w-3.5 h-3.5 text-gray-500" />}
+   444→   444→                    {metric.label === 'API Response Time' && <Zap className="w-3.5 h-3.5 text-gray-500" />}
+   445→   445→                    {metric.label === 'Database Health' && <Database className="w-3.5 h-3.5 text-gray-500" />}
+   446→   446→                    <span className="text-gray-400 text-xs">{metric.label}</span>
+   447→   447→                  </div>
+   448→   448→                  <span className="text-white text-xs font-semibold">
+   449→   449→                    {metric.displayValue || `${metric.value}%`}
+   450→   450→                  </span>
+   451→   451→                </div>
+   452→   452→                <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+   453→   453→                  <motion.div
+   454→   454→                    initial={{ width: 0 }}
+   455→   455→                    animate={{ width: `${Math.min(100, metric.value / (metric.max || 100) * 100)}%` }}
+   456→   456→                    transition={{ duration: 1.2, ease: 'easeOut', delay: 0.6 + i * 0.1 }}
+   457→   457→                    className={cn(
+   458→   458→                      "h-full rounded-full shadow-[0_0_8px_rgba(139,92,246,0.3)]",
+   459→   459→                      metric.color === 'purple' && "bg-gradient-to-r from-purple-500 to-violet-600",
+   460→   460→                      metric.color === 'cyan' && "bg-gradient-to-r from-cyan-500 to-blue-600",
+   461→   461→                      metric.color === 'green' && "bg-gradient-to-r from-green-500 to-emerald-600",
+   462→   462→                      metric.color === 'emerald' && "bg-gradient-to-r from-emerald-500 to-teal-600",
+   463→   463→                    )}
+   464→   464→                  />
+   465→   465→                </div>
+   466→   466→              </motion.div>
+   467→   467→            ))}
+   468→   468→          </div>
+   469→   469→
+   470→   470→          {/* Mini server status indicators */}
+   471→   471→          <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center gap-4">
+   472→   472→            <div className="flex items-center gap-1.5">
+   473→   473→              <Globe className="w-3 h-3 text-gray-500" />
+   474→   474→              <span className="text-[11px] text-gray-500">API</span>
+   475→   475→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   476→   476→            </div>
+   477→   477→            <div className="flex items-center gap-1.5">
+   478→   478→              <Database className="w-3 h-3 text-gray-500" />
+   479→   479→              <span className="text-[11px] text-gray-500">DB</span>
+   480→   480→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   481→   481→            </div>
+   482→   482→            <div className="flex items-center gap-1.5">
+   483→   483→              <Bot className="w-3 h-3 text-gray-500" />
+   484→   484→              <span className="text-[11px] text-gray-500">AI</span>
+   485→   485→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+   486→   486→            </div>
+   487→   487→            <div className="flex items-center gap-1.5">
+   488→   488→              <Monitor className="w-3 h-3 text-gray-500" />
+   489→   489→              <span className="text-[11px] text-gray-500">CDN</span>
+   490→   490→              <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+   491→   491→            </div>
+   492→   492→          </div>
+   493→   493→        </motion.div>
+   494→   494→
+   495→   495→        {/* Quick Actions */}
+   496→   496→        <motion.div
+   497→   497→          initial={{ opacity: 0, x: 20 }}
+   498→   498→          animate={{ opacity: 1, x: 0 }}
+   499→   499→          transition={{ delay: 0.4 }}
+   500→   500→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   501→   501→        >
+   502→   502→          <div className="flex items-center gap-2 mb-5">
+   503→   503→            <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+   504→   504→              <Zap className="w-4 h-4 text-purple-400" />
+   505→   505→            </div>
+   506→   506→            <h3 className="text-white font-semibold">Quick Actions</h3>
+   507→   507→          </div>
+   508→   508→
+   509→   509→          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+   510→   510→            {quickActions.map((action, i) => (
+   511→   511→              <motion.button
+   512→   512→                key={action.label}
+   513→   513→                initial={{ opacity: 0, scale: 0.9 }}
+   514→   514→                animate={{ opacity: 1, scale: 1 }}
+   515→   515→                transition={{ delay: 0.5 + i * 0.05 }}
+   516→   516→                whileHover={{ scale: 1.05, y: -2 }}
+   517→   517→                whileTap={{ scale: 0.95 }}
+   518→   518→                className={cn(
+   519→   519→                  "flex flex-col items-center gap-2.5 p-4 rounded-xl",
+   520→   520→                  "bg-white/[0.03] border border-white/[0.06]",
+   521→   521→                  "hover:border-white/[0.12] hover:bg-white/[0.05]",
+   522→   522→                  "transition-all duration-300 group"
+   523→   523→                )}
+   524→   524→                style={{ boxShadow: `0 0 0px ${action.glow}` }}
+   525→   525→                onClick={() => onNavigate(action.tab)}
+   526→   526→                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 20px ${action.glow}`; }}
+   527→   527→                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0px ${action.glow}`; }}
+   528→   528→              >
+   529→   529→                <div className={cn(
+   530→   530→                  "w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br",
+   531→   531→                  action.gradient,
+   532→   532→                  "shadow-lg group-hover:scale-110 transition-transform duration-300"
+   533→   533→                )}>
+   534→   534→                  <action.icon className="w-5 h-5 text-white" />
+   535→   535→                </div>
+   536→   536→                <span className="text-xs text-gray-400 font-medium text-center group-hover:text-gray-200 transition-colors">
+   537→   537→                  {action.label}
+   538→   538→                </span>
+   539→   539→              </motion.button>
+   540→   540→            ))}
+   541→   541→          </div>
+   542→   542→        </motion.div>
+   543→   543→      </div>
+   544→   544→
+   545→   545→      {/* ─── Recent Activity + AI Insights Row ─────────────── */}
+   546→   546→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   547→   547→        {/* Recent Activity Feed */}
+   548→   548→        <motion.div
+   549→   549→          initial={{ opacity: 0, y: 20 }}
+   550→   550→          animate={{ opacity: 1, y: 0 }}
+   551→   551→          transition={{ delay: 0.6 }}
+   552→   552→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   553→   553→        >
+   554→   554→          <div className="flex items-center justify-between mb-5">
+   555→   555→            <div className="flex items-center gap-2">
+   556→   556→              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+   557→   557→                <Activity className="w-4 h-4 text-blue-400" />
+   558→   558→              </div>
+   559→   559→              <h3 className="text-white font-semibold">Recent Activity</h3>
+   560→   560→            </div>
+   561→   561→            <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+   562→   562→              LIVE
+   563→   563→            </span>
+   564→   564→          </div>
+   565→   565→
+   566→   566→          <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+   567→   567→            {liveActivity.map((activity, i) => (
+   568→   568→              <motion.div
+   569→   569→                key={i}
+   570→   570→                initial={{ opacity: 0, x: -10 }}
+   571→   571→                animate={{ opacity: 1, x: 0 }}
+   572→   572→                transition={{ delay: 0.7 + i * 0.05 }}
+   573→   573→                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors group"
+   574→   574→              >
+   575→   575→                <div className={cn(
+   576→   576→                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+   577→   577→                  activity.type === 'enrollment' && 'bg-purple-500/10',
+   578→   578→                  activity.type === 'complaint' && 'bg-red-500/10',
+   579→   579→                  activity.type === 'academic' && 'bg-cyan-500/10',
+   580→   580→                  activity.type === 'system' && 'bg-gray-500/10',
+   581→   581→                  activity.type === 'event' && 'bg-blue-500/10',
+   582→   582→                  activity.type === 'ai' && 'bg-violet-500/10',
+   583→   583→                  activity.type === 'fee' && 'bg-green-500/10',
+   584→   584→                  activity.type === 'library' && 'bg-orange-500/10',
+   585→   585→                )}>
+   586→   586→                  {activity.type === 'enrollment' && <Users className="w-3.5 h-3.5 text-purple-400" />}
+   587→   587→                  {activity.type === 'complaint' && <AlertTriangle className="w-3.5 h-3.5 text-red-400" />}
+   588→   588→                  {activity.type === 'academic' && <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />}
+   589→   589→                  {activity.type === 'system' && <Server className="w-3.5 h-3.5 text-gray-400" />}
+   590→   590→                  {activity.type === 'event' && <Clock className="w-3.5 h-3.5 text-blue-400" />}
+   591→   591→                  {activity.type === 'ai' && <Bot className="w-3.5 h-3.5 text-violet-400" />}
+   592→   592→                  {activity.type === 'fee' && <Activity className="w-3.5 h-3.5 text-green-400" />}
+   593→   593→                  {activity.type === 'library' && <BookOpen className="w-3.5 h-3.5 text-orange-400" />}
+   594→   594→                </div>
+   595→   595→                <div className="flex-1 min-w-0">
+   596→   596→                  <p className="text-sm text-gray-300 group-hover:text-gray-100 transition-colors leading-snug">
+   597→   597→                    {activity.message}
+   598→   598→                  </p>
+   599→   599→                  <p className="text-[10px] text-gray-600 mt-0.5">{activity.time}</p>
+   600→   600→                </div>
+   601→   601→                <ChevronRight className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-500 shrink-0 mt-1 transition-colors" />
+   602→   602→              </motion.div>
+   603→   603→            ))}
+   604→   604→          </div>
+   605→   605→        </motion.div>
+   606→   606→
+   607→   607→        {/* AI Insights Panel */}
+   608→   608→        <motion.div
+   609→   609→          initial={{ opacity: 0, y: 20 }}
+   610→   610→          animate={{ opacity: 1, y: 0 }}
+   611→   611→          transition={{ delay: 0.7 }}
+   612→   612→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   613→   613→        >
+   614→   614→          <div className="flex items-center justify-between mb-5">
+   615→   615→            <div className="flex items-center gap-2">
+   616→   616→              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+   617→   617→                <Brain className="w-4 h-4 text-violet-400" />
+   618→   618→              </div>
+   619→   619→              <h3 className="text-white font-semibold">AI Insights</h3>
+   620→   620→            </div>
+   621→   621→            <span className="text-[10px] px-2 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium animate-pulse">
+   622→   622→              THINKING
+   623→   623→            </span>
+   624→   624→          </div>
+   625→   625→
+   626→   626→          <div className="space-y-3">
+   627→   627→            {aiInsights.map((insight, i) => (
+   628→   628→              <motion.div
+   629→   629→                key={i}
+   630→   630→                initial={{ opacity: 0, x: 10 }}
+   631→   631→                animate={{ opacity: 1, x: 0 }}
+   632→   632→                transition={{ delay: 0.8 + i * 0.1 }}
+   633→   633→                className={cn(
+   634→   634→                  "flex items-start gap-3 p-4 rounded-xl border transition-all duration-300",
+   635→   635→                  insight.severity === 'warning' && "bg-yellow-500/[0.04] border-yellow-500/10 hover:border-yellow-500/20",
+   636→   636→                  insight.severity === 'success' && "bg-green-500/[0.04] border-green-500/10 hover:border-green-500/20",
+   637→   637→                  insight.severity === 'info' && "bg-blue-500/[0.04] border-blue-500/10 hover:border-blue-500/20",
+   638→   638→                )}
+   639→   639→              >
+   640→   640→                <div className={cn(
+   641→   641→                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+   642→   642→                  insight.severity === 'warning' && "bg-yellow-500/10",
+   643→   643→                  insight.severity === 'success' && "bg-green-500/10",
+   644→   644→                  insight.severity === 'info' && "bg-blue-500/10",
+   645→   645→                )}>
+   646→   646→                  <insight.icon className={cn(
+   647→   647→                    "w-3.5 h-3.5",
+   648→   648→                    insight.severity === 'warning' && "text-yellow-400",
+   649→   649→                    insight.severity === 'success' && "text-green-400",
+   650→   650→                    insight.severity === 'info' && "text-blue-400",
+   651→   651→                  )} />
+   652→   652→                </div>
+   653→   653→                <div className="flex-1 min-w-0">
+   654→   654→                  <p className="text-sm text-gray-300 leading-snug">{insight.text}</p>
+   655→   655→                  <div className="flex items-center gap-2 mt-2">
+   656→   656→                    <span className={cn(
+   657→   657→                      "text-[10px] font-medium px-2 py-0.5 rounded-full",
+   658→   658→                      insight.severity === 'warning' && "bg-yellow-500/10 text-yellow-400",
+   659→   659→                      insight.severity === 'success' && "bg-green-500/10 text-green-400",
+   660→   660→                      insight.severity === 'info' && "bg-blue-500/10 text-blue-400",
+   661→   661→                    )}>
+   662→   662→                      {insight.severity.toUpperCase()}
+   663→   663→                    </span>
+   664→   664→                    <span className="text-[10px] text-gray-600">AI-generated</span>
+   665→   665→                  </div>
+   666→   666→                </div>
+   667→   667→              </motion.div>
+   668→   668→            ))}
+   669→   669→          </div>
+   670→   670→
+   671→   671→          {/* AI Confidence */}
+   672→   672→          <div className="mt-4 pt-4 border-t border-white/[0.06]">
+   673→   673→            <div className="flex items-center justify-between mb-2">
+   674→   674→              <span className="text-xs text-gray-500">AI Confidence Score</span>
+   675→   675→              <span className="text-xs text-purple-400 font-semibold">94.7%</span>
+   676→   676→            </div>
+   677→   677→            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+   678→   678→              <motion.div
+   679→   679→                initial={{ width: 0 }}
+   680→   680→                animate={{ width: '94.7%' }}
+   681→   681→                transition={{ duration: 1.5, ease: 'easeOut', delay: 1 }}
+   682→   682→                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+   683→   683→              />
+   684→   684→            </div>
+   685→   685→          </div>
+   686→   686→        </motion.div>
+   687→   687→      </div>
+   688→   688→
+   689→   689→      {/* ─── Campus Analytics Section ──────────────────────────────── */}
+   690→   690→      <motion.div
+   691→   691→        initial={{ opacity: 0, y: 20 }}
+   692→   692→        animate={{ opacity: 1, y: 0 }}
+   693→   693→        transition={{ delay: 0.9 }}
+   694→   694→      >
+   695→   695→        <div className="flex items-center gap-2 mb-4">
+   696→   696→          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+   697→   697→            <FileBarChart className="w-4 h-4 text-purple-400" />
+   698→   698→          </div>
+   699→   699→          <h3 className="text-white font-semibold text-lg">Campus Analytics</h3>
+   700→   700→          <span className="text-[10px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium ml-2">
+   701→   701→            INSIGHTS
+   702→   702→          </span>
+   703→   703→        </div>
+   704→   704→
+   705→   705→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   706→   706→          {/* Attendance Heatmap */}
+   707→   707→          <motion.div
+   708→   708→            initial={{ opacity: 0, scale: 0.95 }}
+   709→   709→            animate={{ opacity: 1, scale: 1 }}
+   710→   710→            transition={{ delay: 1.0 }}
+   711→   711→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   712→   712→          >
+   713→   713→            <div className="flex items-center justify-between mb-4">
+   714→   714→              <h4 className="text-white font-medium text-sm">Attendance Heatmap</h4>
+   715→   715→              <span className="text-[10px] text-gray-500">By Day & Time Slot</span>
+   716→   716→            </div>
+   717→   717→            <AttendanceHeatmap />
+   718→   718→          </motion.div>
+   719→   719→
+   720→   720→          {/* Department Performance Bar Chart */}
+   721→   721→          <motion.div
+   722→   722→            initial={{ opacity: 0, scale: 0.95 }}
+   723→   723→            animate={{ opacity: 1, scale: 1 }}
+   724→   724→            transition={{ delay: 1.1 }}
+   725→   725→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   726→   726→          >
+   727→   727→            <div className="flex items-center justify-between mb-4">
+   728→   728→              <h4 className="text-white font-medium text-sm">Department Performance</h4>
+   729→   729→              <span className="text-[10px] text-gray-500">Avg CGPA by Dept</span>
+   730→   730→            </div>
+   731→   731→            <DepartmentPerformanceChart adminData={adminData} />
+   732→   732→          </motion.div>
+   733→   733→
+   734→   734→          {/* Placement Trend Line Chart */}
+   735→   735→          <motion.div
+   736→   736→            initial={{ opacity: 0, scale: 0.95 }}
+   737→   737→            animate={{ opacity: 1, scale: 1 }}
+   738→   738→            transition={{ delay: 1.2 }}
+   739→   739→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   740→   740→          >
+   741→   741→            <div className="flex items-center justify-between mb-4">
+   742→   742→              <h4 className="text-white font-medium text-sm">Placement Trend</h4>
+   743→   743→              <span className="text-[10px] text-gray-500">Monthly Placements</span>
+   744→   744→            </div>
+   745→   745→            <PlacementTrendChart />
+   746→   746→          </motion.div>
+   747→   747→
+   748→   748→          {/* Fee Collection Pie Chart */}
+   749→   749→          <motion.div
+   750→   750→            initial={{ opacity: 0, scale: 0.95 }}
+   751→   751→            animate={{ opacity: 1, scale: 1 }}
+   752→   752→            transition={{ delay: 1.3 }}
+   753→   753→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+   754→   754→          >
+   755→   755→            <div className="flex items-center justify-between mb-4">
+   756→   756→              <h4 className="text-white font-medium text-sm">Fee Collection</h4>
+   757→   757→              <span className="text-[10px] text-gray-500">Payment Status</span>
+   758→   758→            </div>
+   759→   759→            <FeeCollectionChart adminData={adminData} />
+   760→   760→          </motion.div>
+   761→   761→        </div>
+   762→   762→      </motion.div>
+   763→   763→    </div>
+   764→   764→  );
+   765→   765→}
+   766→   766→
+   767→   767→// ─── Attendance Heatmap Component ────────────────────────────────────
+   768→   768→function AttendanceHeatmap() {
+   769→   769→  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+   770→   770→  const slots = ['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '2 PM', '3 PM', '4 PM'];
+   771→   771→
+   772→   772→  // Generate realistic heatmap data
+   773→   773→  const heatmapData = useMemo(() => {
+   774→   774→    const data: number[][] = [];
+   775→   775→    for (let d = 0; d < 7; d++) {
+   776→   776→      const row: number[] = [];
+   777→   777→      for (let s = 0; s < 8; s++) {
+   778→   778→        if (d >= 5) { // Weekend
+   779→   779→          row.push(Math.random() * 15);
+   780→   780→        } else if (s >= 4 && s <= 5) { // Afternoon peak
+   781→   781→          row.push(70 + Math.random() * 30);
+   782→   782→        } else if (s >= 1 && s <= 3) { // Morning peak
+   783→   783→          row.push(80 + Math.random() * 20);
+   784→   784→        } else { // Early/late
+   785→   785→          row.push(30 + Math.random() * 40);
+   786→   786→        }
+   787→   787→      }
+   788→   788→      data.push(row);
+   789→   789→    }
+   790→   790→    return data;
+   791→   791→  }, []);
+   792→   792→
+   793→   793→  const getColor = (value: number) => {
+   794→   794→    if (value < 20) return 'rgba(139, 92, 246, 0.08)';
+   795→   795→    if (value < 40) return 'rgba(139, 92, 246, 0.2)';
+   796→   796→    if (value < 60) return 'rgba(139, 92, 246, 0.35)';
+   797→   797→    if (value < 80) return 'rgba(139, 92, 246, 0.55)';
+   798→   798→    return 'rgba(139, 92, 246, 0.8)';
+   799→   799→  };
+   800→   800→
+   801→   801→  return (
+   802→   802→    <div className="overflow-x-auto">
+   803→   803→      <div className="min-w-[320px]">
+   804→   804→        {/* Time slot headers */}
+   805→   805→        <div className="flex items-center gap-1 mb-2 pl-10">
+   806→   806→          {slots.map((slot) => (
+   807→   807→            <div key={slot} className="flex-1 text-center text-[9px] text-gray-500 font-medium">
+   808→   808→              {slot}
+   809→   809→            </div>
+   810→   810→          ))}
+   811→   811→        </div>
+   812→   812→        {/* Day rows */}
+   813→   813→        {days.map((day, dIdx) => (
+   814→   814→          <div key={day} className="flex items-center gap-1 mb-1">
+   815→   815→            <div className="w-9 text-right text-[10px] text-gray-400 font-medium pr-1">{day}</div>
+   816→   816→            {heatmapData[dIdx].map((value, sIdx) => (
+   817→   817→              <motion.div
+   818→   818→                key={`${dIdx}-${sIdx}`}
+   819→   819→                initial={{ opacity: 0, scale: 0 }}
+   820→   820→                animate={{ opacity: 1, scale: 1 }}
+   821→   821→                transition={{ delay: 1.0 + dIdx * 0.05 + sIdx * 0.02, duration: 0.3 }}
+   822→   822→                className="flex-1 aspect-square rounded-md cursor-pointer hover:scale-110 transition-transform"
+   823→   823→                style={{ backgroundColor: getColor(value), minHeight: '24px' }}
+   824→   824→                title={`${day} ${slots[sIdx]}: ${Math.round(value)}% attendance`}
+   825→   825→              />
+   826→   826→            ))}
+   827→   827→          </div>
+   828→   828→        ))}
+   829→   829→        {/* Legend */}
+   830→   830→        <div className="flex items-center justify-end gap-2 mt-3">
+   831→   831→          <span className="text-[9px] text-gray-500">Low</span>
+   832→   832→          <div className="flex gap-0.5">
+   833→   833→            {[0.08, 0.2, 0.35, 0.55, 0.8].map((opacity, i) => (
+   834→   834→              <div
+   835→   835→                key={i}
+   836→   836→                className="w-4 h-3 rounded-sm"
+   837→   837→                style={{ backgroundColor: `rgba(139, 92, 246, ${opacity})` }}
+   838→   838→              />
+   839→   839→            ))}
+   840→   840→          </div>
+   841→   841→          <span className="text-[9px] text-gray-500">High</span>
+   842→   842→        </div>
+   843→   843→      </div>
+   844→   844→    </div>
+   845→   845→  );
+   846→   846→}
+   847→   847→
+   848→   848→// ─── Department Performance Chart ────────────────────────────────────
+   849→   849→function DepartmentPerformanceChart({ adminData }: { adminData: any }) {
+   850→   850→  const data = useMemo(() => {
+   851→   851→    if (adminData?.attendanceByDepartment?.length > 0) {
+   852→   852→      return adminData.attendanceByDepartment.map((d: any) => ({
+   853→   853→        department: d.department?.replace('Computer Science', 'CS')?.replace('Information Technology', 'IT')?.replace('Electronics & Communication', 'ECE')?.replace('Electrical Engineering', 'EEE')?.replace('Mechanical Engineering', 'ME')?.replace('Civil Engineering', 'CE') || d.department,
+   854→   854→        cgpa: d.avgCgpa || d.cgpa || 0,
+   855→   855→      }));
+   856→   856→    }
+   857→   857→    return [
+   858→   858→      { department: 'CS', cgpa: 8.08 },
+   859→   859→      { department: 'IT', cgpa: 8.03 },
+   860→   860→      { department: 'ECE', cgpa: 7.55 },
+   861→   861→      { department: 'EEE', cgpa: 7.50 },
+   862→   862→      { department: 'ME', cgpa: 7.50 },
+   863→   863→      { department: 'CE', cgpa: 7.88 },
+   864→   864→    ];
+   865→   865→  }, [adminData]);
+   866→   866→
+   867→   867→  return (
+   868→   868→    <div className="h-56">
+   869→   869→      <ResponsiveContainer width="100%" height="100%">
+   870→   870→        <BarChart data={data} barCategoryGap="20%">
+   871→   871→          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+   872→   872→          <XAxis
+   873→   873→            dataKey="department"
+   874→   874→            tick={{ fill: '#9ca3af', fontSize: 11 }}
+   875→   875→            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+   876→   876→            tickLine={false}
+   877→   877→          />
+   878→   878→          <YAxis
+   879→   879→            domain={[0, 10]}
+   880→   880→            tick={{ fill: '#9ca3af', fontSize: 10 }}
+   881→   881→            axisLine={false}
+   882→   882→            tickLine={false}
+   883→   883→          />
+   884→   884→          <Tooltip
+   885→   885→            contentStyle={{
+   886→   886→              backgroundColor: 'rgba(10, 10, 30, 0.95)',
+   887→   887→              border: '1px solid rgba(139, 92, 246, 0.3)',
+   888→   888→              borderRadius: '12px',
+   889→   889→              color: '#e5e7eb',
+   890→   890→              fontSize: 12,
+   891→   891→              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+   892→   892→            }}
+   893→   893→            formatter={(value: number) => [value.toFixed(2), 'Avg CGPA']}
+   894→   894→            cursor={{ fill: 'rgba(139, 92, 246, 0.08)' }}
+   895→   895→          />
+   896→   896→          <defs>
+   897→   897→            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+   898→   898→              <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.9} />
+   899→   899→              <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.7} />
+   900→   900→            </linearGradient>
+   901→   901→          </defs>
+   902→   902→          <Bar dataKey="cgpa" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
+   903→   903→        </BarChart>
+   904→   904→      </ResponsiveContainer>
+   905→   905→    </div>
+   906→   906→  );
+   907→   907→}
+   908→   908→
+   909→   909→// ─── Placement Trend Chart ───────────────────────────────────────────
+   910→   910→function PlacementTrendChart() {
+   911→   911→  const data = useMemo(() => [
+   912→   912→    { month: 'Jul', placements: 12 },
+   913→   913→    { month: 'Aug', placements: 28 },
+   914→   914→    { month: 'Sep', placements: 45 },
+   915→   915→    { month: 'Oct', placements: 62 },
+   916→   916→    { month: 'Nov', placements: 54 },
+   917→   917→    { month: 'Dec', placements: 38 },
+   918→   918→    { month: 'Jan', placements: 72 },
+   919→   919→    { month: 'Feb', placements: 85 },
+   920→   920→  ], []);
+   921→   921→
+   922→   922→  return (
+   923→   923→    <div className="h-56">
+   924→   924→      <ResponsiveContainer width="100%" height="100%">
+   925→   925→        <AreaChart data={data}>
+   926→   926→          <defs>
+   927→   927→            <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
+   928→   928→              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
+   929→   929→              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
+   930→   930→            </linearGradient>
+   931→   931→          </defs>
+   932→   932→          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+   933→   933→          <XAxis
+   934→   934→            dataKey="month"
+   935→   935→            tick={{ fill: '#9ca3af', fontSize: 11 }}
+   936→   936→            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+   937→   937→            tickLine={false}
+   938→   938→          />
+   939→   939→          <YAxis
+   940→   940→            tick={{ fill: '#9ca3af', fontSize: 10 }}
+   941→   941→            axisLine={false}
+   942→   942→            tickLine={false}
+   943→   943→          />
+   944→   944→          <Tooltip
+   945→   945→            contentStyle={{
+   946→   946→              backgroundColor: 'rgba(10, 10, 30, 0.95)',
+   947→   947→              border: '1px solid rgba(6, 182, 212, 0.3)',
+   948→   948→              borderRadius: '12px',
+   949→   949→              color: '#e5e7eb',
+   950→   950→              fontSize: 12,
+   951→   951→              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+   952→   952→            }}
+   953→   953→            formatter={(value: number) => [value, 'Placements']}
+   954→   954→          />
+   955→   955→          <Area
+   956→   956→            type="monotone"
+   957→   957→            dataKey="placements"
+   958→   958→            stroke="#06b6d4"
+   959→   959→            strokeWidth={2.5}
+   960→   960→            fill="url(#cyanGradient)"
+   961→   961→            dot={{ fill: '#06b6d4', r: 4, strokeWidth: 2, stroke: '#0a0a1e' }}
+   962→   962→            activeDot={{ fill: '#06b6d4', r: 6, strokeWidth: 2, stroke: '#0a0a1e' }}
+   963→   963→          />
+   964→   964→        </AreaChart>
+   965→   965→      </ResponsiveContainer>
+   966→   966→    </div>
+   967→   967→  );
+   968→   968→}
+   969→   969→
+   970→   970→// ─── Fee Collection Chart ────────────────────────────────────────────
+   971→   971→function FeeCollectionChart({ adminData }: { adminData: any }) {
+   972→   972→  const data = useMemo(() => {
+   973→   973→    if (adminData?.stats) {
+   974→   974→      const s = adminData.stats;
+   975→   975→      return [
+   976→   976→        { name: 'Paid', value: s.feesPaid || 45, color: '#22c55e' },
+   977→   977→        { name: 'Pending', value: s.feesPending || 28, color: '#eab308' },
+   978→   978→        { name: 'Overdue', value: s.feesOverdue || 12, color: '#ef4444' },
+   979→   979→      ];
+   980→   980→    }
+   981→   981→    return [
+   982→   982→      { name: 'Paid', value: 45, color: '#22c55e' },
+   983→   983→      { name: 'Pending', value: 28, color: '#eab308' },
+   984→   984→      { name: 'Overdue', value: 12, color: '#ef4444' },
+   985→   985→    ];
+   986→   986→  }, [adminData]);
+   987→   987→
+   988→   988→  const total = data.reduce((sum, d) => sum + d.value, 0);
+   989→   989→
+   990→   990→  return (
+   991→   991→    <div className="h-56 flex items-center">
+   992→   992→      <div className="w-1/2">
+   993→   993→        <ResponsiveContainer width="100%" height={200}>
+   994→   994→          <PieChart>
+   995→   995→            <Pie
+   996→   996→              data={data}
+   997→   997→              cx="50%"
+   998→   998→              cy="50%"
+   999→   999→              innerRadius={50}
+  1000→  1000→              outerRadius={80}
+  1001→  1001→              paddingAngle={3}
+  1002→  1002→              dataKey="value"
+  1003→  1003→              stroke="none"
+  1004→  1004→            >
+  1005→  1005→              {data.map((entry, index) => (
+  1006→  1006→                <Cell key={`cell-${index}`} fill={entry.color} />
+  1007→  1007→              ))}
+  1008→  1008→            </Pie>
+  1009→  1009→            <Tooltip
+  1010→  1010→              contentStyle={{
+  1011→  1011→                backgroundColor: 'rgba(10, 10, 30, 0.95)',
+  1012→  1012→                border: '1px solid rgba(255,255,255,0.1)',
+  1013→  1013→                borderRadius: '12px',
+  1014→  1014→                color: '#e5e7eb',
+  1015→  1015→                fontSize: 12,
+  1016→  1016→                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+  1017→  1017→              }}
+  1018→  1018→              formatter={(value: number, name: string) => [`₹${value}L`, name]}
+  1019→  1019→            />
+  1020→  1020→          </PieChart>
+  1021→  1021→        </ResponsiveContainer>
+  1022→  1022→      </div>
+  1023→  1023→      <div className="w-1/2 space-y-3">
+  1024→  1024→        {data.map((item) => (
+  1025→  1025→          <div key={item.name} className="flex items-center gap-3">
+  1026→  1026→            <div
+  1027→  1027→              className="w-3 h-3 rounded-full shrink-0"
+  1028→  1028→              style={{ backgroundColor: item.color }}
+  1029→  1029→            />
+  1030→  1030→            <div className="flex-1 min-w-0">
+  1031→  1031→              <div className="flex items-center justify-between">
+  1032→  1032→                <span className="text-xs text-gray-400">{item.name}</span>
+  1033→  1033→                <span className="text-xs text-white font-semibold">
+  1034→  1034→                  {Math.round((item.value / total) * 100)}%
+  1035→  1035→                </span>
+  1036→  1036→              </div>
+  1037→  1037→              <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mt-1">
+  1038→  1038→                <motion.div
+  1039→  1039→                  initial={{ width: 0 }}
+  1040→  1040→                  animate={{ width: `${(item.value / total) * 100}%` }}
+  1041→  1041→                  transition={{ duration: 1, ease: 'easeOut', delay: 1.5 }}
+  1042→  1042→                  className="h-full rounded-full"
+  1043→  1043→                  style={{ backgroundColor: item.color }}
+  1044→  1044→                />
+  1045→  1045→              </div>
+  1046→  1046→            </div>
+  1047→  1047→          </div>
+  1048→  1048→        ))}
+  1049→  1049→        <div className="pt-2 border-t border-white/[0.06]">
+  1050→  1050→          <div className="flex items-center justify-between">
+  1051→  1051→            <span className="text-xs text-gray-500">Total Collection</span>
+  1052→  1052→            <span className="text-sm text-white font-bold">₹{total}L</span>
+  1053→  1053→          </div>
+  1054→  1054→        </div>
+  1055→  1055→      </div>
+  1056→  1056→    </div>
+  1057→  1057→  );
+  1058→  1058→}
+  1059→  1059→
+  1060→  1060→// ═══════════════════════════════════════════════════════════════════════
+  1061→  1061→// Placeholder Tab — Beautiful placeholder for each sub-section
+  1062→  1062→// ═══════════════════════════════════════════════════════════════════════
+  1063→  1063→interface PlaceholderTabProps {
+  1064→  1064→  id: string;
+  1065→  1065→  label: string;
+  1066→  1066→  description: string;
+  1067→  1067→  icon: React.ComponentType<{ className?: string }>;
+  1068→  1068→  gradient: string;
+  1069→  1069→  accentColor: string;
+  1070→  1070→  stats: { l: string; v: string }[];
+  1071→  1071→}
+  1072→  1072→
+  1073→  1073→function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentColor, stats }: PlaceholderTabProps) {
+  1074→  1074→  const accentMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+  1075→  1075→    purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', glow: 'rgba(139,92,246,0.3)' },
+  1076→  1076→    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', glow: 'rgba(6,182,212,0.3)' },
+  1077→  1077→    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'rgba(59,130,246,0.3)' },
+  1078→  1078→    red: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', glow: 'rgba(239,68,68,0.3)' },
+  1079→  1079→    yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-400', glow: 'rgba(234,179,8,0.3)' },
+  1080→  1080→    violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', glow: 'rgba(139,92,246,0.3)' },
+  1081→  1081→    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'rgba(16,185,129,0.3)' },
+  1082→  1082→    orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', glow: 'rgba(249,115,22,0.3)' },
+  1083→  1083→  };
+  1084→  1084→
+  1085→  1085→  const accent = accentMap[accentColor] || accentMap.purple;
+  1086→  1086→
+  1087→  1087→  return (
+  1088→  1088→    <div className="space-y-6 pt-2">
+  1089→  1089→      {/* Section Header */}
+  1090→  1090→      <motion.div
+  1091→  1091→        initial={{ opacity: 0, y: 20 }}
+  1092→  1092→        animate={{ opacity: 1, y: 0 }}
+  1093→  1093→        transition={{ duration: 0.5 }}
+  1094→  1094→        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+  1095→  1095→      >
+  1096→  1096→        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent" />
+  1097→  1097→        <motion.div
+  1098→  1098→          className="absolute inset-0 rounded-2xl"
+  1099→  1099→          style={{
+  1100→  1100→            background: `linear-gradient(90deg, ${accent.glow}, transparent, ${accent.glow})`,
+  1101→  1101→            backgroundSize: '200% 100%',
+  1102→  1102→          }}
+  1103→  1103→          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+  1104→  1104→          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+  1105→  1105→        >
+  1106→  1106→          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+  1107→  1107→        </motion.div>
+  1108→  1108→
+  1109→  1109→        <div className="relative z-10 flex items-start gap-4">
+  1110→  1110→          <motion.div
+  1111→  1111→            initial={{ scale: 0 }}
+  1112→  1112→            animate={{ scale: 1 }}
+  1113→  1113→            transition={{ delay: 0.2, type: 'spring' }}
+  1114→  1114→            className={cn(
+  1115→  1115→              "w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br",
+  1116→  1116→              gradient,
+  1117→  1117→              "shadow-lg"
+  1118→  1118→            )}
+  1119→  1119→            style={{ boxShadow: `0 0 25px ${accent.glow}` }}
+  1120→  1120→          >
+  1121→  1121→            <Icon className="w-7 h-7 text-white" />
+  1122→  1122→          </motion.div>
+  1123→  1123→          <div>
+  1124→  1124→            <motion.h2
+  1125→  1125→              initial={{ opacity: 0, x: -10 }}
+  1126→  1126→              animate={{ opacity: 1, x: 0 }}
+  1127→  1127→              transition={{ delay: 0.2 }}
+  1128→  1128→              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400"
+  1129→  1129→            >
+  1130→  1130→              {label}
+  1131→  1131→            </motion.h2>
+  1132→  1132→            <motion.p
+  1133→  1133→              initial={{ opacity: 0, x: -10 }}
+  1134→  1134→              animate={{ opacity: 1, x: 0 }}
+  1135→  1135→              transition={{ delay: 0.3 }}
+  1136→  1136→              className="text-gray-500 text-sm mt-1 max-w-lg"
+  1137→  1137→            >
+  1138→  1138→              {description}
+  1139→  1139→            </motion.p>
+  1140→  1140→          </div>
+  1141→  1141→        </div>
+  1142→  1142→      </motion.div>
+  1143→  1143→
+  1144→  1144→      {/* Stats Row */}
+  1145→  1145→      <div className="grid grid-cols-3 gap-3">
+  1146→  1146→        {stats.map((stat, i) => (
+  1147→  1147→          <motion.div
+  1148→  1148→            key={stat.l}
+  1149→  1149→            initial={{ opacity: 0, y: 15 }}
+  1150→  1150→            animate={{ opacity: 1, y: 0 }}
+  1151→  1151→            transition={{ delay: 0.3 + i * 0.1 }}
+  1152→  1152→            whileHover={{ scale: 1.02, y: -2 }}
+  1153→  1153→            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.12] transition-all duration-300"
+  1154→  1154→          >
+  1155→  1155→            <p className="text-[11px] text-gray-500 mb-1">{stat.l}</p>
+  1156→  1156→            <p className={cn("text-xl font-bold", accent.text)}>{stat.v}</p>
+  1157→  1157→          </motion.div>
+  1158→  1158→        ))}
+  1159→  1159→      </div>
+  1160→  1160→
+  1161→  1161→      {/* Coming Soon Card */}
+  1162→  1162→      <motion.div
+  1163→  1163→        initial={{ opacity: 0, y: 20 }}
+  1164→  1164→        animate={{ opacity: 1, y: 0 }}
+  1165→  1165→        transition={{ delay: 0.5 }}
+  1166→  1166→        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 hover:border-white/[0.12] transition-all duration-300"
+  1167→  1167→      >
+  1168→  1168→        <div className="flex flex-col items-center text-center">
+  1169→  1169→          <motion.div
+  1170→  1170→            animate={{ rotate: [0, 10, -10, 0] }}
+  1171→  1171→            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  1172→  1172→            className={cn(
+  1173→  1173→              "w-20 h-20 rounded-2xl flex items-center justify-center bg-gradient-to-br mb-6",
+  1174→  1174→              gradient
+  1175→  1175→            )}
+  1176→  1176→            style={{ boxShadow: `0 0 30px ${accent.glow}` }}
+  1177→  1177→          >
+  1178→  1178→            <Icon className="w-10 h-10 text-white" />
+  1179→  1179→          </motion.div>
+  1180→  1180→          <h3 className="text-xl font-bold text-white mb-2">Coming Soon</h3>
+  1181→  1181→          <p className="text-gray-500 text-sm max-w-md mb-6">
+  1182→  1182→            This section is being built with AI-powered features. Stay tuned for an enhanced administrative experience.
+  1183→  1183→          </p>
+  1184→  1184→          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+  1185→  1185→            <Sparkles className={cn("w-4 h-4", accent.text)} />
+  1186→  1186→            <span className="text-xs text-gray-400">AI-powered features in development</span>
+  1187→  1187→          </div>
+  1188→  1188→        </div>
+  1189→  1189→      </motion.div>
+  1190→  1190→
+  1191→  1191→      {/* Feature Preview Grid */}
+  1192→  1192→      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+  1193→  1193→        {[
+  1194→  1194→          { title: 'Smart Search', desc: 'AI-powered semantic search across all records' },
+  1195→  1195→          { title: 'Bulk Operations', desc: 'Perform actions on multiple records simultaneously' },
+  1196→  1196→          { title: 'Analytics', desc: 'Deep insights with interactive visualizations' },
+  1197→  1197→        ].map((feature, i) => (
+  1198→  1198→          <motion.div
+  1199→  1199→            key={feature.title}
+  1200→  1200→            initial={{ opacity: 0, y: 15 }}
+  1201→  1201→            animate={{ opacity: 1, y: 0 }}
+  1202→  1202→            transition={{ delay: 0.6 + i * 0.1 }}
+  1203→  1203→            className={cn(
+  1204→  1204→              "bg-white/[0.02] border border-white/[0.06] rounded-xl p-4",
+  1205→  1205→              "hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300",
+  1206→  1206→              "group cursor-pointer"
+  1207→  1207→            )}
+  1208→  1208→          >
+  1209→  1209→            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", accent.bg, accent.border, "border")}>
+  1210→  1210→              <ArrowUpRight className={cn("w-4 h-4", accent.text)} />
+  1211→  1211→            </div>
+  1212→  1212→            <h4 className="text-sm font-semibold text-white mb-1 group-hover:text-gray-200">{feature.title}</h4>
+  1213→  1213→            <p className="text-xs text-gray-600">{feature.desc}</p>
+  1214→  1214→          </motion.div>
+  1215→  1215→        ))}
+  1216→  1216→      </div>
+  1217→  1217→    </div>
+  1218→  1218→  );
+  1219→  1219→}
+  1220→  1220→

@@ -49,15 +49,15 @@ type TabId = (typeof tabs)[number]['id'];
 
 // ─── Stat Card Data ──────────────────────────────────────────────────
 const statCards = [
-  { label: 'Students', value: 2451, icon: Users, color: 'purple', gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-400', tab: 'students' as TabId },
-  { label: 'Faculty', value: 168, icon: GraduationCap, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.3)', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-400', tab: 'faculty' as TabId },
-  { label: 'Departments', value: 11, icon: Shield, color: 'blue', gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.3)', bg: 'bg-blue-500/10 border-blue-500/20', textColor: 'text-blue-400', tab: 'courses' as TabId },
-  { label: 'Attendance Today', value: 91.2, decimals: 1, suffix: '%', icon: Activity, color: 'green', gradient: 'from-green-500 to-emerald-600', glow: 'rgba(34,197,94,0.3)', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-400', tab: 'dashboard' as TabId },
-  { label: 'Library Books', value: 54120, icon: BookOpen, color: 'orange', gradient: 'from-orange-500 to-red-600', glow: 'rgba(249,115,22,0.3)', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-400', tab: 'dashboard' as TabId },
-  { label: 'Pending Complaints', value: 12, icon: AlertTriangle, color: 'red', gradient: 'from-red-500 to-rose-600', glow: 'rgba(239,68,68,0.3)', bg: 'bg-red-500/10 border-red-500/20', textColor: 'text-red-400', tab: 'complaints' as TabId },
-  { label: 'Upcoming Events', value: 7, icon: Clock, color: 'yellow', gradient: 'from-yellow-500 to-amber-600', glow: 'rgba(234,179,8,0.3)', bg: 'bg-yellow-500/10 border-yellow-500/20', textColor: 'text-yellow-400', tab: 'dashboard' as TabId },
+  { label: 'Students', value: 2451, icon: Users, color: 'purple', gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-600 dark:text-purple-400', tab: 'students' as TabId },
+  { label: 'Faculty', value: 168, icon: GraduationCap, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.3)', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-600 dark:text-cyan-400', tab: 'faculty' as TabId },
+  { label: 'Departments', value: 11, icon: Shield, color: 'blue', gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.3)', bg: 'bg-blue-500/10 border-blue-500/20', textColor: 'text-blue-600 dark:text-blue-400', tab: 'courses' as TabId },
+  { label: 'Attendance Today', value: 91.2, decimals: 1, suffix: '%', icon: Activity, color: 'green', gradient: 'from-green-500 to-emerald-600', glow: 'rgba(34,197,94,0.3)', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-600 dark:text-green-400', tab: 'dashboard' as TabId },
+  { label: 'Library Books', value: 54120, icon: BookOpen, color: 'orange', gradient: 'from-orange-500 to-red-600', glow: 'rgba(249,115,22,0.3)', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-600 dark:text-orange-400', tab: 'dashboard' as TabId },
+  { label: 'Pending Complaints', value: 12, icon: AlertTriangle, color: 'red', gradient: 'from-red-500 to-rose-600', glow: 'rgba(239,68,68,0.3)', bg: 'bg-red-500/10 border-red-500/20', textColor: 'text-red-600 dark:text-red-400', tab: 'complaints' as TabId },
+  { label: 'Upcoming Events', value: 7, icon: Clock, color: 'yellow', gradient: 'from-yellow-500 to-amber-600', glow: 'rgba(234,179,8,0.3)', bg: 'bg-yellow-500/10 border-yellow-500/20', textColor: 'text-yellow-600 dark:text-yellow-400', tab: 'dashboard' as TabId },
   { label: 'AI Requests Today', value: 18420, icon: Zap, color: 'violet', gradient: 'from-violet-500 to-purple-600', glow: 'rgba(139,92,246,0.3)', bg: 'bg-violet-500/10 border-violet-500/20', textColor: 'text-violet-400', tab: 'ai-playground' as TabId },
-  { label: 'System Health', value: 99.98, decimals: 2, suffix: '%', icon: HeartPulse, color: 'emerald', gradient: 'from-emerald-500 to-teal-600', glow: 'rgba(16,185,129,0.3)', bg: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-400', tab: 'dashboard' as TabId },
+  { label: 'System Health', value: 99.98, decimals: 2, suffix: '%', icon: HeartPulse, color: 'emerald', gradient: 'from-emerald-500 to-teal-600', glow: 'rgba(16,185,129,0.3)', bg: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400', tab: 'dashboard' as TabId },
 ];
 
 // ─── System Health Data ──────────────────────────────────────────────
@@ -127,7 +127,7 @@ const adminSectionToTabMap: Record<string, TabId> = {
 // Main Component
 // ═══════════════════════════════════════════════════════════════════════
 export default function AdminPortal() {
-  const { activeSection, setActiveSection } = useCampusStore();
+  const { activeSection, setActiveSection, currentUser, setActiveRole } = useCampusStore();
   const [activeTab, setActiveTab] = useState<TabId>(adminSectionToTabMap[activeSection] || 'dashboard');
 
   // Sync tab with store's activeSection for sidebar navigation
@@ -142,29 +142,48 @@ export default function AdminPortal() {
     setActiveTab(mappedTab);
   }
 
+  // Role guard: Only admin can access this portal
+  if (currentUser && currentUser.role !== 'admin') {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Shield className="w-12 h-12 text-amber-600 dark:text-amber-400 mx-auto" />
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Access Denied</h2>
+          <p className="text-sm text-[var(--text-muted)]">This portal is only available to administrators.</p>
+          <button
+            onClick={() => { setActiveRole((currentUser?.role as 'student' | 'faculty' | 'admin') || 'student'); setActiveSection('dashboard'); }}
+            className="px-4 py-2 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+          >
+            Go to My Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* ─── Top Bar ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">CampusOS Control Center</h1>
-            <p className="text-[11px] text-gray-500">System Administration & AI Operations</p>
+            <h1 className="text-lg font-bold text-[var(--text-primary)]">CampusOS Control Center</h1>
+            <p className="text-[11px] text-[var(--text-muted)]">System Administration & AI Operations</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs text-emerald-400 font-medium">All Systems Operational</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">All Systems Operational</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)]">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">
               A
             </div>
-            <span className="text-xs text-gray-300 font-medium hidden sm:inline">Admin</span>
+            <span className="text-xs text-[var(--text-secondary)] font-medium hidden sm:inline">Admin</span>
           </div>
         </div>
       </div>
@@ -183,13 +202,13 @@ export default function AdminPortal() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 shrink-0",
                   isActive
-                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                    : "bg-white/[0.02] text-gray-500 border border-white/[0.06] hover:text-gray-300 hover:bg-white/[0.04] hover:border-white/[0.1]"
+                    ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                    : "bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border-color)] hover:text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:border-[var(--border-color)]"
                 )}
               >
-                <tab.icon className={cn("w-4 h-4", isActive && "text-purple-400")} />
+                <tab.icon className={cn("w-4 h-4", isActive && "text-purple-600 dark:text-purple-400")} />
                 <span>{tab.label}</span>
-                {isActive && <Sparkles className="w-3 h-3 text-purple-400" />}
+                {isActive && <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" />}
               </motion.button>
             );
           })}
@@ -268,15 +287,15 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
   if (loading) {
     return (
       <div className="space-y-6 pt-2">
-        <div className="h-40 bg-white/[0.03] rounded-2xl animate-pulse" />
+        <div className="h-40 bg-[var(--glass-bg)] rounded-2xl animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
           {[...Array(9)].map((_, i) => (
-            <div key={i} className="h-28 bg-white/[0.03] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+            <div key={i} className="h-28 bg-[var(--glass-bg)] rounded-2xl animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
-          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+          <div className="h-64 bg-[var(--glass-bg)] rounded-2xl animate-pulse" />
+          <div className="h-64 bg-[var(--glass-bg)] rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -289,7 +308,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+        className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] p-8"
       >
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-cyan-500/10" />
@@ -316,8 +335,8 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
               transition={{ delay: 0.2 }}
               className="flex items-center gap-2 mb-2"
             >
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              <span className="text-xs text-purple-400 font-medium uppercase tracking-wider">AI-Powered Administration</span>
+              <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs text-purple-600 dark:text-purple-400 font-medium uppercase tracking-wider">AI-Powered Administration</span>
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, x: -20 }}
@@ -331,7 +350,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-gray-400 text-sm max-w-lg"
+              className="text-[var(--text-secondary)] text-sm max-w-lg"
             >
               Real-time campus monitoring, AI-driven insights, and complete administrative control at your fingertips.
             </motion.p>
@@ -343,15 +362,15 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             className="flex items-center gap-3"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-xs text-gray-500">Last synced</p>
-              <p className="text-sm text-gray-300 font-medium">Just now</p>
+              <p className="text-xs text-[var(--text-muted)]">Last synced</p>
+              <p className="text-sm text-[var(--text-secondary)] font-medium">Just now</p>
             </div>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.2)]"
             >
-              <Server className="w-5 h-5 text-purple-400" />
+              <Server className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </motion.div>
           </motion.div>
         </div>
@@ -368,15 +387,15 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             whileHover={{ scale: 1.03, y: -3 }}
             onClick={() => onNavigate(card.tab)}
             className={cn(
-              "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4",
-              "hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300 cursor-pointer",
+              "bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-4",
+              "hover:border-[var(--border-color)] hover:bg-[var(--glass-bg)] transition-all duration-300 cursor-pointer",
               "group"
             )}
           >
             <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3 border", card.bg)}>
               <card.icon className={cn("w-4.5 h-4.5", card.textColor)} />
             </div>
-            <div className="text-2xl font-bold text-white mb-0.5">
+            <div className="text-2xl font-bold text-[var(--text-primary)] mb-0.5">
               <AnimatedCounter
                 value={card.value}
                 decimals={card.decimals || 0}
@@ -384,7 +403,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                 duration={1.5}
               />
             </div>
-            <p className="text-[11px] text-gray-500 truncate">{card.label}</p>
+            <p className="text-[11px] text-[var(--text-muted)] truncate">{card.label}</p>
           </motion.div>
         ))}
       </div>
@@ -396,16 +415,16 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+          className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <HeartPulse className="w-4 h-4 text-emerald-400" />
+                <HeartPulse className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-white font-semibold">System Health</h3>
+              <h3 className="text-[var(--text-primary)] font-semibold">System Health</h3>
             </div>
-            <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium">
               HEALTHY
             </span>
           </div>
@@ -420,17 +439,17 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
               >
                 <div className="flex justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    {metric.label === 'CPU Usage' && <Cpu className="w-3.5 h-3.5 text-gray-500" />}
-                    {metric.label === 'Memory Usage' && <HardDrive className="w-3.5 h-3.5 text-gray-500" />}
-                    {metric.label === 'API Response Time' && <Zap className="w-3.5 h-3.5 text-gray-500" />}
-                    {metric.label === 'Database Health' && <Database className="w-3.5 h-3.5 text-gray-500" />}
-                    <span className="text-gray-400 text-xs">{metric.label}</span>
+                    {metric.label === 'CPU Usage' && <Cpu className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                    {metric.label === 'Memory Usage' && <HardDrive className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                    {metric.label === 'API Response Time' && <Zap className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                    {metric.label === 'Database Health' && <Database className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                    <span className="text-[var(--text-secondary)] text-xs">{metric.label}</span>
                   </div>
-                  <span className="text-white text-xs font-semibold">
+                  <span className="text-[var(--text-primary)] text-xs font-semibold">
                     {metric.displayValue || `${metric.value}%`}
                   </span>
                 </div>
-                <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, metric.value / (metric.max || 100) * 100)}%` }}
@@ -449,25 +468,25 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           </div>
 
           {/* Mini server status indicators */}
-          <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center gap-4">
+          <div className="mt-5 pt-4 border-t border-[var(--border-color)] flex items-center gap-4">
             <div className="flex items-center gap-1.5">
-              <Globe className="w-3 h-3 text-gray-500" />
-              <span className="text-[11px] text-gray-500">API</span>
+              <Globe className="w-3 h-3 text-[var(--text-muted)]" />
+              <span className="text-[11px] text-[var(--text-muted)]">API</span>
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="flex items-center gap-1.5">
-              <Database className="w-3 h-3 text-gray-500" />
-              <span className="text-[11px] text-gray-500">DB</span>
+              <Database className="w-3 h-3 text-[var(--text-muted)]" />
+              <span className="text-[11px] text-[var(--text-muted)]">DB</span>
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="flex items-center gap-1.5">
-              <Bot className="w-3 h-3 text-gray-500" />
-              <span className="text-[11px] text-gray-500">AI</span>
+              <Bot className="w-3 h-3 text-[var(--text-muted)]" />
+              <span className="text-[11px] text-[var(--text-muted)]">AI</span>
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="flex items-center gap-1.5">
-              <Monitor className="w-3 h-3 text-gray-500" />
-              <span className="text-[11px] text-gray-500">CDN</span>
+              <Monitor className="w-3 h-3 text-[var(--text-muted)]" />
+              <span className="text-[11px] text-[var(--text-muted)]">CDN</span>
               <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
             </div>
           </div>
@@ -478,13 +497,13 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+          className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
         >
           <div className="flex items-center gap-2 mb-5">
             <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-purple-400" />
+              <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-white font-semibold">Quick Actions</h3>
+            <h3 className="text-[var(--text-primary)] font-semibold">Quick Actions</h3>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -498,8 +517,8 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                 whileTap={{ scale: 0.95 }}
                 className={cn(
                   "flex flex-col items-center gap-2.5 p-4 rounded-xl",
-                  "bg-white/[0.03] border border-white/[0.06]",
-                  "hover:border-white/[0.12] hover:bg-white/[0.05]",
+                  "bg-[var(--glass-bg)] border border-[var(--border-color)]",
+                  "hover:border-[var(--border-color)] hover:bg-[var(--glass-bg)]",
                   "transition-all duration-300 group"
                 )}
                 style={{ boxShadow: `0 0 0px ${action.glow}` }}
@@ -512,9 +531,9 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                   action.gradient,
                   "shadow-lg group-hover:scale-110 transition-transform duration-300"
                 )}>
-                  <action.icon className="w-5 h-5 text-white" />
+                  <action.icon className="w-5 h-5 text-[var(--text-primary)]" />
                 </div>
-                <span className="text-xs text-gray-400 font-medium text-center group-hover:text-gray-200 transition-colors">
+                <span className="text-xs text-[var(--text-secondary)] font-medium text-center group-hover:text-gray-200 transition-colors">
                   {action.label}
                 </span>
               </motion.button>
@@ -530,16 +549,16 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+          className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-blue-400" />
+                <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-white font-semibold">Recent Activity</h3>
+              <h3 className="text-[var(--text-primary)] font-semibold">Recent Activity</h3>
             </div>
-            <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-medium">
               LIVE
             </span>
           </div>
@@ -551,7 +570,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 + i * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors group"
+                className="flex items-start gap-3 p-3 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] transition-colors group"
               >
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
@@ -564,22 +583,22 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                   activity.type === 'fee' && 'bg-green-500/10',
                   activity.type === 'library' && 'bg-orange-500/10',
                 )}>
-                  {activity.type === 'enrollment' && <Users className="w-3.5 h-3.5 text-purple-400" />}
-                  {activity.type === 'complaint' && <AlertTriangle className="w-3.5 h-3.5 text-red-400" />}
-                  {activity.type === 'academic' && <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />}
-                  {activity.type === 'system' && <Server className="w-3.5 h-3.5 text-gray-400" />}
-                  {activity.type === 'event' && <Clock className="w-3.5 h-3.5 text-blue-400" />}
+                  {activity.type === 'enrollment' && <Users className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />}
+                  {activity.type === 'complaint' && <AlertTriangle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
+                  {activity.type === 'academic' && <GraduationCap className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />}
+                  {activity.type === 'system' && <Server className="w-3.5 h-3.5 text-[var(--text-secondary)]" />}
+                  {activity.type === 'event' && <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                   {activity.type === 'ai' && <Bot className="w-3.5 h-3.5 text-violet-400" />}
-                  {activity.type === 'fee' && <Activity className="w-3.5 h-3.5 text-green-400" />}
-                  {activity.type === 'library' && <BookOpen className="w-3.5 h-3.5 text-orange-400" />}
+                  {activity.type === 'fee' && <Activity className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />}
+                  {activity.type === 'library' && <BookOpen className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-300 group-hover:text-gray-100 transition-colors leading-snug">
+                  <p className="text-sm text-[var(--text-secondary)] group-hover:text-gray-100 transition-colors leading-snug">
                     {activity.message}
                   </p>
-                  <p className="text-[10px] text-gray-600 mt-0.5">{activity.time}</p>
+                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5">{activity.time}</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-700 group-hover:text-gray-500 shrink-0 mt-1 transition-colors" />
+                <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-muted)] shrink-0 mt-1 transition-colors" />
               </motion.div>
             ))}
           </div>
@@ -590,14 +609,14 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+          className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                 <Brain className="w-4 h-4 text-violet-400" />
               </div>
-              <h3 className="text-white font-semibold">AI Insights</h3>
+              <h3 className="text-[var(--text-primary)] font-semibold">AI Insights</h3>
             </div>
             <span className="text-[10px] px-2 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium animate-pulse">
               THINKING
@@ -626,23 +645,23 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
                 )}>
                   <insight.icon className={cn(
                     "w-3.5 h-3.5",
-                    insight.severity === 'warning' && "text-yellow-400",
-                    insight.severity === 'success' && "text-green-400",
-                    insight.severity === 'info' && "text-blue-400",
+                    insight.severity === 'warning' && "text-yellow-600 dark:text-yellow-400",
+                    insight.severity === 'success' && "text-green-600 dark:text-green-400",
+                    insight.severity === 'info' && "text-blue-600 dark:text-blue-400",
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-300 leading-snug">{insight.text}</p>
+                  <p className="text-sm text-[var(--text-secondary)] leading-snug">{insight.text}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className={cn(
                       "text-[10px] font-medium px-2 py-0.5 rounded-full",
-                      insight.severity === 'warning' && "bg-yellow-500/10 text-yellow-400",
-                      insight.severity === 'success' && "bg-green-500/10 text-green-400",
-                      insight.severity === 'info' && "bg-blue-500/10 text-blue-400",
+                      insight.severity === 'warning' && "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+                      insight.severity === 'success' && "bg-green-500/10 text-green-600 dark:text-green-400",
+                      insight.severity === 'info' && "bg-blue-500/10 text-blue-600 dark:text-blue-400",
                     )}>
                       {insight.severity.toUpperCase()}
                     </span>
-                    <span className="text-[10px] text-gray-600">AI-generated</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">AI-generated</span>
                   </div>
                 </div>
               </motion.div>
@@ -650,12 +669,12 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           </div>
 
           {/* AI Confidence */}
-          <div className="mt-4 pt-4 border-t border-white/[0.06]">
+          <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-500">AI Confidence Score</span>
-              <span className="text-xs text-purple-400 font-semibold">94.7%</span>
+              <span className="text-xs text-[var(--text-muted)]">AI Confidence Score</span>
+              <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">94.7%</span>
             </div>
-            <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: '94.7%' }}
@@ -675,10 +694,10 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
       >
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-            <FileBarChart className="w-4 h-4 text-purple-400" />
+            <FileBarChart className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="text-white font-semibold text-lg">Campus Analytics</h3>
-          <span className="text-[10px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium ml-2">
+          <h3 className="text-[var(--text-primary)] font-semibold text-lg">Campus Analytics</h3>
+          <span className="text-[10px] px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-medium ml-2">
             INSIGHTS
           </span>
         </div>
@@ -689,11 +708,11 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.0 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-white font-medium text-sm">Attendance Heatmap</h4>
-              <span className="text-[10px] text-gray-500">By Day & Time Slot</span>
+              <h4 className="text-[var(--text-primary)] font-medium text-sm">Attendance Heatmap</h4>
+              <span className="text-[10px] text-[var(--text-muted)]">By Day & Time Slot</span>
             </div>
             <AttendanceHeatmap />
           </motion.div>
@@ -703,11 +722,11 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.1 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-white font-medium text-sm">Department Performance</h4>
-              <span className="text-[10px] text-gray-500">Avg CGPA by Dept</span>
+              <h4 className="text-[var(--text-primary)] font-medium text-sm">Department Performance</h4>
+              <span className="text-[10px] text-[var(--text-muted)]">Avg CGPA by Dept</span>
             </div>
             <DepartmentPerformanceChart adminData={adminData} />
           </motion.div>
@@ -717,11 +736,11 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.2 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-white font-medium text-sm">Placement Trend</h4>
-              <span className="text-[10px] text-gray-500">Monthly Placements</span>
+              <h4 className="text-[var(--text-primary)] font-medium text-sm">Placement Trend</h4>
+              <span className="text-[10px] text-[var(--text-muted)]">Monthly Placements</span>
             </div>
             <PlacementTrendChart />
           </motion.div>
@@ -731,11 +750,11 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.3 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-300"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--border-color)] transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-white font-medium text-sm">Fee Collection</h4>
-              <span className="text-[10px] text-gray-500">Payment Status</span>
+              <h4 className="text-[var(--text-primary)] font-medium text-sm">Fee Collection</h4>
+              <span className="text-[10px] text-[var(--text-muted)]">Payment Status</span>
             </div>
             <FeeCollectionChart adminData={adminData} />
           </motion.div>
@@ -785,7 +804,7 @@ function AttendanceHeatmap() {
         {/* Time slot headers */}
         <div className="flex items-center gap-1 mb-2 pl-10">
           {slots.map((slot) => (
-            <div key={slot} className="flex-1 text-center text-[9px] text-gray-500 font-medium">
+            <div key={slot} className="flex-1 text-center text-[9px] text-[var(--text-muted)] font-medium">
               {slot}
             </div>
           ))}
@@ -793,7 +812,7 @@ function AttendanceHeatmap() {
         {/* Day rows */}
         {days.map((day, dIdx) => (
           <div key={day} className="flex items-center gap-1 mb-1">
-            <div className="w-9 text-right text-[10px] text-gray-400 font-medium pr-1">{day}</div>
+            <div className="w-9 text-right text-[10px] text-[var(--text-secondary)] font-medium pr-1">{day}</div>
             {heatmapData[dIdx].map((value, sIdx) => (
               <motion.div
                 key={`${dIdx}-${sIdx}`}
@@ -809,7 +828,7 @@ function AttendanceHeatmap() {
         ))}
         {/* Legend */}
         <div className="flex items-center justify-end gap-2 mt-3">
-          <span className="text-[9px] text-gray-500">Low</span>
+          <span className="text-[9px] text-[var(--text-muted)]">Low</span>
           <div className="flex gap-0.5">
             {[0.08, 0.2, 0.35, 0.55, 0.8].map((opacity, i) => (
               <div
@@ -819,7 +838,7 @@ function AttendanceHeatmap() {
               />
             ))}
           </div>
-          <span className="text-[9px] text-gray-500">High</span>
+          <span className="text-[9px] text-[var(--text-muted)]">High</span>
         </div>
       </div>
     </div>
@@ -849,7 +868,7 @@ function DepartmentPerformanceChart({ adminData }: { adminData: any }) {
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} barCategoryGap="20%">
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
           <XAxis
             dataKey="department"
             tick={{ fill: '#9ca3af', fontSize: 11 }}
@@ -910,7 +929,7 @@ function PlacementTrendChart() {
               <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
           <XAxis
             dataKey="month"
             tick={{ fill: '#9ca3af', fontSize: 11 }}
@@ -1010,12 +1029,12 @@ function FeeCollectionChart({ adminData }: { adminData: any }) {
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">{item.name}</span>
-                <span className="text-xs text-white font-semibold">
+                <span className="text-xs text-[var(--text-secondary)]">{item.name}</span>
+                <span className="text-xs text-[var(--text-primary)] font-semibold">
                   {Math.round((item.value / total) * 100)}%
                 </span>
               </div>
-              <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mt-1">
+              <div className="h-1.5 bg-[var(--glass-bg)] rounded-full overflow-hidden mt-1">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(item.value / total) * 100}%` }}
@@ -1027,10 +1046,10 @@ function FeeCollectionChart({ adminData }: { adminData: any }) {
             </div>
           </div>
         ))}
-        <div className="pt-2 border-t border-white/[0.06]">
+        <div className="pt-2 border-t border-[var(--border-color)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">Total Collection</span>
-            <span className="text-sm text-white font-bold">₹{total}L</span>
+            <span className="text-xs text-[var(--text-muted)]">Total Collection</span>
+            <span className="text-sm text-[var(--text-primary)] font-bold">₹{total}L</span>
           </div>
         </div>
       </div>
@@ -1053,14 +1072,14 @@ interface PlaceholderTabProps {
 
 function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentColor, stats }: PlaceholderTabProps) {
   const accentMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
-    purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', glow: 'rgba(139,92,246,0.3)' },
-    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', glow: 'rgba(6,182,212,0.3)' },
-    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'rgba(59,130,246,0.3)' },
-    red: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', glow: 'rgba(239,68,68,0.3)' },
-    yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-400', glow: 'rgba(234,179,8,0.3)' },
+    purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-600 dark:text-purple-400', glow: 'rgba(139,92,246,0.3)' },
+    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-600 dark:text-cyan-400', glow: 'rgba(6,182,212,0.3)' },
+    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-600 dark:text-blue-400', glow: 'rgba(59,130,246,0.3)' },
+    red: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-600 dark:text-red-400', glow: 'rgba(239,68,68,0.3)' },
+    yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-600 dark:text-yellow-400', glow: 'rgba(234,179,8,0.3)' },
     violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', glow: 'rgba(139,92,246,0.3)' },
-    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'rgba(16,185,129,0.3)' },
-    orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', glow: 'rgba(249,115,22,0.3)' },
+    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400', glow: 'rgba(16,185,129,0.3)' },
+    orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-600 dark:text-orange-400', glow: 'rgba(249,115,22,0.3)' },
   };
 
   const accent = accentMap[accentColor] || accentMap.purple;
@@ -1072,7 +1091,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-8"
+        className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] p-8"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent" />
         <motion.div
@@ -1099,7 +1118,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
             )}
             style={{ boxShadow: `0 0 25px ${accent.glow}` }}
           >
-            <Icon className="w-7 h-7 text-white" />
+            <Icon className="w-7 h-7 text-[var(--text-primary)]" />
           </motion.div>
           <div>
             <motion.h2
@@ -1114,7 +1133,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-gray-500 text-sm mt-1 max-w-lg"
+              className="text-[var(--text-muted)] text-sm mt-1 max-w-lg"
             >
               {description}
             </motion.p>
@@ -1131,9 +1150,9 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + i * 0.1 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.12] transition-all duration-300"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-color)] transition-all duration-300"
           >
-            <p className="text-[11px] text-gray-500 mb-1">{stat.l}</p>
+            <p className="text-[11px] text-[var(--text-muted)] mb-1">{stat.l}</p>
             <p className={cn("text-xl font-bold", accent.text)}>{stat.v}</p>
           </motion.div>
         ))}
@@ -1144,7 +1163,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 hover:border-white/[0.12] transition-all duration-300"
+        className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-12 hover:border-[var(--border-color)] transition-all duration-300"
       >
         <div className="flex flex-col items-center text-center">
           <motion.div
@@ -1156,15 +1175,15 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
             )}
             style={{ boxShadow: `0 0 30px ${accent.glow}` }}
           >
-            <Icon className="w-10 h-10 text-white" />
+            <Icon className="w-10 h-10 text-[var(--text-primary)]" />
           </motion.div>
-          <h3 className="text-xl font-bold text-white mb-2">Coming Soon</h3>
-          <p className="text-gray-500 text-sm max-w-md mb-6">
+          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Coming Soon</h3>
+          <p className="text-[var(--text-muted)] text-sm max-w-md mb-6">
             This section is being built with AI-powered features. Stay tuned for an enhanced administrative experience.
           </p>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)]">
             <Sparkles className={cn("w-4 h-4", accent.text)} />
-            <span className="text-xs text-gray-400">AI-powered features in development</span>
+            <span className="text-xs text-[var(--text-secondary)]">AI-powered features in development</span>
           </div>
         </div>
       </motion.div>
@@ -1182,16 +1201,16 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 + i * 0.1 }}
             className={cn(
-              "bg-white/[0.02] border border-white/[0.06] rounded-xl p-4",
-              "hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300",
+              "bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4",
+              "hover:bg-[var(--glass-bg)] hover:border-[var(--border-color)] transition-all duration-300",
               "group cursor-pointer"
             )}
           >
             <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", accent.bg, accent.border, "border")}>
               <ArrowUpRight className={cn("w-4 h-4", accent.text)} />
             </div>
-            <h4 className="text-sm font-semibold text-white mb-1 group-hover:text-gray-200">{feature.title}</h4>
-            <p className="text-xs text-gray-600">{feature.desc}</p>
+            <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1 group-hover:text-gray-200">{feature.title}</h4>
+            <p className="text-xs text-[var(--text-muted)]">{feature.desc}</p>
           </motion.div>
         ))}
       </div>

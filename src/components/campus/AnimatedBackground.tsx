@@ -96,8 +96,10 @@ export default function AnimatedBackground() {
 
     const animate = () => {
       const isLight = document.documentElement.classList.contains('light');
-      const alphaMultiplier = isLight ? 0.3 : 1.0; // Reduce orb opacity in light mode
-      const gridAlphaMultiplier = isLight ? 0.3 : 1.0;
+      const alphaMultiplier = isLight ? 0.12 : 1.0; // Dramatically reduce orb opacity in light mode
+      const gridAlphaMultiplier = isLight ? 0.15 : 1.0; // Almost invisible grid in light mode
+      const particleAlphaMultiplier = isLight ? 0.25 : 1.0; // Much more subtle particles in light mode
+      const connectionAlphaMultiplier = isLight ? 0.1 : 1.0; // Almost no connection lines in light mode
 
       time += 0.003;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -159,7 +161,7 @@ export default function AnimatedBackground() {
           const dy = screenPoints[i].sy - screenPoints[j].sy;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < CONNECTION_DIST * 2.5) {
-            const lineAlpha = Math.max(0, (0.03 - (dist / (CONNECTION_DIST * 4))) * gridAlphaMultiplier);
+            const lineAlpha = Math.max(0, (0.03 - (dist / (CONNECTION_DIST * 4))) * gridAlphaMultiplier * connectionAlphaMultiplier);
             ctx.strokeStyle = `rgba(139, 92, 246, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
@@ -171,7 +173,7 @@ export default function AnimatedBackground() {
       }
 
       // Draw small dots at constellation points
-      const dotAlpha = isLight ? 0.03 : 0.08;
+      const dotAlpha = isLight ? 0.015 : 0.08;
       screenPoints.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, 1.5, 0, Math.PI * 2);
@@ -199,7 +201,7 @@ export default function AnimatedBackground() {
 
         // Twinkle effect
         const twinkle = 0.5 + 0.5 * Math.sin(time * p.twinkleSpeed + p.twinklePhase);
-        const currentAlpha = p.alpha * twinkle * (isLight ? 0.5 : 1.0);
+        const currentAlpha = p.alpha * twinkle * (isLight ? particleAlphaMultiplier : 1.0);
 
         const px = p.x * canvas.width;
         const py = p.y * canvas.height;
@@ -226,7 +228,7 @@ export default function AnimatedBackground() {
           const dy = (particles[i].y - particles[j].y) * canvas.height;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < CONNECTION_DIST) {
-            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.06 * gridAlphaMultiplier;
+            const lineAlpha = (1 - dist / CONNECTION_DIST) * 0.06 * gridAlphaMultiplier * connectionAlphaMultiplier;
             ctx.strokeStyle = `rgba(139, 92, 246, ${lineAlpha})`;
             ctx.lineWidth = 0.3;
             ctx.beginPath();
@@ -237,13 +239,13 @@ export default function AnimatedBackground() {
         }
       }
 
-      // Vignette effect at edges
+      // Vignette effect at edges - much softer in light mode
       const vignetteGradient = ctx.createRadialGradient(
         canvas.width / 2, canvas.height / 2, canvas.height * 0.3,
         canvas.width / 2, canvas.height / 2, canvas.height * 0.9
       );
       vignetteGradient.addColorStop(0, 'transparent');
-      vignetteGradient.addColorStop(1, isLight ? 'rgba(255, 255, 255, 0.4)' : 'rgba(5, 5, 16, 0.6)');
+      vignetteGradient.addColorStop(1, isLight ? 'rgba(248, 250, 252, 0.6)' : 'rgba(5, 5, 16, 0.6)');
       ctx.fillStyle = vignetteGradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 

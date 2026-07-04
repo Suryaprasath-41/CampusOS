@@ -1,0 +1,739 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useRef, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  Search, X, Users, GraduationCap, BookOpen, ArrowRight,
+     7→  MapPin, Star, Clock, ChevronDown, ChevronUp, Sparkles,
+     8→  Loader2, Filter, TrendingUp, Hash, Mail, Building2,
+     9→  Award, Calendar, CreditCard, UserCheck, ExternalLink
+    10→} from 'lucide-react';
+    11→import { cn } from '@/lib/utils';
+    12→import { fetchAPI } from '@/lib/store';
+    13→
+    14→// ─── Types ────────────────────────────────────────────────────────────
+    15→interface StudentResult {
+    16→  id: string;
+    17→  type: 'student';
+    18→  name: string;
+    19→  email: string;
+    20→  rollNumber: string;
+    21→  department: string;
+    22→  semester: number;
+    23→  cgpa: number;
+    24→  placementStatus: string;
+    25→  avatar?: string;
+    26→}
+    27→
+    28→interface FacultyResult {
+    29→  id: string;
+    30→  type: 'faculty';
+    31→  name: string;
+    32→  email: string;
+    33→  department: string;
+    34→  designation: string;
+    35→  cabinLocation?: string;
+    36→  avatar?: string;
+    37→}
+    38→
+    39→interface SubjectResult {
+    40→  id: string;
+    41→  type: 'subject';
+    42→  name: string;
+    43→  code: string;
+    44→  department: string;
+    45→  semester: number;
+    46→  credits: number;
+    47→  facultyName: string;
+    48→}
+    49→
+    50→interface SearchResult {
+    51→  students: StudentResult[];
+    52→  faculty: FacultyResult[];
+    53→  subjects: SubjectResult[];
+    54→}
+    55→
+    56→// ─── Quick Search Suggestions ─────────────────────────────────────────
+    57→const QUICK_SUGGESTIONS = [
+    58→  { label: 'Find Arjun', query: 'Arjun', icon: Users, color: 'purple' },
+    59→  { label: 'CS Department', query: 'Computer Science', icon: Building2, color: 'cyan' },
+    60→  { label: 'Machine Learning', query: 'Machine Learning', icon: BookOpen, color: 'orange' },
+    61→  { label: 'Faculty on leave', query: 'Professor', icon: GraduationCap, color: 'blue' },
+    62→];
+    63→
+    64→// ─── Recent Searches ──────────────────────────────────────────────────
+    65→const RECENT_SEARCHES = ['Sam Kumar', 'CS301', 'Dr. Meera', 'Data Structures'];
+    66→
+    67→// ─── Category Config ──────────────────────────────────────────────────
+    68→const CATEGORY_CONFIG = {
+    69→  students: {
+    70→    label: 'Students',
+    71→    icon: Users,
+    72→    gradient: 'from-purple-500 to-violet-600',
+    73→    bg: 'bg-purple-500/10',
+    74→    border: 'border-purple-500/20',
+    75→    text: 'text-purple-400',
+    76→    glow: 'rgba(139,92,246,0.2)',
+    77→    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/25',
+    78→  },
+    79→  faculty: {
+    80→    label: 'Faculty',
+    81→    icon: GraduationCap,
+    82→    gradient: 'from-cyan-500 to-blue-600',
+    83→    bg: 'bg-cyan-500/10',
+    84→    border: 'border-cyan-500/20',
+    85→    text: 'text-cyan-400',
+    86→    glow: 'rgba(6,182,212,0.2)',
+    87→    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25',
+    88→  },
+    89→  subjects: {
+    90→    label: 'Subjects',
+    91→    icon: BookOpen,
+    92→    gradient: 'from-orange-500 to-red-600',
+    93→    bg: 'bg-orange-500/10',
+    94→    border: 'border-orange-500/20',
+    95→    text: 'text-orange-400',
+    96→    glow: 'rgba(249,115,22,0.2)',
+    97→    badge: 'bg-orange-500/15 text-orange-400 border-orange-500/25',
+    98→  },
+    99→} as const;
+   100→
+   101→type CategoryKey = keyof typeof CATEGORY_CONFIG;
+   102→
+   103→// ─── Skeleton Card ────────────────────────────────────────────────────
+   104→function SkeletonCard() {
+   105→  return (
+   106→    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 animate-pulse">
+   107→      <div className="flex items-center gap-3 mb-3">
+   108→        <div className="w-10 h-10 rounded-xl bg-white/[0.05]" />
+   109→        <div className="flex-1">
+   110→          <div className="h-3.5 w-32 bg-white/[0.05] rounded mb-2" />
+   111→          <div className="h-2.5 w-20 bg-white/[0.05] rounded" />
+   112→        </div>
+   113→      </div>
+   114→      <div className="space-y-2">
+   115→        <div className="h-2.5 w-full bg-white/[0.05] rounded" />
+   116→        <div className="h-2.5 w-3/4 bg-white/[0.05] rounded" />
+   117→      </div>
+   118→    </div>
+   119→  );
+   120→}
+   121→
+   122→// ═══════════════════════════════════════════════════════════════════════
+   123→// Student Card
+   124→// ═══════════════════════════════════════════════════════════════════════
+   125→function StudentCard({ student, index }: { student: StudentResult; index: number }) {
+   126→  const [expanded, setExpanded] = useState(false);
+   127→  const config = CATEGORY_CONFIG.students;
+   128→
+   129→  return (
+   130→    <motion.div
+   131→      initial={{ opacity: 0, y: 15 }}
+   132→      animate={{ opacity: 1, y: 0 }}
+   133→      transition={{ delay: index * 0.05 }}
+   134→      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden hover:border-purple-500/20 transition-all duration-300 group"
+   135→      style={{ boxShadow: `0 0 0px ${config.glow}` }}
+   136→      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 20px ${config.glow}`; }}
+   137→      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0px ${config.glow}`; }}
+   138→    >
+   139→      <div className="p-4">
+   140→        <div className="flex items-center gap-3">
+   141→          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border shrink-0", config.bg, config.border)}>
+   142→            <Users className={cn("w-5 h-5", config.text)} />
+   143→          </div>
+   144→          <div className="flex-1 min-w-0">
+   145→            <div className="flex items-center gap-2">
+   146→              <h4 className="text-sm font-semibold text-white truncate">{student.name}</h4>
+   147→              <span className={cn("text-[8px] px-1.5 py-0.5 rounded-full border font-medium", config.badge)}>
+   148→                STUDENT
+   149→              </span>
+   150→            </div>
+   151→            <p className="text-[11px] text-gray-500 mt-0.5">{student.rollNumber} • {student.department}</p>
+   152→          </div>
+   153→          <div className="flex items-center gap-1.5">
+   154→            <motion.button
+   155→              whileHover={{ scale: 1.1 }}
+   156→              whileTap={{ scale: 0.95 }}
+   157→              className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
+   158→            >
+   159→              <ExternalLink className="w-3 h-3 text-gray-500" />
+   160→            </motion.button>
+   161→            <motion.button
+   162→              whileHover={{ scale: 1.1 }}
+   163→              whileTap={{ scale: 0.95 }}
+   164→              onClick={() => setExpanded(!expanded)}
+   165→              className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
+   166→            >
+   167→              {expanded ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
+   168→            </motion.button>
+   169→          </div>
+   170→        </div>
+   171→
+   172→        {/* Quick info badges */}
+   173→        <div className="flex items-center gap-2 mt-3 flex-wrap">
+   174→          <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   175→            <Star className="w-2.5 h-2.5 text-amber-400" />
+   176→            CGPA: {student.cgpa}
+   177→          </span>
+   178→          <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   179→            <Calendar className="w-2.5 h-2.5" />
+   180→            Sem {student.semester}
+   181→          </span>
+   182→          <span className={cn(
+   183→            "text-[10px] px-2 py-1 rounded-lg border font-medium flex items-center gap-1",
+   184→            student.placementStatus === 'placed' ? "bg-green-500/10 text-green-400 border-green-500/20" :
+   185→            student.placementStatus === 'seeking' ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" :
+   186→            "bg-blue-500/10 text-blue-400 border-blue-500/20"
+   187→          )}>
+   188→            <Award className="w-2.5 h-2.5" />
+   189→            {student.placementStatus}
+   190→          </span>
+   191→        </div>
+   192→      </div>
+   193→
+   194→      {/* Expanded Details */}
+   195→      <AnimatePresence>
+   196→        {expanded && (
+   197→          <motion.div
+   198→            initial={{ height: 0, opacity: 0 }}
+   199→            animate={{ height: 'auto', opacity: 1 }}
+   200→            exit={{ height: 0, opacity: 0 }}
+   201→            transition={{ duration: 0.25 }}
+   202→            className="overflow-hidden"
+   203→          >
+   204→            <div className="px-4 pb-4 pt-0 border-t border-white/[0.04] mt-0">
+   205→              <div className="grid grid-cols-2 gap-2 mt-3">
+   206→                <div className="bg-white/[0.02] rounded-lg p-2.5 border border-white/[0.04]">
+   207→                  <div className="text-[9px] text-gray-600 mb-0.5">Email</div>
+   208→                  <div className="text-[11px] text-gray-300 truncate flex items-center gap-1">
+   209→                    <Mail className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+   210→                    {student.email}
+   211→                  </div>
+   212→                </div>
+   213→                <div className="bg-white/[0.02] rounded-lg p-2.5 border border-white/[0.04]">
+   214→                  <div className="text-[9px] text-gray-600 mb-0.5">Department</div>
+   215→                  <div className="text-[11px] text-gray-300 truncate flex items-center gap-1">
+   216→                    <Building2 className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+   217→                    {student.department}
+   218→                  </div>
+   219→                </div>
+   220→              </div>
+   221→              <div className="flex gap-2 mt-3">
+   222→                <motion.button
+   223→                  whileHover={{ scale: 1.02 }}
+   224→                  whileTap={{ scale: 0.98 }}
+   225→                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-400 hover:bg-purple-500/15 transition-colors"
+   226→                >
+   227→                  <UserCheck className="w-3 h-3" />
+   228→                  View Profile
+   229→                </motion.button>
+   230→                <motion.button
+   231→                  whileHover={{ scale: 1.02 }}
+   232→                  whileTap={{ scale: 0.98 }}
+   233→                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[11px] text-gray-400 hover:bg-white/[0.06] transition-colors"
+   234→                >
+   235→                  <CreditCard className="w-3 h-3" />
+   236→                  View Fees
+   237→                </motion.button>
+   238→              </div>
+   239→            </div>
+   240→          </motion.div>
+   241→        )}
+   242→      </AnimatePresence>
+   243→    </motion.div>
+   244→  );
+   245→}
+   246→
+   247→// ═══════════════════════════════════════════════════════════════════════
+   248→// Faculty Card
+   249→// ═══════════════════════════════════════════════════════════════════════
+   250→function FacultyCard({ faculty, index }: { faculty: FacultyResult; index: number }) {
+   251→  const config = CATEGORY_CONFIG.faculty;
+   252→
+   253→  return (
+   254→    <motion.div
+   255→      initial={{ opacity: 0, y: 15 }}
+   256→      animate={{ opacity: 1, y: 0 }}
+   257→      transition={{ delay: index * 0.05 }}
+   258→      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 hover:border-cyan-500/20 transition-all duration-300 group"
+   259→      style={{ boxShadow: `0 0 0px ${config.glow}` }}
+   260→      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 20px ${config.glow}`; }}
+   261→      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0px ${config.glow}`; }}
+   262→    >
+   263→      <div className="flex items-center gap-3">
+   264→        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border shrink-0", config.bg, config.border)}>
+   265→          <GraduationCap className={cn("w-5 h-5", config.text)} />
+   266→        </div>
+   267→        <div className="flex-1 min-w-0">
+   268→          <div className="flex items-center gap-2">
+   269→            <h4 className="text-sm font-semibold text-white truncate">{faculty.name}</h4>
+   270→            <span className={cn("text-[8px] px-1.5 py-0.5 rounded-full border font-medium", config.badge)}>
+   271→              FACULTY
+   272→            </span>
+   273→          </div>
+   274→          <p className="text-[11px] text-gray-500 mt-0.5">{faculty.designation} • {faculty.department}</p>
+   275→        </div>
+   276→        <motion.button
+   277→          whileHover={{ scale: 1.1 }}
+   278→          whileTap={{ scale: 0.95 }}
+   279→          className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
+   280→        >
+   281→          <ExternalLink className="w-3 h-3 text-gray-500" />
+   282→        </motion.button>
+   283→      </div>
+   284→
+   285→      <div className="flex items-center gap-2 mt-3 flex-wrap">
+   286→        <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   287→          <Mail className="w-2.5 h-2.5" />
+   288→          {faculty.email}
+   289→        </span>
+   290→        {faculty.cabinLocation && (
+   291→          <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   292→            <MapPin className="w-2.5 h-2.5" />
+   293→            {faculty.cabinLocation}
+   294→          </span>
+   295→        )}
+   296→      </div>
+   297→    </motion.div>
+   298→  );
+   299→}
+   300→
+   301→// ═══════════════════════════════════════════════════════════════════════
+   302→// Subject Card
+   303→// ═══════════════════════════════════════════════════════════════════════
+   304→function SubjectCard({ subject, index }: { subject: SubjectResult; index: number }) {
+   305→  const config = CATEGORY_CONFIG.subjects;
+   306→
+   307→  return (
+   308→    <motion.div
+   309→      initial={{ opacity: 0, y: 15 }}
+   310→      animate={{ opacity: 1, y: 0 }}
+   311→      transition={{ delay: index * 0.05 }}
+   312→      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 hover:border-orange-500/20 transition-all duration-300 group"
+   313→      style={{ boxShadow: `0 0 0px ${config.glow}` }}
+   314→      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 20px ${config.glow}`; }}
+   315→      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0px ${config.glow}`; }}
+   316→    >
+   317→      <div className="flex items-center gap-3">
+   318→        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border shrink-0", config.bg, config.border)}>
+   319→          <BookOpen className={cn("w-5 h-5", config.text)} />
+   320→        </div>
+   321→        <div className="flex-1 min-w-0">
+   322→          <div className="flex items-center gap-2">
+   323→            <h4 className="text-sm font-semibold text-white truncate">{subject.name}</h4>
+   324→            <span className={cn("text-[8px] px-1.5 py-0.5 rounded-full border font-medium", config.badge)}>
+   325→              SUBJECT
+   326→            </span>
+   327→          </div>
+   328→          <p className="text-[11px] text-gray-500 mt-0.5">{subject.code} • {subject.department}</p>
+   329→        </div>
+   330→        <motion.button
+   331→          whileHover={{ scale: 1.1 }}
+   332→          whileTap={{ scale: 0.95 }}
+   333→          className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
+   334→        >
+   335→          <ExternalLink className="w-3 h-3 text-gray-500" />
+   336→        </motion.button>
+   337→      </div>
+   338→
+   339→      <div className="flex items-center gap-2 mt-3 flex-wrap">
+   340→        <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   341→          <Calendar className="w-2.5 h-2.5" />
+   342→          Semester {subject.semester}
+   343→        </span>
+   344→        <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   345→          <Hash className="w-2.5 h-2.5" />
+   346→          {subject.credits} Credits
+   347→        </span>
+   348→        <span className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-400 flex items-center gap-1">
+   349→          <GraduationCap className="w-2.5 h-2.5" />
+   350→          {subject.facultyName}
+   351→        </span>
+   352→      </div>
+   353→    </motion.div>
+   354→  );
+   355→}
+   356→
+   357→// ═══════════════════════════════════════════════════════════════════════
+   358→// Main Component
+   359→// ═══════════════════════════════════════════════════════════════════════
+   360→export default function AdminSmartSearch() {
+   361→  const [query, setQuery] = useState('');
+   362→  const [results, setResults] = useState<SearchResult | null>(null);
+   363→  const [loading, setLoading] = useState(false);
+   364→  const [searchFocused, setSearchFocused] = useState(false);
+   365→  const [activeTab, setActiveTab] = useState<CategoryKey>('students');
+   366→  const [hasSearched, setHasSearched] = useState(false);
+   367→  const inputRef = useRef<HTMLInputElement>(null);
+   368→  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+   369→
+   370→  // Debounced search
+   371→  const performSearch = useCallback(async (searchTerm: string) => {
+   372→    if (!searchTerm.trim()) {
+   373→      setResults(null);
+   374→      setHasSearched(false);
+   375→      return;
+   376→    }
+   377→    setLoading(true);
+   378→    setHasSearched(true);
+   379→    try {
+   380→      const data = await fetchAPI(`/admin/search?q=${encodeURIComponent(searchTerm.trim())}`);
+   381→      setResults(data);
+   382→    } catch {
+   383→      setResults({ students: [], faculty: [], subjects: [] });
+   384→    }
+   385→    setLoading(false);
+   386→  }, []);
+   387→
+   388→  // Debounce input
+   389→  useEffect(() => {
+   390→    if (debounceRef.current) clearTimeout(debounceRef.current);
+   391→    debounceRef.current = setTimeout(() => {
+   392→      performSearch(query);
+   393→    }, 300);
+   394→    return () => {
+   395→      if (debounceRef.current) clearTimeout(debounceRef.current);
+   396→    };
+   397→  }, [query, performSearch]);
+   398→
+   399→  const totalStudents = results?.students?.length || 0;
+   400→  const totalFaculty = results?.faculty?.length || 0;
+   401→  const totalSubjects = results?.subjects?.length || 0;
+   402→  const totalResults = totalStudents + totalFaculty + totalSubjects;
+   403→
+   404→  const tabs: { id: CategoryKey; label: string; count: number; icon: React.ComponentType<{ className?: string }> }[] = [
+   405→    { id: 'students', label: 'Students', count: totalStudents, icon: Users },
+   406→    { id: 'faculty', label: 'Faculty', count: totalFaculty, icon: GraduationCap },
+   407→    { id: 'subjects', label: 'Subjects', count: totalSubjects, icon: BookOpen },
+   408→  ];
+   409→
+   410→  return (
+   411→    <div className="space-y-4 pt-2">
+   412→      {/* Section Header */}
+   413→      <motion.div
+   414→        initial={{ opacity: 0, y: 20 }}
+   415→        animate={{ opacity: 1, y: 0 }}
+   416→        transition={{ duration: 0.5 }}
+   417→        className="relative overflow-hidden rounded-2xl border border-white/[0.08] p-6"
+   418→      >
+   419→        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/10" />
+   420→        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+   421→        <motion.div
+   422→          className="absolute inset-0 rounded-2xl"
+   423→          style={{
+   424→            background: 'linear-gradient(90deg, rgba(16,185,129,0.3), rgba(6,182,212,0.3), rgba(16,185,129,0.3))',
+   425→            backgroundSize: '200% 100%',
+   426→          }}
+   427→          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+   428→          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+   429→        >
+   430→          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+   431→        </motion.div>
+   432→
+   433→        <div className="relative z-10 flex items-center gap-4">
+   434→          <motion.div
+   435→            initial={{ scale: 0 }}
+   436→            animate={{ scale: 1 }}
+   437→            transition={{ delay: 0.2, type: 'spring' }}
+   438→            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg"
+   439→            style={{ boxShadow: '0 0 25px rgba(16,185,129,0.3)' }}
+   440→          >
+   441→            <Search className="w-6 h-6 text-white" />
+   442→          </motion.div>
+   443→          <div>
+   444→            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+   445→              Smart Search
+   446→            </h2>
+   447→            <p className="text-gray-500 text-xs mt-0.5">Search across all campus data with AI-powered intelligent matching</p>
+   448→          </div>
+   449→        </div>
+   450→      </motion.div>
+   451→
+   452→      {/* Search Bar */}
+   453→      <motion.div
+   454→        initial={{ opacity: 0, y: 15 }}
+   455→        animate={{ opacity: 1, y: 0 }}
+   456→        transition={{ delay: 0.2 }}
+   457→        className="relative"
+   458→      >
+   459→        <div
+   460→          className={cn(
+   461→            "relative rounded-2xl transition-all duration-500",
+   462→            searchFocused
+   463→              ? "shadow-[0_0_40px_rgba(16,185,129,0.15)]"
+   464→              : "shadow-[0_0_0px_rgba(0,0,0,0)]"
+   465→          )}
+   466→        >
+   467→          {/* Animated gradient border */}
+   468→          {searchFocused && (
+   469→            <motion.div
+   470→              className="absolute inset-0 rounded-2xl"
+   471→              style={{
+   472→                background: 'linear-gradient(90deg, rgba(16,185,129,0.4), rgba(6,182,212,0.4), rgba(139,92,246,0.4), rgba(16,185,129,0.4))',
+   473→                backgroundSize: '300% 100%',
+   474→              }}
+   475→              animate={{ backgroundPosition: ['0% 0%', '300% 0%'] }}
+   476→              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+   477→            >
+   478→              <div className="absolute inset-[1.5px] rounded-2xl bg-[#050510]" />
+   479→            </motion.div>
+   480→          )}
+   481→
+   482→          <div className="relative z-10 flex items-center gap-3 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl px-5 py-4">
+   483→            <Search className={cn(
+   484→              "w-5 h-5 transition-colors duration-300",
+   485→              searchFocused ? "text-emerald-400" : "text-gray-600"
+   486→            )} />
+   487→            <input
+   488→              ref={inputRef}
+   489→              type="text"
+   490→              value={query}
+   491→              onChange={(e) => setQuery(e.target.value)}
+   492→              onFocus={() => setSearchFocused(true)}
+   493→              onBlur={() => setSearchFocused(false)}
+   494→              placeholder="Search students, faculty, courses, anything..."
+   495→              className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-600 focus:outline-none"
+   496→            />
+   497→            {query && (
+   498→              <motion.button
+   499→                initial={{ opacity: 0, scale: 0.8 }}
+   500→                animate={{ opacity: 1, scale: 1 }}
+   501→                whileHover={{ scale: 1.1 }}
+   502→                whileTap={{ scale: 0.9 }}
+   503→                onClick={() => { setQuery(''); setResults(null); setHasSearched(false); }}
+   504→                className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors"
+   505→              >
+   506→                <X className="w-3 h-3 text-gray-400" />
+   507→              </motion.button>
+   508→            )}
+   509→            {loading && (
+   510→              <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+   511→            )}
+   512→            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+   513→              <Sparkles className="w-3 h-3 text-emerald-400" />
+   514→              <span className="text-[9px] text-gray-500">AI</span>
+   515→            </div>
+   516→          </div>
+   517→        </div>
+   518→
+   519→        {/* Recent Searches Dropdown */}
+   520→        <AnimatePresence>
+   521→          {searchFocused && !query && (
+   522→            <motion.div
+   523→              initial={{ opacity: 0, y: -5 }}
+   524→              animate={{ opacity: 1, y: 0 }}
+   525→              exit={{ opacity: 0, y: -5 }}
+   526→              className="absolute top-full left-0 right-0 mt-2 z-50"
+   527→            >
+   528→              <div className="bg-[#0a0a1a]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+   529→                <div className="flex items-center gap-2 mb-3">
+   530→                  <Clock className="w-3.5 h-3.5 text-gray-600" />
+   531→                  <span className="text-[11px] text-gray-500 font-medium">Recent Searches</span>
+   532→                </div>
+   533→                <div className="flex flex-wrap gap-2 mb-4">
+   534→                  {RECENT_SEARCHES.map((term) => (
+   535→                    <motion.button
+   536→                      key={term}
+   537→                      whileHover={{ scale: 1.03 }}
+   538→                      whileTap={{ scale: 0.97 }}
+   539→                      onClick={() => setQuery(term)}
+   540→                      className="text-[11px] px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-gray-400 hover:bg-white/[0.06] hover:text-gray-300 transition-colors"
+   541→                    >
+   542→                      {term}
+   543→                    </motion.button>
+   544→                  ))}
+   545→                </div>
+   546→
+   547→                <div className="flex items-center gap-2 mb-3">
+   548→                  <TrendingUp className="w-3.5 h-3.5 text-gray-600" />
+   549→                  <span className="text-[11px] text-gray-500 font-medium">Quick Search</span>
+   550→                </div>
+   551→                <div className="grid grid-cols-2 gap-2">
+   552→                  {QUICK_SUGGESTIONS.map((suggestion) => {
+   553→                    const colorMap: Record<string, string> = {
+   554→                      purple: 'hover:border-purple-500/20 hover:bg-purple-500/[0.04]',
+   555→                      cyan: 'hover:border-cyan-500/20 hover:bg-cyan-500/[0.04]',
+   556→                      orange: 'hover:border-orange-500/20 hover:bg-orange-500/[0.04]',
+   557→                      blue: 'hover:border-blue-500/20 hover:bg-blue-500/[0.04]',
+   558→                    };
+   559→                    return (
+   560→                      <motion.button
+   561→                        key={suggestion.label}
+   562→                        whileHover={{ scale: 1.02, x: 2 }}
+   563→                        whileTap={{ scale: 0.98 }}
+   564→                        onClick={() => setQuery(suggestion.query)}
+   565→                        className={cn(
+   566→                          "flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-left transition-all",
+   567→                          colorMap[suggestion.color] || ''
+   568→                        )}
+   569→                      >
+   570→                        <suggestion.icon className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+   571→                        <span className="text-[11px] text-gray-400">{suggestion.label}</span>
+   572→                        <ArrowRight className="w-3 h-3 text-gray-700 ml-auto shrink-0" />
+   573→                      </motion.button>
+   574→                    );
+   575→                  })}
+   576→                </div>
+   577→              </div>
+   578→            </motion.div>
+   579→          )}
+   580→        </AnimatePresence>
+   581→      </motion.div>
+   582→
+   583→      {/* Results Area */}
+   584→      {!hasSearched ? (
+   585→        /* Empty State */
+   586→        <motion.div
+   587→          initial={{ opacity: 0 }}
+   588→          animate={{ opacity: 1 }}
+   589→          transition={{ delay: 0.4 }}
+   590→          className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 text-center"
+   591→        >
+   592→          <motion.div
+   593→            animate={{ y: [0, -8, 0] }}
+   594→            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+   595→            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+   596→          >
+   597→            <Search className="w-8 h-8 text-white" />
+   598→          </motion.div>
+   599→          <h3 className="text-lg font-bold text-white mb-2">Start typing to search</h3>
+   600→          <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
+   601→            Search across all campus data — students, faculty, courses, and more with AI-powered intelligent matching
+   602→          </p>
+   603→          <div className="flex flex-wrap items-center justify-center gap-2">
+   604→            {QUICK_SUGGESTIONS.map((s) => (
+   605→              <motion.button
+   606→                key={s.label}
+   607→                whileHover={{ scale: 1.05 }}
+   608→                whileTap={{ scale: 0.95 }}
+   609→                onClick={() => setQuery(s.query)}
+   610→                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-gray-400 hover:bg-white/[0.06] hover:text-gray-300 transition-all"
+   611→              >
+   612→                <s.icon className="w-3 h-3" />
+   613→                {s.label}
+   614→              </motion.button>
+   615→            ))}
+   616→          </div>
+   617→        </motion.div>
+   618→      ) : (
+   619→        /* Search Results */
+   620→        <div className="space-y-4">
+   621→          {/* Results Count & Tabs */}
+   622→          <div className="flex items-center gap-4">
+   623→            <div className="text-xs text-gray-500">
+   624→              {loading ? (
+   625→                <span className="flex items-center gap-2">
+   626→                  <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
+   627→                  Searching...
+   628→                </span>
+   629→              ) : (
+   630→                <span>
+   631→                  Found <span className="text-white font-semibold">{totalResults}</span> results
+   632→                  {query && <span> for &ldquo;<span className="text-emerald-400">{query}</span>&rdquo;</span>}
+   633→                </span>
+   634→              )}
+   635→            </div>
+   636→          </div>
+   637→
+   638→          {/* Category Tabs */}
+   639→          <div className="flex gap-1.5">
+   640→            {tabs.map((tab) => {
+   641→              const config = CATEGORY_CONFIG[tab.id];
+   642→              const isActive = activeTab === tab.id;
+   643→              return (
+   644→                <motion.button
+   645→                  key={tab.id}
+   646→                  onClick={() => setActiveTab(tab.id)}
+   647→                  whileHover={{ scale: 1.02 }}
+   648→                  whileTap={{ scale: 0.98 }}
+   649→                  className={cn(
+   650→                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300",
+   651→                    isActive
+   652→                      ? `${config.bg} ${config.text} border ${config.border} shadow-[0_0_15px_${config.glow}]`
+   653→                      : "bg-white/[0.02] text-gray-500 border border-white/[0.06] hover:text-gray-300 hover:bg-white/[0.04]"
+   654→                  )}
+   655→                >
+   656→                  <tab.icon className="w-3.5 h-3.5" />
+   657→                  <span>{tab.label}</span>
+   658→                  <span className={cn(
+   659→                    "text-[9px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center",
+   660→                    isActive ? `${config.badge}` : "bg-white/[0.04] text-gray-600"
+   661→                  )}>
+   662→                    {tab.count}
+   663→                  </span>
+   664→                </motion.button>
+   665→              );
+   666→            })}
+   667→          </div>
+   668→
+   669→          {/* Results Grid */}
+   670→          <AnimatePresence mode="wait">
+   671→            <motion.div
+   672→              key={activeTab}
+   673→              initial={{ opacity: 0, y: 10 }}
+   674→              animate={{ opacity: 1, y: 0 }}
+   675→              exit={{ opacity: 0, y: -10 }}
+   676→              transition={{ duration: 0.2 }}
+   677→            >
+   678→              {loading ? (
+   679→                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   680→                  {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+   681→                </div>
+   682→              ) : activeTab === 'students' ? (
+   683→                totalStudents > 0 ? (
+   684→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   685→                    {results!.students.map((student, i) => (
+   686→                      <StudentCard key={student.id} student={student} index={i} />
+   687→                    ))}
+   688→                  </div>
+   689→                ) : (
+   690→                  <NoResults query={query} category="students" />
+   691→                )
+   692→              ) : activeTab === 'faculty' ? (
+   693→                totalFaculty > 0 ? (
+   694→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   695→                    {results!.faculty.map((faculty, i) => (
+   696→                      <FacultyCard key={faculty.id} faculty={faculty} index={i} />
+   697→                    ))}
+   698→                  </div>
+   699→                ) : (
+   700→                  <NoResults query={query} category="faculty" />
+   701→                )
+   702→              ) : totalSubjects > 0 ? (
+   703→                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   704→                  {results!.subjects.map((subject, i) => (
+   705→                    <SubjectCard key={subject.id} subject={subject} index={i} />
+   706→                  ))}
+   707→                </div>
+   708→              ) : (
+   709→                <NoResults query={query} category="subjects" />
+   710→              )}
+   711→            </motion.div>
+   712→          </AnimatePresence>
+   713→        </div>
+   714→      )}
+   715→    </div>
+   716→  );
+   717→}
+   718→
+   719→// ─── No Results Component ─────────────────────────────────────────────
+   720→function NoResults({ query, category }: { query: string; category: string }) {
+   721→  const config = CATEGORY_CONFIG[category as CategoryKey];
+   722→  return (
+   723→    <motion.div
+   724→      initial={{ opacity: 0 }}
+   725→      animate={{ opacity: 1 }}
+   726→      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 text-center"
+   727→    >
+   728→      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 border", config.bg, config.border)}>
+   729→        <Search className={cn("w-6 h-6", config.text)} />
+   730→      </div>
+   731→      <h4 className="text-sm font-semibold text-white mb-1">No {category} found</h4>
+   732→      <p className="text-xs text-gray-500 mb-3">
+   733→        No results for &ldquo;<span className="text-gray-300">{query}</span>&rdquo; in {category}
+   734→      </p>
+   735→      <p className="text-[11px] text-gray-600">Try searching with different keywords</p>
+   736→    </motion.div>
+   737→  );
+   738→}
+   739→

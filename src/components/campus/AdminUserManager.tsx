@@ -20,7 +20,7 @@ interface UserAccount {
 }
 
 export default function AdminUserManager() {
-  const { addToast } = useCampusStore();
+  const { addToast, currentUser } = useCampusStore();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +29,8 @@ export default function AdminUserManager() {
   const [showPassword, setShowPassword] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [copied, setCopied] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Create form state
   const [formName, setFormName] = useState('');
@@ -146,6 +148,52 @@ export default function AdminUserManager() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    setDeletingUserId(userId);
+    try {
+      const token = document.cookie.split('; ').find(row => row.startsWith('campusos-token='))?.split('=')[1];
+      const res = await fetch('/api/auth/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        addToast({
+          id: `user-deleted-${Date.now()}`,
+          type: 'success',
+          title: 'User Deleted',
+          message: data.message || 'User has been deleted successfully.',
+          timestamp: Date.now(),
+        });
+        setConfirmDeleteId(null);
+        loadUsers();
+      } else {
+        addToast({
+          id: `user-delete-error-${Date.now()}`,
+          type: 'error',
+          title: 'Deletion Failed',
+          message: data.error || 'Failed to delete user.',
+          timestamp: Date.now(),
+        });
+      }
+    } catch (err) {
+      addToast({
+        id: `user-delete-error-${Date.now()}`,
+        type: 'error',
+        title: 'Error',
+        message: 'Network error. Please try again.',
+        timestamp: Date.now(),
+      });
+    }
+    setDeletingUserId(null);
+  };
+
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,15 +201,15 @@ export default function AdminUserManager() {
   );
 
   const roleIcon = (role: string) => {
-    if (role === 'admin') return <Shield className="w-4 h-4 text-amber-400" />;
-    if (role === 'faculty') return <BookOpen className="w-4 h-4 text-cyan-400" />;
-    return <GraduationCap className="w-4 h-4 text-purple-400" />;
+    if (role === 'admin') return <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
+    if (role === 'faculty') return <BookOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />;
+    return <GraduationCap className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
   };
 
   const roleBadge = (role: string) => {
-    if (role === 'admin') return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-    if (role === 'faculty') return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-    return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    if (role === 'admin') return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+    if (role === 'faculty') return 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20';
+    return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
   };
 
   return (
@@ -199,7 +247,7 @@ export default function AdminUserManager() {
           >
             <GlassCard className="p-6 overflow-hidden">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-amber-400" />
+                <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 Create New @JSE.com Account
               </h3>
 
@@ -216,7 +264,7 @@ export default function AdminUserManager() {
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="e.g. John Doe"
                         required
-                        className="w-full bg-white/[0.04] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
+                        className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
                       />
                     </div>
                   </div>
@@ -232,7 +280,7 @@ export default function AdminUserManager() {
                         onChange={(e) => setFormEmail(e.target.value)}
                         placeholder="username"
                         required
-                        className="w-full bg-white/[0.04] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
+                        className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--text-muted)]">@JSE.com</span>
                     </div>
@@ -250,7 +298,7 @@ export default function AdminUserManager() {
                           onChange={(e) => setFormPassword(e.target.value)}
                           placeholder="Enter or generate password"
                           required
-                          className="w-full bg-white/[0.04] border border-[var(--border-color)] rounded-xl pl-10 pr-10 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
+                          className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl pl-10 pr-10 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
                         />
                         <button
                           type="button"
@@ -263,7 +311,7 @@ export default function AdminUserManager() {
                       <button
                         type="button"
                         onClick={generatePassword}
-                        className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-[var(--border-color)] text-xs text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30 transition-colors whitespace-nowrap"
+                        className="px-3 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30 transition-colors whitespace-nowrap"
                       >
                         Auto Generate
                       </button>
@@ -276,7 +324,7 @@ export default function AdminUserManager() {
                           onClick={() => copyToClipboard(generatedPassword)}
                           className="p-1 rounded hover:bg-amber-500/10 transition-colors"
                         >
-                          {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                          {copied ? <Check className="w-3.5 h-3.5 text-green-600 dark:text-green-400" /> : <Copy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
                         </button>
                       </div>
                     )}
@@ -294,11 +342,11 @@ export default function AdminUserManager() {
                           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition-all ${
                             formRole === role
                               ? role === 'admin'
-                                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                                ? 'bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400'
                                 : role === 'faculty'
-                                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
-                                : 'bg-purple-500/15 border-purple-500/30 text-purple-400'
-                              : 'bg-white/[0.04] border-[var(--border-color)] text-[var(--text-muted)] hover:bg-white/[0.06]'
+                                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
+                                : 'bg-purple-500/15 border-purple-500/30 text-purple-600 dark:text-purple-400'
+                              : 'bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-muted)] hover:bg-[var(--bg-card)]'
                           }`}
                         >
                           {roleIcon(role)}
@@ -315,17 +363,17 @@ export default function AdminUserManager() {
                   <select
                     value={formDepartment}
                     onChange={(e) => setFormDepartment(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/40 transition-colors"
+                    className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/40 transition-colors"
                   >
                     {departments.map(dept => (
-                      <option key={dept} value={dept} className="bg-[#0a0a14]">{dept}</option>
+                      <option key={dept} value={dept} className="bg-[var(--bg-secondary)]">{dept}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Info banner */}
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div className="text-xs text-amber-300/80">
                     <strong>Note:</strong> Only administrators can create accounts. The email will be <span className="font-mono text-amber-300">{formEmail || 'username'}@JSE.com</span>. Share the credentials securely with the user.
                   </div>
@@ -336,7 +384,7 @@ export default function AdminUserManager() {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="px-4 py-2.5 rounded-xl text-sm text-[var(--text-muted)] hover:bg-white/[0.04] transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-sm text-[var(--text-muted)] hover:bg-[var(--glass-bg)] transition-colors"
                   >
                     Cancel
                   </button>
@@ -372,17 +420,17 @@ export default function AdminUserManager() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search users by name, email, or role..."
-          className="w-full bg-white/[0.04] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
+          className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/40 transition-colors"
         />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Users', value: users.length, color: 'text-white' },
-          { label: 'Students', value: users.filter(u => u.role === 'student').length, color: 'text-purple-400' },
-          { label: 'Faculty', value: users.filter(u => u.role === 'faculty').length, color: 'text-cyan-400' },
-          { label: 'Admins', value: users.filter(u => u.role === 'admin').length, color: 'text-amber-400' },
+          { label: 'Total Users', value: users.length, color: 'text-[var(--text-primary)]' },
+          { label: 'Students', value: users.filter(u => u.role === 'student').length, color: 'text-purple-600 dark:text-purple-400' },
+          { label: 'Faculty', value: users.filter(u => u.role === 'faculty').length, color: 'text-cyan-600 dark:text-cyan-400' },
+          { label: 'Admins', value: users.filter(u => u.role === 'admin').length, color: 'text-amber-600 dark:text-amber-400' },
         ].map((stat, i) => (
           <GlassCard key={stat.label} className="p-4">
             <div className="text-xs text-[var(--text-muted)]">{stat.label}</div>
@@ -395,12 +443,12 @@ export default function AdminUserManager() {
       <GlassCard className="overflow-hidden">
         <div className="px-5 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <Users className="w-4 h-4 text-amber-400" />
+            <Users className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             All User Accounts
           </h3>
           <button
             onClick={loadUsers}
-            className="text-xs text-[var(--text-muted)] hover:text-amber-400 transition-colors"
+            className="text-xs text-[var(--text-muted)] hover:text-amber-600 dark:text-amber-400 transition-colors"
           >
             Refresh
           </button>
@@ -409,7 +457,7 @@ export default function AdminUserManager() {
         <div className="max-h-[500px] overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center">
-              <Loader2 className="w-6 h-6 animate-spin text-amber-400 mx-auto mb-2" />
+              <Loader2 className="w-6 h-6 animate-spin text-amber-600 dark:text-amber-400 mx-auto mb-2" />
               <p className="text-xs text-[var(--text-muted)]">Loading users...</p>
             </div>
           ) : filteredUsers.length === 0 ? (
@@ -425,10 +473,10 @@ export default function AdminUserManager() {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--glass-bg)] transition-colors"
                 >
                   {/* Avatar */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 ${
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-primary)] text-sm font-bold shrink-0 ${
                     user.role === 'admin' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
                     user.role === 'faculty' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
                     'bg-gradient-to-br from-purple-500 to-violet-600'
@@ -457,6 +505,38 @@ export default function AdminUserManager() {
                   <div className="hidden lg:block text-[10px] text-[var(--text-muted)]">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </div>
+
+                  {/* Delete Button */}
+                  {user.id !== currentUser?.id && (
+                    <div className="relative">
+                      {confirmDeleteId === user.id ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={deletingUserId === user.id}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 text-[10px] font-medium hover:bg-red-500/25 transition-colors disabled:opacity-50"
+                          >
+                            {deletingUserId === user.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-2 py-1.5 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-muted)] text-[10px] hover:bg-[var(--bg-card)] transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(user.id)}
+                          className="p-2 rounded-lg text-[var(--text-muted)] hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
+                          title="Delete user"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>

@@ -57,28 +57,28 @@ const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor',
 const PAGE_SIZES = [10, 20, 50];
 
 const DEPT_COLORS: Record<string, string> = {
-  CS: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  IT: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  ECE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  EEE: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  ME: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  CE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  CS: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  IT: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+  ECE: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  EEE: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+  ME: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+  CE: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
 };
 
 const DESIGNATION_COLORS: Record<string, string> = {
-  'Professor': 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  'Associate Professor': 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  'Assistant Professor': 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  'Lecturer': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  'Professor': 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  'Associate Professor': 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+  'Assistant Professor': 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  'Lecturer': 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
 };
 
 const SUBJECT_COLORS = [
-  'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+  'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+  'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+  'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+  'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
 ];
 
 // ─── Form State ───────────────────────────────────────────────────────────
@@ -258,8 +258,8 @@ export default function AdminFacultyManager() {
             className={cn(
               "fixed top-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-lg",
               toast.type === 'success'
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : "bg-red-500/10 border-red-500/30 text-red-400"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                : "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
             )}
           >
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -279,24 +279,24 @@ export default function AdminFacultyManager() {
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
               Faculty Management
-              <Badge className="bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 text-[10px] px-2">
+              <Badge className="bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 text-[10px] px-2">
                 {total} total
               </Badge>
             </h2>
-            <p className="text-xs text-gray-500">Manage faculty profiles, assignments & departments</p>
+            <p className="text-xs text-[var(--text-muted)]">Manage faculty profiles, assignments & departments</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          <div className="flex items-center rounded-xl bg-white/[0.03] border border-white/[0.08] p-0.5">
+          <div className="flex items-center rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] p-0.5">
             <button
               onClick={() => setViewMode('table')}
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-200",
-                viewMode === 'table' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+                viewMode === 'table' ? "bg-[var(--bg-card)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               <List className="w-4 h-4" />
@@ -305,7 +305,7 @@ export default function AdminFacultyManager() {
               onClick={() => setViewMode('card')}
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-200",
-                viewMode === 'card' ? "bg-white/[0.08] text-white" : "text-gray-500 hover:text-gray-300"
+                viewMode === 'card' ? "bg-[var(--bg-card)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -332,16 +332,16 @@ export default function AdminFacultyManager() {
         className="flex flex-col sm:flex-row gap-3"
       >
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <input
             type="text"
             placeholder="Search by name or designation..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
           />
           {search && (
-            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+            <button onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -351,12 +351,12 @@ export default function AdminFacultyManager() {
           <select
             value={filterDept}
             onChange={(e) => { setFilterDept(e.target.value); setPage(1); }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 cursor-pointer"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 cursor-pointer"
           >
-            <option value="" className="bg-[#0a0a1a]">All Departments</option>
-            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+            <option value="" className="bg-[var(--bg-secondary)]">All Departments</option>
+            {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
           </select>
-          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] rotate-90 pointer-events-none" />
         </div>
       </motion.div>
 
@@ -369,15 +369,15 @@ export default function AdminFacultyManager() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ delay: 0.15 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+            className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl overflow-hidden"
           >
             {/* Table View */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/[0.06]">
+                  <tr className="border-b border-[var(--border-color)]">
                     {['Name', 'Department', 'Designation', 'Subjects', 'Cabin', 'Actions'].map(h => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                         {h}
                       </th>
                     ))}
@@ -389,7 +389,7 @@ export default function AdminFacultyManager() {
                       <tr key={i} className="border-b border-white/[0.04]">
                         {Array.from({ length: 6 }).map((_, j) => (
                           <td key={j} className="px-4 py-3">
-                            <div className="h-4 bg-white/[0.04] rounded animate-pulse" />
+                            <div className="h-4 bg-[var(--glass-bg)] rounded animate-pulse" />
                           </td>
                         ))}
                       </tr>
@@ -397,9 +397,9 @@ export default function AdminFacultyManager() {
                   ) : faculty.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-12 text-center">
-                        <GraduationCap className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                        <p className="text-gray-500 text-sm">No faculty found</p>
-                        <p className="text-gray-700 text-xs mt-1">Try adjusting your search or filters</p>
+                        <GraduationCap className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
+                        <p className="text-[var(--text-muted)] text-sm">No faculty found</p>
+                        <p className="text-[var(--text-muted)] text-xs mt-1">Try adjusting your search or filters</p>
                       </td>
                     </tr>
                   ) : (
@@ -409,7 +409,7 @@ export default function AdminFacultyManager() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="border-b border-white/[0.04] hover:bg-white/[0.05] transition-colors duration-200 group"
+                        className="border-b border-white/[0.04] hover:bg-[var(--glass-bg)] transition-colors duration-200 group"
                       >
                         {/* Name */}
                         <td className="px-4 py-3">
@@ -421,8 +421,8 @@ export default function AdminFacultyManager() {
                               {getInitial(f.user.name)}
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-white">{f.user.name}</p>
-                              <p className="text-[11px] text-gray-600">{f.user.email}</p>
+                              <p className="text-sm font-medium text-[var(--text-primary)]">{f.user.name}</p>
+                              <p className="text-[11px] text-[var(--text-muted)]">{f.user.email}</p>
                             </div>
                           </div>
                         </td>
@@ -430,7 +430,7 @@ export default function AdminFacultyManager() {
                         <td className="px-4 py-3">
                           <span className={cn(
                             "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
-                            DEPT_COLORS[f.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                            DEPT_COLORS[f.department] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                           )}>
                             {f.department}
                           </span>
@@ -439,7 +439,7 @@ export default function AdminFacultyManager() {
                         <td className="px-4 py-3">
                           <span className={cn(
                             "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
-                            DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                            DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                           )}>
                             {f.designation}
                           </span>
@@ -448,17 +448,17 @@ export default function AdminFacultyManager() {
                         <td className="px-4 py-3">
                           <button
                             onClick={() => setSubjectsDialogId(f.id)}
-                            className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-cyan-400 transition-colors group/btn"
+                            className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-cyan-600 dark:text-cyan-400 transition-colors group/btn"
                           >
-                            <BookOpen className="w-3.5 h-3.5 text-gray-500 group-hover/btn:text-cyan-400" />
+                            <BookOpen className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover/btn:text-cyan-600 dark:text-cyan-400" />
                             <span className="font-medium">{f.subjectCount}</span>
-                            <span className="text-gray-600 text-xs">subjects</span>
+                            <span className="text-[var(--text-muted)] text-xs">subjects</span>
                           </button>
                         </td>
                         {/* Cabin */}
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-400">
-                            <MapPin className="w-3 h-3 text-gray-600" />
+                          <div className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+                            <MapPin className="w-3 h-3 text-[var(--text-muted)]" />
                             {f.cabinLocation || '—'}
                           </div>
                         </td>
@@ -469,7 +469,7 @@ export default function AdminFacultyManager() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => openEdit(f)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
                               title="Edit"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -478,7 +478,7 @@ export default function AdminFacultyManager() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => setDeleteId(f.id)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-all duration-200"
                               title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -494,36 +494,36 @@ export default function AdminFacultyManager() {
 
             {/* Pagination */}
             {!loading && total > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-white/[0.06]">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-[var(--border-color)]">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                   <span>Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}</span>
-                  <span className="text-gray-700">|</span>
+                  <span className="text-[var(--text-muted)]">|</span>
                   <div className="flex items-center gap-1">
                     <span>Per page:</span>
                     <select
                       value={limit}
                       onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                      className="appearance-none bg-white/[0.04] border border-white/[0.06] rounded-md px-2 py-0.5 text-xs text-white focus:outline-none cursor-pointer"
+                      className="appearance-none bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-md px-2 py-0.5 text-xs text-[var(--text-primary)] focus:outline-none cursor-pointer"
                     >
-                      {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[#0a0a1a]">{s}</option>)}
+                      {PAGE_SIZES.map(s => <option key={s} value={s} className="bg-[var(--bg-secondary)]">{s}</option>)}
                     </select>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                    className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                    className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   {pageNumbers.map(p => (
                     <button key={p} onClick={() => setPage(p)}
                       className={cn("w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200",
-                        p === page ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-gray-500 hover:text-white hover:bg-white/[0.05]"
+                        p === page ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30" : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
                       )}>
                       {p}
                     </button>
                   ))}
                   <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                    className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                    className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -542,17 +542,17 @@ export default function AdminFacultyManager() {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 animate-pulse">
-                    <div className="h-20 bg-white/[0.04] rounded-xl mb-4" />
-                    <div className="h-4 bg-white/[0.04] rounded mb-2" />
-                    <div className="h-3 bg-white/[0.04] rounded w-2/3" />
+                  <div key={i} className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-6 animate-pulse">
+                    <div className="h-20 bg-[var(--glass-bg)] rounded-xl mb-4" />
+                    <div className="h-4 bg-[var(--glass-bg)] rounded mb-2" />
+                    <div className="h-3 bg-[var(--glass-bg)] rounded w-2/3" />
                   </div>
                 ))}
               </div>
             ) : faculty.length === 0 ? (
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-12 text-center">
-                <GraduationCap className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No faculty found</p>
+              <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-12 text-center">
+                <GraduationCap className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
+                <p className="text-[var(--text-muted)] text-sm">No faculty found</p>
               </div>
             ) : (
               <>
@@ -564,7 +564,7 @@ export default function AdminFacultyManager() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       whileHover={{ y: -4, scale: 1.01 }}
-                      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300 group"
+                      className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl p-5 hover:border-[var(--border-color)] hover:bg-[var(--glass-bg)] transition-all duration-300 group"
                     >
                       {/* Card Header */}
                       <div className="flex items-start justify-between mb-4">
@@ -576,10 +576,10 @@ export default function AdminFacultyManager() {
                             {getInitial(f.user.name)}
                           </div>
                           <div>
-                            <h4 className="text-sm font-semibold text-white group-hover:text-gray-100">{f.user.name}</h4>
+                            <h4 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-gray-100">{f.user.name}</h4>
                             <span className={cn(
                               "inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border font-medium mt-0.5",
-                              DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                              DESIGNATION_COLORS[f.designation] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                             )}>
                               {f.designation}
                             </span>
@@ -590,13 +590,13 @@ export default function AdminFacultyManager() {
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <button
                             onClick={() => openEdit(f)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-all"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteId(f.id)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -607,7 +607,7 @@ export default function AdminFacultyManager() {
                       <div className="mb-3">
                         <span className={cn(
                           "inline-flex items-center text-xs px-2.5 py-1 rounded-full border font-medium",
-                          DEPT_COLORS[f.department] || 'bg-gray-500/15 text-gray-400 border-gray-500/30'
+                          DEPT_COLORS[f.department] || 'bg-gray-500/15 text-[var(--text-secondary)] border-gray-500/30'
                         )}>
                           {f.department} Department
                         </span>
@@ -616,11 +616,11 @@ export default function AdminFacultyManager() {
                       {/* Subjects */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[11px] text-gray-500 font-medium">Subjects ({f.subjectCount})</span>
+                          <span className="text-[11px] text-[var(--text-muted)] font-medium">Subjects ({f.subjectCount})</span>
                           {f.subjectCount > 3 && (
                             <button
                               onClick={() => setSubjectsDialogId(f.id)}
-                              className="text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors"
+                              className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-300 transition-colors"
                             >
                               View all
                             </button>
@@ -637,10 +637,10 @@ export default function AdminFacultyManager() {
                               </span>
                             ))
                           ) : (
-                            <span className="text-[11px] text-gray-600 italic">No subjects assigned</span>
+                            <span className="text-[11px] text-[var(--text-muted)] italic">No subjects assigned</span>
                           )}
                           {f.subjectCount > 3 && (
-                            <span className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-gray-500">
+                            <span className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-muted)]">
                               +{f.subjectCount - 3} more
                             </span>
                           )}
@@ -649,19 +649,19 @@ export default function AdminFacultyManager() {
 
                       {/* Cabin Location */}
                       {f.cabinLocation && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                           <MapPin className="w-3 h-3" />
                           <span>{f.cabinLocation}</span>
                         </div>
                       )}
 
                       {/* Contact row */}
-                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.06]">
-                        <a href={`mailto:${f.user.email}`} className="text-gray-600 hover:text-cyan-400 transition-colors" title={f.user.email}>
+                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--border-color)]">
+                        <a href={`mailto:${f.user.email}`} className="text-[var(--text-muted)] hover:text-cyan-600 dark:text-cyan-400 transition-colors" title={f.user.email}>
                           <Mail className="w-3.5 h-3.5" />
                         </a>
                         {f.user.phone && (
-                          <a href={`tel:${f.user.phone}`} className="text-gray-600 hover:text-cyan-400 transition-colors" title={f.user.phone}>
+                          <a href={`tel:${f.user.phone}`} className="text-[var(--text-muted)] hover:text-cyan-600 dark:text-cyan-400 transition-colors" title={f.user.phone}>
                             <Phone className="w-3.5 h-3.5" />
                           </a>
                         )}
@@ -674,14 +674,14 @@ export default function AdminFacultyManager() {
                 {total > limit && (
                   <div className="flex items-center justify-center gap-2 mt-6">
                     <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                      className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                      className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-[var(--text-muted)]">
                       Page {page} of {totalPages}
                     </span>
                     <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                      className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                      className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -694,13 +694,13 @@ export default function AdminFacultyManager() {
 
       {/* ─── Add/Edit Dialog ─────────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              {editId ? <Pencil className="w-4 h-4 text-cyan-400" /> : <Plus className="w-4 h-4 text-cyan-400" />}
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              {editId ? <Pencil className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> : <Plus className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />}
               {editId ? 'Edit Faculty' : 'Add New Faculty'}
             </DialogTitle>
-            <DialogDescription className="text-gray-500">
+            <DialogDescription className="text-[var(--text-muted)]">
               {editId ? 'Update faculty information' : 'Fill in the details to add a new faculty member'}
             </DialogDescription>
           </DialogHeader>
@@ -708,64 +708,64 @@ export default function AdminFacultyManager() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             {/* Name */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</label>
+              <label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><UserCircle className="w-3 h-3" /> Name *</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                 placeholder="Full name"
               />
             </div>
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</label>
+              <label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><Mail className="w-3 h-3" /> Email *</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                 placeholder="email@university.edu"
               />
             </div>
             {/* Department */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs">Department *</label>
+              <label className="text-[var(--text-secondary)] text-xs">Department *</label>
               <select
                 value={form.department}
                 onChange={(e) => setForm({ ...form, department: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
               >
-                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
               </select>
             </div>
             {/* Designation */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs flex items-center gap-1"><Briefcase className="w-3 h-3" /> Designation</label>
+              <label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><Briefcase className="w-3 h-3" /> Designation</label>
               <select
                 value={form.designation}
                 onChange={(e) => setForm({ ...form, designation: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer"
               >
-                {DESIGNATIONS.map(d => <option key={d} value={d} className="bg-[#0a0a1a]">{d}</option>)}
+                {DESIGNATIONS.map(d => <option key={d} value={d} className="bg-[var(--bg-secondary)]">{d}</option>)}
               </select>
             </div>
             {/* Phone */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</label>
+              <label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</label>
               <input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                 placeholder="+91 9876543210"
               />
             </div>
             {/* Cabin Location */}
             <div className="space-y-1.5">
-              <label className="text-gray-400 text-xs flex items-center gap-1"><MapPin className="w-3 h-3" /> Cabin Location</label>
+              <label className="text-[var(--text-secondary)] text-xs flex items-center gap-1"><MapPin className="w-3 h-3" /> Cabin Location</label>
               <input
                 value={form.cabinLocation}
                 onChange={(e) => setForm({ ...form, cabinLocation: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                 placeholder="Room 301, Block A"
               />
             </div>
@@ -774,7 +774,7 @@ export default function AdminFacultyManager() {
           <DialogFooter>
             <button
               onClick={() => setDialogOpen(false)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Cancel
             </button>
@@ -793,20 +793,20 @@ export default function AdminFacultyManager() {
 
       {/* ─── Delete Confirmation Dialog ──────────────────────────────── */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-sm">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               Confirm Delete
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-[var(--text-secondary)]">
               This action cannot be undone. The faculty record and associated user account will be permanently deleted. Faculty with assigned subjects cannot be deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
             <button
               onClick={() => setDeleteId(null)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Cancel
             </button>
@@ -824,13 +824,13 @@ export default function AdminFacultyManager() {
 
       {/* ─── Subjects Dialog ─────────────────────────────────────────── */}
       <Dialog open={!!subjectsDialogId} onOpenChange={() => setSubjectsDialogId(null)}>
-        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] text-white max-w-md">
+        <DialogContent className="bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-[var(--border-color)] text-[var(--text-primary)] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-cyan-400" />
+            <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               Subjects — {selectedFaculty?.user.name}
             </DialogTitle>
-            <DialogDescription className="text-gray-500">
+            <DialogDescription className="text-[var(--text-muted)]">
               {selectedFaculty?.subjectCount || 0} subject{selectedFaculty?.subjectCount !== 1 ? 's' : ''} currently assigned
             </DialogDescription>
           </DialogHeader>
@@ -843,7 +843,7 @@ export default function AdminFacultyManager() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: si * 0.05 }}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-all"
+                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn(
@@ -853,16 +853,16 @@ export default function AdminFacultyManager() {
                       {s.code.slice(0, 3)}
                     </div>
                     <div>
-                      <p className="text-sm text-white font-medium">{s.name}</p>
-                      <p className="text-[11px] text-gray-600">{s.code} · Sem {s.semester} · {s.credits} credits</p>
+                      <p className="text-sm text-[var(--text-primary)] font-medium">{s.name}</p>
+                      <p className="text-[11px] text-[var(--text-muted)]">{s.code} · Sem {s.semester} · {s.credits} credits</p>
                     </div>
                   </div>
                 </motion.div>
               ))
             ) : (
               <div className="text-center py-8">
-                <BookOpen className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No subjects assigned</p>
+                <BookOpen className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
+                <p className="text-sm text-[var(--text-muted)]">No subjects assigned</p>
               </div>
             )}
           </div>
@@ -870,7 +870,7 @@ export default function AdminFacultyManager() {
           <DialogFooter>
             <button
               onClick={() => setSubjectsDialogId(null)}
-              className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300"
+              className="px-4 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
             >
               Close
             </button>

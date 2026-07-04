@@ -91,19 +91,19 @@ export default function ChatPanel() {
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 100 }}
-      className="fixed bottom-0 right-6 w-[420px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[80vh] bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-t-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
+      className="fixed bottom-0 right-6 w-[420px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[80vh] bg-[var(--bg-secondary)]/95 backdrop-blur-2xl border border-[var(--border-color)] rounded-t-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">CampusOS AI</div>
+            <div className="text-sm font-semibold text-[var(--text-primary)]">CampusOS AI</div>
             <div className="flex items-center gap-1.5">
-              <div className="text-[10px] text-gray-500">Multi-Agent System</div>
-              <span className="text-[8px] px-1 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">AI</span>
+              <div className="text-[10px] text-[var(--text-muted)]">Multi-Agent System</div>
+              <span className="text-[8px] px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">AI</span>
             </div>
           </div>
         </div>
@@ -112,20 +112,20 @@ export default function ChatPanel() {
           <div className="relative">
             <button
               onClick={() => setShowAgents(!showAgents)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08] text-xs text-gray-300 hover:bg-white/[0.08] transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors"
             >
               <span>{currentAgent?.icon}</span>
               <span>{currentAgent?.label}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             {showAgents && (
-              <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-[#12121e]/95 backdrop-blur-xl border border-white/[0.1] rounded-xl shadow-xl z-10">
+              <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-[var(--bg-secondary)]/95 backdrop-blur-xl border border-[var(--border-color)] rounded-xl shadow-xl z-10">
                 {agentOptions.map((agent) => (
                   <button
                     key={agent.id}
                     onClick={() => { setSelectedAgent(agent.id); setShowAgents(false); }}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-white/[0.05] transition-colors ${
-                      selectedAgent === agent.id ? 'text-purple-400 bg-purple-500/5' : 'text-gray-400'
+                    className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-[var(--glass-bg)] transition-colors ${
+                      selectedAgent === agent.id ? 'text-purple-600 dark:text-purple-400 bg-purple-500/5' : 'text-[var(--text-muted)]'
                     }`}
                   >
                     <span>{agent.icon}</span>
@@ -135,7 +135,7 @@ export default function ChatPanel() {
               </div>
             )}
           </div>
-          <button onClick={() => setChatOpen(false)} className="p-1.5 rounded-lg hover:bg-white/[0.05] text-gray-500 hover:text-white transition-colors">
+          <button onClick={() => setChatOpen(false)} className="p-1.5 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -146,16 +146,16 @@ export default function ChatPanel() {
         {chatMessages.length === 0 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/20 flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-purple-400" />
+              <Sparkles className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-white font-semibold mb-1">Ask Campus AI</h3>
-            <p className="text-xs text-gray-500 mb-4">Your intelligent campus assistant</p>
+            <h3 className="text-[var(--text-primary)] font-semibold mb-1">Ask Campus AI</h3>
+            <p className="text-xs text-[var(--text-muted)] mb-4">Your intelligent campus assistant</p>
             <div className="flex flex-wrap gap-1.5 justify-center">
               {quickActions.map((action) => (
                 <button
                   key={action}
                   onClick={() => handleQuickAction(action)}
-                  className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-gray-400 hover:text-white hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
+                  className="px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] hover:border-purple-500/30 transition-all"
                 >
                   {action}
                 </button>
@@ -168,11 +168,11 @@ export default function ChatPanel() {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm ${
               msg.role === 'user'
-                ? 'bg-purple-600/30 border border-purple-500/20 text-white'
-                : 'bg-white/[0.04] border border-white/[0.06] text-gray-300'
+                ? 'bg-purple-500/20 dark:bg-purple-600/30 border border-purple-500/20 text-[var(--text-primary)]'
+                : 'bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-secondary)]'
             }`}>
               {msg.role === 'assistant' ? (
-                <div className="prose prose-invert prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:mb-0.5">
+                <div className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:mb-2 [&>ol]:mb-2 [&>li]:mb-0.5">
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               ) : (
@@ -184,11 +184,11 @@ export default function ChatPanel() {
 
         {chatLoading && (
           <div className="flex justify-start">
-            <div className="bg-white/[0.04] border border-white/[0.06] px-4 py-3 rounded-2xl">
+            <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] px-4 py-3 rounded-2xl">
               <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -197,8 +197,8 @@ export default function ChatPanel() {
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-white/[0.06] bg-white/[0.02]">
-        <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 focus-within:border-purple-500/40 transition-colors">
+      <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-card)]">
+        <div className="flex items-center gap-2 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-3 py-2 focus-within:border-purple-500/40 transition-colors">
           <input
             ref={inputRef}
             type="text"
@@ -206,7 +206,7 @@ export default function ChatPanel() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask Campus AI..."
-            className="flex-1 bg-transparent text-white text-sm placeholder-gray-600 outline-none"
+            className="flex-1 bg-transparent text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] outline-none"
           />
           <button
             onClick={handleSend}

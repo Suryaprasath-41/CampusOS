@@ -14,7 +14,7 @@ import {
   Activity, Target, BarChart3, Filter, Calendar, Bell,
   ChevronDown, Eye, Edit3, Star, ExternalLink, Hash,
   ArrowUpRight, Lightbulb, FileQuestion, Mic, Bot as BotIcon,
-  UserCheck, UserX, Save, RotateCcw
+  UserCheck, UserX, Save, RotateCcw, Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AnimatedCounter from './AnimatedCounter';
@@ -36,12 +36,12 @@ type TabId = (typeof tabs)[number]['id'];
 
 // ─── Department Colors ────────────────────────────────────────────────
 const deptColors: Record<string, { accent: string; bg: string; border: string; text: string; gradient: string }> = {
-  CS: { accent: 'purple', bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-400', gradient: 'from-purple-500 to-violet-600' },
-  IT: { accent: 'cyan', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', gradient: 'from-cyan-500 to-blue-600' },
-  ECE: { accent: 'blue', bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', gradient: 'from-blue-500 to-indigo-600' },
-  EEE: { accent: 'yellow', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-600' },
-  ME: { accent: 'orange', bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-400', gradient: 'from-orange-500 to-red-600' },
-  CE: { accent: 'green', bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400', gradient: 'from-green-500 to-emerald-600' },
+  CS: { accent: 'purple', bg: 'bg-purple-500/10', border: 'border-purple-500/20', text: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-500 to-violet-600' },
+  IT: { accent: 'cyan', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-600 dark:text-cyan-400', gradient: 'from-cyan-500 to-blue-600' },
+  ECE: { accent: 'blue', bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-500 to-indigo-600' },
+  EEE: { accent: 'yellow', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', text: 'text-yellow-600 dark:text-yellow-400', gradient: 'from-yellow-500 to-amber-600' },
+  ME: { accent: 'orange', bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-500 to-red-600' },
+  CE: { accent: 'green', bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-600 dark:text-green-400', gradient: 'from-green-500 to-emerald-600' },
 };
 
 // ─── Mock Data ────────────────────────────────────────────────────────
@@ -246,8 +246,8 @@ const suggestedPrompts = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-[#1a1a2e]/95 backdrop-blur-xl border border-white/[0.1] rounded-xl px-3 py-2 shadow-xl">
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
+    <div className="bg-[#1a1a2e]/95 backdrop-blur-xl border border-[var(--border-color)] rounded-xl px-3 py-2 shadow-xl">
+      <p className="text-xs text-[var(--text-secondary)] mb-1">{label}</p>
       {payload.map((entry: any, i: number) => (
         <p key={i} className="text-xs font-medium" style={{ color: entry.color }}>
           {entry.name}: {entry.value}%
@@ -270,7 +270,7 @@ const sectionToTabMap: Record<string, TabId> = {
 };
 
 export default function FacultyPortal() {
-  const { activeSection, setActiveSection } = useCampusStore();
+  const { activeSection, setActiveSection, activeRole, currentUser, setActiveRole } = useCampusStore();
   const [activeTab, setActiveTab] = useState<TabId>(sectionToTabMap[activeSection] || 'dashboard');
   const [expandedClass, setExpandedClass] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState(myClasses[0]);
@@ -348,7 +348,7 @@ export default function FacultyPortal() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-white/[0.08] p-6"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-[var(--border-color)] p-6"
       >
         <span className="absolute inset-0 overflow-hidden rounded-3xl">
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-[shimmer_4s_ease-in-out_infinite]" style={{ transform: 'translateX(-100%)' }} />
@@ -357,13 +357,13 @@ export default function FacultyPortal() {
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span className="text-xs text-purple-300 uppercase tracking-wider">Faculty Portal</span>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-1">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
               Welcome, <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{facultyProfile.name}</span> 👋
             </h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[var(--text-secondary)]">
               {facultyProfile.designation} • {facultyProfile.department} Department • {facultyProfile.semester} Semester
             </p>
           </div>
@@ -382,9 +382,9 @@ export default function FacultyPortal() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleTabChange('attendance')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white text-sm font-medium hover:bg-white/[0.08] transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-card)] transition-colors"
             >
-              <ClipboardCheck className="w-4 h-4 text-cyan-400" />
+              <ClipboardCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               Mark Attendance
             </motion.button>
           </div>
@@ -411,7 +411,7 @@ export default function FacultyPortal() {
             <WidgetCard
               title={stat.title}
               value={<AnimatedCounter value={stat.value} suffix={stat.suffix} />}
-              icon={<stat.icon className={cn('w-5 h-5', stat.color === 'purple' ? 'text-purple-400' : stat.color === 'cyan' ? 'text-cyan-400' : stat.color === 'green' ? 'text-green-400' : stat.color === 'yellow' ? 'text-yellow-400' : stat.color === 'blue' ? 'text-blue-400' : 'text-orange-400')} />}
+              icon={<stat.icon className={cn('w-5 h-5', stat.color === 'purple' ? 'text-purple-600 dark:text-purple-400' : stat.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' : stat.color === 'green' ? 'text-green-600 dark:text-green-400' : stat.color === 'yellow' ? 'text-yellow-600 dark:text-yellow-400' : stat.color === 'blue' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400')} />}
             />
           </motion.div>
         ))}
@@ -421,29 +421,29 @@ export default function FacultyPortal() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden"
+        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] overflow-hidden"
       >
-        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
+        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-[var(--border-color)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
-          <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
+          <span className="text-[10px] text-green-600 dark:text-green-400 uppercase tracking-wider font-semibold">Live</span>
         </div>
         <div className="flex-1 overflow-hidden">
           <motion.div
             animate={{ x: ['0%', '-50%'] }}
             transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="flex gap-8 whitespace-nowrap text-xs text-gray-400"
+            className="flex gap-8 whitespace-nowrap text-xs text-[var(--text-secondary)]"
           >
-            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> 3 new ML assignment submissions received</span>
-            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-400" /> Deep Learning class attendance: 91%</span>
-            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-400" /> Paper cited 3 times today</span>
-            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> 2 students flagged for low attendance</span>
-            <span className="flex items-center gap-1.5"><Brain className="w-3 h-3 text-blue-400" /> AI Grading Agent processed 15 submissions</span>
-            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> 3 new ML assignment submissions received</span>
-            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-400" /> Deep Learning class attendance: 91%</span>
-            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-400" /> Paper cited 3 times today</span>
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-600 dark:text-purple-400" /> 3 new ML assignment submissions received</span>
+            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Deep Learning class attendance: 91%</span>
+            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-600 dark:text-green-400" /> Paper cited 3 times today</span>
+            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400" /> 2 students flagged for low attendance</span>
+            <span className="flex items-center gap-1.5"><Brain className="w-3 h-3 text-blue-600 dark:text-blue-400" /> AI Grading Agent processed 15 submissions</span>
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-600 dark:text-purple-400" /> 3 new ML assignment submissions received</span>
+            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Deep Learning class attendance: 91%</span>
+            <span className="flex items-center gap-1.5"><FlaskConical className="w-3 h-3 text-green-600 dark:text-green-400" /> Paper cited 3 times today</span>
           </motion.div>
         </div>
       </motion.div>
@@ -455,38 +455,38 @@ export default function FacultyPortal() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
-                <Zap className="w-5 h-5 text-purple-400" />
+                <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </motion.div>
-              <h3 className="text-white font-semibold">AI Predictions</h3>
+              <h3 className="text-[var(--text-primary)] font-semibold">AI Predictions</h3>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">Live</span>
             </div>
-            <span className="text-xs text-gray-500">Updated 2 min ago</span>
+            <span className="text-xs text-[var(--text-muted)]">Updated 2 min ago</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Class Engagement</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={86} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Class Engagement</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={86} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: '86%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Student Performance</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={78} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Student Performance</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={78} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: '78%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(34,211,238,0.4)]" />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Workload Balance</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={65} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Workload Balance</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={65} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: '65%' }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-600 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
               </div>
             </div>
@@ -510,7 +510,7 @@ export default function FacultyPortal() {
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={qa.action}
-            className="text-left p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all group"
+            className="text-left p-4 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all group"
           >
             <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-3',
               qa.color === 'purple' ? 'bg-purple-500/10 border border-purple-500/20' :
@@ -519,13 +519,13 @@ export default function FacultyPortal() {
               'bg-blue-500/10 border border-blue-500/20'
             )}>
               <qa.icon className={cn('w-5 h-5',
-                qa.color === 'purple' ? 'text-purple-400' :
-                qa.color === 'cyan' ? 'text-cyan-400' :
-                qa.color === 'green' ? 'text-green-400' : 'text-blue-400'
+                qa.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
+                qa.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' :
+                qa.color === 'green' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'
               )} />
             </div>
-            <div className="text-sm text-white font-medium group-hover:text-purple-300 transition-colors">{qa.label}</div>
-            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+            <div className="text-sm text-[var(--text-primary)] font-medium group-hover:text-purple-300 transition-colors">{qa.label}</div>
+            <div className="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-0.5">
               {qa.desc}
               <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
             </div>
@@ -539,10 +539,10 @@ export default function FacultyPortal() {
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-white font-semibold">Today&apos;s Schedule</h3>
+              <Clock className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Today&apos;s Schedule</h3>
             </div>
-            <button onClick={() => handleTabChange('schedule')} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+            <button onClick={() => handleTabChange('schedule')} className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-300 flex items-center gap-1">
               View week <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -551,22 +551,22 @@ export default function FacultyPortal() {
               <motion.div
                 key={i}
                 whileHover={{ x: 4 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all"
+                className="flex items-center gap-3 p-3 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-white/[0.04] transition-all"
               >
                 <div className={cn('w-1 h-10 rounded-full shrink-0',
                   item.status === 'completed' ? 'bg-green-500/60' :
                   item.status === 'ongoing' ? 'bg-gradient-to-b from-purple-500 to-cyan-500' :
                   'bg-gray-600'
                 )} />
-                <div className="text-xs text-purple-400 font-mono w-20 shrink-0">{item.time}</div>
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-mono w-20 shrink-0">{item.time}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white">{item.subject}</div>
-                  <div className="text-xs text-gray-500">{item.room} • {item.duration}</div>
+                  <div className="text-sm text-[var(--text-primary)]">{item.subject}</div>
+                  <div className="text-xs text-[var(--text-muted)]">{item.room} • {item.duration}</div>
                 </div>
                 <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium shrink-0',
-                  item.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                  item.status === 'ongoing' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 animate-pulse' :
-                  'bg-white/[0.04] text-gray-400 border-white/[0.08]'
+                  item.status === 'completed' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' :
+                  item.status === 'ongoing' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 animate-pulse' :
+                  'bg-[var(--glass-bg)] text-[var(--text-secondary)] border-[var(--border-color)]'
                 )}>
                   {item.status === 'completed' ? 'Done' : item.status === 'ongoing' ? 'Live' : 'Next'}
                 </span>
@@ -579,8 +579,8 @@ export default function FacultyPortal() {
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold">Recent Student Queries</h3>
+              <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Recent Student Queries</h3>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">5 new</span>
           </div>
@@ -591,18 +591,18 @@ export default function FacultyPortal() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer border-l-2 border-l-purple-500/60"
+                className="flex items-start gap-3 p-3 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] transition-colors cursor-pointer border-l-2 border-l-purple-500/60"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
                   {q.student[0]}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-white font-medium">{q.student}</span>
+                    <span className="text-sm text-[var(--text-primary)] font-medium">{q.student}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">{q.subject}</span>
                   </div>
-                  <div className="text-xs text-gray-400 truncate">{q.query}</div>
-                  <div className="text-[10px] text-gray-600 mt-0.5">{q.time}</div>
+                  <div className="text-xs text-[var(--text-secondary)] truncate">{q.query}</div>
+                  <div className="text-[10px] text-[var(--text-muted)] mt-0.5">{q.time}</div>
                 </div>
               </motion.div>
             ))}
@@ -614,10 +614,10 @@ export default function FacultyPortal() {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-white font-semibold">Class Engagement Trend</h3>
+            <BarChart3 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Class Engagement Trend</h3>
           </div>
-          <span className="text-xs text-gray-500">Last 8 weeks</span>
+          <span className="text-xs text-[var(--text-muted)]">Last 8 weeks</span>
         </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -656,7 +656,7 @@ export default function FacultyPortal() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all overflow-hidden"
+              className="rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] backdrop-blur-xl transition-all overflow-hidden"
             >
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
@@ -665,10 +665,10 @@ export default function FacultyPortal() {
                       <span className={cn('text-[10px] px-2 py-0.5 rounded-full border font-medium', colors.bg, colors.border, colors.text)}>
                         {cls.department}
                       </span>
-                      <span className="text-[10px] text-gray-500">Sem {cls.semester}</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">Sem {cls.semester}</span>
                     </div>
-                    <h4 className="text-white font-semibold">{cls.name}</h4>
-                    <p className="text-xs text-gray-500">{cls.id}</p>
+                    <h4 className="text-[var(--text-primary)] font-semibold">{cls.name}</h4>
+                    <p className="text-xs text-[var(--text-muted)]">{cls.id}</p>
                   </div>
                   <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', colors.bg, 'border', colors.border)}>
                     <BookOpen className={cn('w-5 h-5', colors.text)} />
@@ -676,21 +676,21 @@ export default function FacultyPortal() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                    <div className="text-[10px] text-gray-500">Students</div>
-                    <div className="text-lg font-bold text-white">{cls.students}</div>
+                  <div className="p-2 rounded-lg bg-[var(--glass-bg)] border border-white/[0.04]">
+                    <div className="text-[10px] text-[var(--text-muted)]">Students</div>
+                    <div className="text-lg font-bold text-[var(--text-primary)]">{cls.students}</div>
                   </div>
-                  <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                    <div className="text-[10px] text-gray-500">Avg Attendance</div>
-                    <div className="text-lg font-bold text-white">{cls.avgAttendance}%</div>
+                  <div className="p-2 rounded-lg bg-[var(--glass-bg)] border border-white/[0.04]">
+                    <div className="text-[10px] text-[var(--text-muted)]">Avg Attendance</div>
+                    <div className="text-lg font-bold text-[var(--text-primary)]">{cls.avgAttendance}%</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-3">
                   <Clock className="w-3 h-3" />
                   <span>{cls.schedule}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                   <Target className="w-3 h-3" />
                   <span>Room {cls.room}</span>
                 </div>
@@ -699,7 +699,7 @@ export default function FacultyPortal() {
               {/* Expand Button */}
               <button
                 onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border-t border-white/[0.06] text-xs text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-t border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-colors"
               >
                 {isExpanded ? 'Hide' : 'View'} Students
                 <ChevronDown className={cn('w-3 h-3 transition-transform', isExpanded && 'rotate-180')} />
@@ -722,20 +722,20 @@ export default function FacultyPortal() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: si * 0.02 }}
-                          className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+                          className="flex items-center gap-3 p-2 rounded-lg bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] transition-colors"
                         >
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center text-[10px] font-bold text-purple-300 shrink-0">
                             {student.name[0]}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs text-white truncate">{student.name}</div>
-                            <div className="text-[10px] text-gray-500">{student.roll}</div>
+                            <div className="text-xs text-[var(--text-primary)] truncate">{student.name}</div>
+                            <div className="text-[10px] text-[var(--text-muted)]">{student.roll}</div>
                           </div>
-                          <div className="text-[10px] text-gray-500">Att: <span className={student.attendance < 70 ? 'text-red-400' : student.attendance < 80 ? 'text-yellow-400' : 'text-green-400'}>{student.attendance}%</span></div>
+                          <div className="text-[10px] text-[var(--text-muted)]">Att: <span className={student.attendance < 70 ? 'text-red-600 dark:text-red-400' : student.attendance < 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}>{student.attendance}%</span></div>
                           <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium',
-                            student.grade.startsWith('A') ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                            student.grade.startsWith('B') ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                            'bg-red-500/10 text-red-400 border border-red-500/20'
+                            student.grade.startsWith('A') ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' :
+                            student.grade.startsWith('B') ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20' :
+                            'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
                           )}>
                             {student.grade}
                           </span>
@@ -765,7 +765,7 @@ export default function FacultyPortal() {
       {/* Class & Date Selector */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <label className="text-xs text-gray-400 mb-1.5 block">Select Class</label>
+          <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Select Class</label>
           <div className="flex gap-3">
             {myClasses.map(cls => (
               <motion.button
@@ -779,24 +779,24 @@ export default function FacultyPortal() {
                 className={cn(
                   'flex-1 p-3 rounded-xl border text-left transition-all',
                   selectedClass.id === cls.id
-                    ? 'bg-purple-500/10 border-purple-500/30 text-white'
-                    : 'bg-white/[0.03] border-white/[0.08] text-gray-400 hover:border-white/[0.15]'
+                    ? 'bg-purple-500/10 border-purple-500/30 text-[var(--text-primary)]'
+                    : 'bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--border-color)]'
                 )}
               >
                 <div className="text-sm font-medium">{cls.name}</div>
-                <div className="text-[10px] text-gray-500">{cls.students} students</div>
+                <div className="text-[10px] text-[var(--text-muted)]">{cls.students} students</div>
               </motion.button>
             ))}
           </div>
         </div>
         <div>
-          <label className="text-xs text-gray-400 mb-1.5 block">Date</label>
+          <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Date</label>
           <div className="relative">
             <input
               type="date"
               value={attendanceDate}
               onChange={e => setAttendanceDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]"
             />
           </div>
         </div>
@@ -805,16 +805,16 @@ export default function FacultyPortal() {
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4">
         <GlassCard className="text-center">
-          <div className="text-2xl font-bold text-green-400"><AnimatedCounter value={presentCount} /></div>
-          <div className="text-xs text-gray-400 mt-1">Present</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400"><AnimatedCounter value={presentCount} /></div>
+          <div className="text-xs text-[var(--text-secondary)] mt-1">Present</div>
         </GlassCard>
         <GlassCard className="text-center">
-          <div className="text-2xl font-bold text-red-400"><AnimatedCounter value={absentCount} /></div>
-          <div className="text-xs text-gray-400 mt-1">Absent</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400"><AnimatedCounter value={absentCount} /></div>
+          <div className="text-xs text-[var(--text-secondary)] mt-1">Absent</div>
         </GlassCard>
         <GlassCard className="text-center">
-          <div className="text-2xl font-bold text-cyan-400"><AnimatedCounter value={attendancePct} suffix="%" /></div>
-          <div className="text-xs text-gray-400 mt-1">Percentage</div>
+          <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400"><AnimatedCounter value={attendancePct} suffix="%" /></div>
+          <div className="text-xs text-[var(--text-secondary)] mt-1">Percentage</div>
         </GlassCard>
       </div>
 
@@ -824,10 +824,10 @@ export default function FacultyPortal() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20"
       >
-        <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+        <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
         <div>
           <div className="text-sm text-yellow-300 font-medium">AI Anomaly Alert</div>
-          <div className="text-xs text-yellow-400/70">3 students marked present but were absent in previous class: Rahul Verma (CS2022038), Karthik Rao (CS2022042), Deepak Yadav (CS2023016)</div>
+          <div className="text-xs text-yellow-600 dark:text-yellow-400/70">3 students marked present but were absent in previous class: Rahul Verma (CS2022038), Karthik Rao (CS2022042), Deepak Yadav (CS2023016)</div>
         </div>
       </motion.div>
 
@@ -837,7 +837,7 @@ export default function FacultyPortal() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={toggleAllPresent}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors"
         >
           <UserCheck className="w-4 h-4" /> Mark All Present
         </motion.button>
@@ -845,7 +845,7 @@ export default function FacultyPortal() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={toggleAllAbsent}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
         >
           <UserX className="w-4 h-4" /> Mark All Absent
         </motion.button>
@@ -855,10 +855,10 @@ export default function FacultyPortal() {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-white font-semibold">{selectedClass.name} - Attendance</h3>
+            <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">{selectedClass.name} - Attendance</h3>
           </div>
-          <span className="text-xs text-gray-500">{selectedClass.studentsList.length} students</span>
+          <span className="text-xs text-[var(--text-muted)]">{selectedClass.studentsList.length} students</span>
         </div>
         <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
           {selectedClass.studentsList.map((student, i) => (
@@ -867,16 +867,16 @@ export default function FacultyPortal() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.02 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all"
+              className="flex items-center gap-3 p-3 rounded-xl bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-white/[0.04] transition-all"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
                 {student.name[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white">{student.name}</div>
-                <div className="text-[10px] text-gray-500">{student.roll}</div>
+                <div className="text-sm text-[var(--text-primary)]">{student.name}</div>
+                <div className="text-[10px] text-[var(--text-muted)]">{student.roll}</div>
               </div>
-              <div className="text-[10px] text-gray-500 mr-2">Prev: <span className={student.attendance < 75 ? 'text-red-400' : 'text-green-400'}>{student.attendance}%</span></div>
+              <div className="text-[10px] text-[var(--text-muted)] mr-2">Prev: <span className={student.attendance < 75 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>{student.attendance}%</span></div>
               {/* Toggle Switch */}
               <button
                 onClick={() => setAttendanceData(prev => ({ ...prev, [student.roll]: !prev[student.roll] }))}
@@ -911,10 +911,10 @@ export default function FacultyPortal() {
             const btn = document.getElementById('save-attendance-btn');
             if (btn) {
               btn.textContent = '✓ Saved Successfully!';
-              btn.classList.add('bg-green-500/20', 'border-green-500/30', 'text-green-400');
+              btn.classList.add('bg-green-500/20', 'border-green-500/30', 'text-green-600 dark:text-green-400');
               setTimeout(() => {
                 btn.innerHTML = '<span class="flex items-center gap-2"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Submit</span>';
-                btn.classList.remove('bg-green-500/20', 'border-green-500/30', 'text-green-400');
+                btn.classList.remove('bg-green-500/20', 'border-green-500/30', 'text-green-600 dark:text-green-400');
               }, 2000);
             }
           }}
@@ -957,37 +957,37 @@ export default function FacultyPortal() {
             className="overflow-hidden"
           >
             <GlassCard>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-purple-400" /> Create New Assignment
+              <h3 className="text-[var(--text-primary)] font-semibold mb-4 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Create New Assignment
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Title</label>
-                  <input type="text" placeholder="Assignment title" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Title</label>
+                  <input type="text" placeholder="Assignment title" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Subject</label>
-                  <select className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Subject</label>
+                  <select className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
                     <option value="CS601">Machine Learning (CS601)</option>
                     <option value="CS503">Probability & Statistics (CS503)</option>
                     <option value="CS702">Deep Learning (CS702)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Due Date</label>
-                  <input type="date" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Due Date</label>
+                  <input type="date" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Max Marks</label>
-                  <input type="number" placeholder="100" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Max Marks</label>
+                  <input type="number" placeholder="100" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-xs text-gray-400 mb-1.5 block">Description</label>
-                  <textarea placeholder="Assignment description..." rows={3} className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors resize-none placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Description</label>
+                  <textarea placeholder="Assignment description..." rows={3} className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors resize-none placeholder:text-[var(--text-muted)]" />
                 </div>
               </div>
               <div className="flex justify-end gap-3 mt-4">
-                <button onClick={() => setShowNewAssignment(false)} className="px-4 py-2 rounded-xl text-gray-400 text-sm hover:text-white transition-colors">Cancel</button>
+                <button onClick={() => setShowNewAssignment(false)} className="px-4 py-2 rounded-xl text-[var(--text-secondary)] text-sm hover:text-[var(--text-primary)] transition-colors">Cancel</button>
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_15px_rgba(139,92,246,0.3)]">
                   <Save className="w-4 h-4" /> Create Assignment
                 </motion.button>
@@ -1001,14 +1001,14 @@ export default function FacultyPortal() {
       {selectedAssignment ? (
         /* Assignment Detail / Grading View */
         <div>
-          <button onClick={() => setSelectedAssignment(null)} className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 mb-4">
+          <button onClick={() => setSelectedAssignment(null)} className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-300 mb-4">
             <ChevronRight className="w-3 h-3 rotate-180" /> Back to Assignments
           </button>
           <GlassCard>
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-white font-semibold text-lg">{selectedAssignment.title}</h3>
-                <p className="text-xs text-gray-500">{selectedAssignment.subject} • Due: {selectedAssignment.dueDate} • Max: {selectedAssignment.maxMarks} marks</p>
+                <h3 className="text-[var(--text-primary)] font-semibold text-lg">{selectedAssignment.title}</h3>
+                <p className="text-xs text-[var(--text-muted)]">{selectedAssignment.subject} • Due: {selectedAssignment.dueDate} • Max: {selectedAssignment.maxMarks} marks</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -1018,20 +1018,20 @@ export default function FacultyPortal() {
                 <Sparkles className="w-3 h-3" /> AI Auto-Grade
               </motion.button>
             </div>
-            <p className="text-sm text-gray-400 mb-4">{selectedAssignment.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mb-4">{selectedAssignment.description}</p>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
-                <div className="text-lg font-bold text-white">{selectedAssignment.submissions}/{selectedAssignment.totalStudents}</div>
-                <div className="text-[10px] text-gray-500">Submitted</div>
+              <div className="p-3 rounded-xl bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                <div className="text-lg font-bold text-[var(--text-primary)]">{selectedAssignment.submissions}/{selectedAssignment.totalStudents}</div>
+                <div className="text-[10px] text-[var(--text-muted)]">Submitted</div>
               </div>
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
-                <div className="text-lg font-bold text-green-400">{selectedAssignment.graded}</div>
-                <div className="text-[10px] text-gray-500">Graded</div>
+              <div className="p-3 rounded-xl bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                <div className="text-lg font-bold text-green-600 dark:text-green-400">{selectedAssignment.graded}</div>
+                <div className="text-[10px] text-[var(--text-muted)]">Graded</div>
               </div>
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
-                <div className="text-lg font-bold text-yellow-400">{selectedAssignment.submissions - selectedAssignment.graded}</div>
-                <div className="text-[10px] text-gray-500">Pending</div>
+              <div className="p-3 rounded-xl bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{selectedAssignment.submissions - selectedAssignment.graded}</div>
+                <div className="text-[10px] text-[var(--text-muted)]">Pending</div>
               </div>
             </div>
 
@@ -1043,15 +1043,15 @@ export default function FacultyPortal() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
                   className={cn('flex items-center gap-3 p-3 rounded-xl border transition-colors',
-                    sub.submitted ? 'bg-white/[0.02] border-white/[0.04]' : 'bg-red-500/[0.03] border-red-500/10'
+                    sub.submitted ? 'bg-[var(--glass-bg)] border-white/[0.04]' : 'bg-red-500/[0.03] border-red-500/10'
                   )}
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shrink-0">
                     {sub.name[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white">{sub.name}</div>
-                    <div className="text-[10px] text-gray-500">{sub.roll} • Submitted: {sub.date}</div>
+                    <div className="text-sm text-[var(--text-primary)]">{sub.name}</div>
+                    <div className="text-[10px] text-[var(--text-muted)]">{sub.roll} • Submitted: {sub.date}</div>
                   </div>
                   {sub.submitted ? (
                     <>
@@ -1060,19 +1060,19 @@ export default function FacultyPortal() {
                           type="number"
                           defaultValue={sub.score || ''}
                           placeholder="Score"
-                          className="w-16 px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs text-center focus:outline-none focus:border-purple-500/50"
+                          className="w-16 px-2 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs text-center focus:outline-none focus:border-purple-500/50"
                         />
-                        <span className="text-[10px] text-gray-500">/{selectedAssignment.maxMarks}</span>
+                        <span className="text-[10px] text-[var(--text-muted)]">/{selectedAssignment.maxMarks}</span>
                       </div>
                       <input
                         type="text"
                         defaultValue={sub.feedback}
                         placeholder="Feedback"
-                        className="w-40 px-2 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-purple-500/50 placeholder:text-gray-600"
+                        className="w-40 px-2 py-1 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs focus:outline-none focus:border-purple-500/50 placeholder:text-[var(--text-muted)]"
                       />
                     </>
                   ) : (
-                    <span className="text-xs text-red-400 font-medium">Not Submitted</span>
+                    <span className="text-xs text-red-600 dark:text-red-400 font-medium">Not Submitted</span>
                   )}
                 </motion.div>
               ))}
@@ -1090,33 +1090,33 @@ export default function FacultyPortal() {
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -4 }}
               onClick={() => setSelectedAssignment(asgn)}
-              className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all cursor-pointer group"
+              className="p-5 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] backdrop-blur-xl transition-all cursor-pointer group"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="text-white font-medium text-sm group-hover:text-purple-300 transition-colors">{asgn.title}</h4>
-                  <p className="text-[10px] text-gray-500">{asgn.subject} • {asgn.subjectCode}</p>
+                  <h4 className="text-[var(--text-primary)] font-medium text-sm group-hover:text-purple-300 transition-colors">{asgn.title}</h4>
+                  <p className="text-[10px] text-[var(--text-muted)]">{asgn.subject} • {asgn.subjectCode}</p>
                 </div>
-                <FileText className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors" />
+                <FileText className="w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-600 dark:text-purple-400 transition-colors" />
               </div>
-              <p className="text-xs text-gray-500 mb-3 line-clamp-2">{asgn.description}</p>
+              <p className="text-xs text-[var(--text-muted)] mb-3 line-clamp-2">{asgn.description}</p>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
-                  <div className="text-sm font-bold text-white">{asgn.submissions}/{asgn.totalStudents}</div>
-                  <div className="text-[9px] text-gray-500">Submitted</div>
+                <div className="p-2 rounded-lg bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                  <div className="text-sm font-bold text-[var(--text-primary)]">{asgn.submissions}/{asgn.totalStudents}</div>
+                  <div className="text-[9px] text-[var(--text-muted)]">Submitted</div>
                 </div>
-                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
-                  <div className="text-sm font-bold text-green-400">{asgn.graded}</div>
-                  <div className="text-[9px] text-gray-500">Graded</div>
+                <div className="p-2 rounded-lg bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                  <div className="text-sm font-bold text-green-600 dark:text-green-400">{asgn.graded}</div>
+                  <div className="text-[9px] text-[var(--text-muted)]">Graded</div>
                 </div>
-                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
-                  <div className="text-sm font-bold text-cyan-400">{asgn.maxMarks}</div>
-                  <div className="text-[9px] text-gray-500">Max Marks</div>
+                <div className="p-2 rounded-lg bg-[var(--glass-bg)] border border-white/[0.04] text-center">
+                  <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400">{asgn.maxMarks}</div>
+                  <div className="text-[9px] text-[var(--text-muted)]">Max Marks</div>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Due: {asgn.dueDate}</span>
-                <ChevronRight className="w-3 h-3 text-gray-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+                <span className="text-xs text-[var(--text-muted)]">Due: {asgn.dueDate}</span>
+                <ChevronRight className="w-3 h-3 text-[var(--text-muted)] group-hover:text-purple-600 dark:text-purple-400 group-hover:translate-x-0.5 transition-all" />
               </div>
             </motion.div>
           ))}
@@ -1158,17 +1158,17 @@ export default function FacultyPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08]"
+            className="p-4 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)]"
           >
             <div className="flex items-center gap-2 mb-2">
               <stat.icon className={cn('w-4 h-4',
-                stat.color === 'purple' ? 'text-purple-400' :
-                stat.color === 'green' ? 'text-green-400' :
-                stat.color === 'cyan' ? 'text-cyan-400' : 'text-yellow-400'
+                stat.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
+                stat.color === 'green' ? 'text-green-600 dark:text-green-400' :
+                stat.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' : 'text-yellow-600 dark:text-yellow-400'
               )} />
-              <span className="text-xs text-gray-400">{stat.label}</span>
+              <span className="text-xs text-[var(--text-secondary)]">{stat.label}</span>
             </div>
-            <div className="text-2xl font-bold text-white"><AnimatedCounter value={stat.value} /></div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]"><AnimatedCounter value={stat.value} /></div>
           </motion.div>
         ))}
       </div>
@@ -1177,10 +1177,10 @@ export default function FacultyPortal() {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-white font-semibold">Citation Tracker</h3>
+            <TrendingUp className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Citation Tracker</h3>
           </div>
-          <span className="text-xs text-gray-500">Last 12 months</span>
+          <span className="text-xs text-[var(--text-muted)]">Last 12 months</span>
         </div>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -1211,21 +1211,21 @@ export default function FacultyPortal() {
             className="overflow-hidden"
           >
             <GlassCard>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-purple-400" /> Add Research Paper
+              <h3 className="text-[var(--text-primary)] font-semibold mb-4 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Add Research Paper
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="text-xs text-gray-400 mb-1.5 block">Title</label>
-                  <input type="text" placeholder="Paper title" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Title</label>
+                  <input type="text" placeholder="Paper title" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Journal / Conference</label>
-                  <input type="text" placeholder="Journal name" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Journal / Conference</label>
+                  <input type="text" placeholder="Journal name" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1.5 block">Status</label>
-                  <select className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Status</label>
+                  <select className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]">
                     <option value="draft">Draft</option>
                     <option value="under_review">Under Review</option>
                     <option value="accepted">Accepted</option>
@@ -1233,12 +1233,12 @@ export default function FacultyPortal() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-xs text-gray-400 mb-1.5 block">Co-Authors</label>
-                  <input type="text" placeholder="Comma separated names" className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600" />
+                  <label className="text-xs text-[var(--text-secondary)] mb-1.5 block">Co-Authors</label>
+                  <input type="text" placeholder="Comma separated names" className="w-full px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]" />
                 </div>
               </div>
               <div className="flex justify-end gap-3 mt-4">
-                <button onClick={() => setShowNewResearch(false)} className="px-4 py-2 rounded-xl text-gray-400 text-sm hover:text-white transition-colors">Cancel</button>
+                <button onClick={() => setShowNewResearch(false)} className="px-4 py-2 rounded-xl text-[var(--text-secondary)] text-sm hover:text-[var(--text-primary)] transition-colors">Cancel</button>
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium shadow-[0_0_15px_rgba(139,92,246,0.3)]">
                   <Save className="w-4 h-4" /> Add Paper
                 </motion.button>
@@ -1256,29 +1256,29 @@ export default function FacultyPortal() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-xl transition-all"
+            className="p-4 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] backdrop-blur-xl transition-all"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
-                <h4 className="text-white font-medium text-sm">{paper.title}</h4>
-                <p className="text-xs text-gray-500 mt-0.5">{paper.journal} • {paper.year}</p>
+                <h4 className="text-[var(--text-primary)] font-medium text-sm">{paper.title}</h4>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">{paper.journal} • {paper.year}</p>
               </div>
               <span className={cn('text-[10px] px-2.5 py-1 rounded-full border font-medium shrink-0 ml-3',
-                paper.status === 'published' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                paper.status === 'accepted' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                paper.status === 'under_review' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                paper.status === 'published' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' :
+                paper.status === 'accepted' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
+                paper.status === 'under_review' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' :
+                'bg-gray-500/10 text-[var(--text-secondary)] border-gray-500/20'
               )}>
                 {paper.status.replace('_', ' ').toUpperCase()}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-xs text-gray-400">
+            <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
               <span className="flex items-center gap-1">
                 <Users className="w-3 h-3" />
                 {paper.coAuthors.join(', ')}
               </span>
               {paper.citations > 0 && (
-                <span className="flex items-center gap-1 text-cyan-400">
+                <span className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400">
                   <Hash className="w-3 h-3" />
                   {paper.citations} citations
                 </span>
@@ -1299,11 +1299,11 @@ export default function FacultyPortal() {
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => { handleTabChange('ai-assistant'); setSelectedAgent('research'); }}
-        className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-cyan-500/5 border border-white/[0.08] hover:border-purple-500/30 transition-all group"
+        className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-cyan-500/5 border border-[var(--border-color)] hover:border-purple-500/30 transition-all group"
       >
-        <FlaskConical className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
-        <span className="text-sm text-white font-medium group-hover:text-purple-300 transition-colors">Chat with AI Research Assistant</span>
-        <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+        <FlaskConical className="w-5 h-5 text-purple-600 dark:text-purple-400 group-hover:text-purple-300" />
+        <span className="text-sm text-[var(--text-primary)] font-medium group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">Chat with AI Research Assistant</span>
+        <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-all" />
       </motion.button>
     </div>
   );
@@ -1330,19 +1330,19 @@ export default function FacultyPortal() {
             </div>
             <SectionTitle>Weekly Schedule</SectionTitle>
           </div>
-          <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          <span className="text-xs text-[var(--text-muted)] px-3 py-1.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)]">
             Even Semester 2025
           </span>
         </div>
 
         {/* Weekly Grid */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+        <div className="rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-7 border-b border-white/[0.06]">
-            <div className="p-3 text-xs text-gray-500 font-medium text-center border-r border-white/[0.06]">Time</div>
+          <div className="grid grid-cols-7 border-b border-[var(--border-color)]">
+            <div className="p-3 text-xs text-[var(--text-muted)] font-medium text-center border-r border-[var(--border-color)]">Time</div>
             {days.map(day => (
-              <div key={day} className={cn('p-3 text-xs font-medium text-center border-r border-white/[0.06] last:border-r-0',
-                day === 'Wed' ? 'text-purple-400' : 'text-gray-400'
+              <div key={day} className={cn('p-3 text-xs font-medium text-center border-r border-[var(--border-color)] last:border-r-0',
+                day === 'Wed' ? 'text-purple-600 dark:text-purple-400' : 'text-[var(--text-secondary)]'
               )}>
                 {day}
               </div>
@@ -1352,7 +1352,7 @@ export default function FacultyPortal() {
           {/* Time Slots */}
           {timeSlots.map((time, ti) => (
             <div key={time} className={cn('grid grid-cols-7', ti < timeSlots.length - 1 && 'border-b border-white/[0.04]')}>
-              <div className="p-2 text-[10px] text-gray-600 font-mono text-center border-r border-white/[0.06] flex items-center justify-center">
+              <div className="p-2 text-[10px] text-[var(--text-muted)] font-mono text-center border-r border-[var(--border-color)] flex items-center justify-center">
                 {time}
               </div>
               {days.map(day => {
@@ -1360,7 +1360,7 @@ export default function FacultyPortal() {
                 const colors = cls ? (deptColors[cls.dept] || deptColors.CS) : null;
                 return (
                   <div key={`${day}-${time}`} className={cn(
-                    'p-1 border-r border-white/[0.06] last:border-r-0 min-h-[48px]',
+                    'p-1 border-r border-[var(--border-color)] last:border-r-0 min-h-[48px]',
                     !cls && 'bg-white/[0.01]'
                   )}>
                     {cls ? (
@@ -1375,11 +1375,11 @@ export default function FacultyPortal() {
                         title={`${cls.subject} - ${cls.room}`}
                       >
                         <div className={cn('font-medium truncate', colors?.text)}>{cls.subject}</div>
-                        <div className="text-gray-500 truncate">{cls.room}</div>
+                        <div className="text-[var(--text-muted)] truncate">{cls.room}</div>
                       </motion.div>
                     ) : (
                       <div className="h-full flex items-center justify-center">
-                        <span className="text-[8px] text-gray-700">Free</span>
+                        <span className="text-[8px] text-[var(--text-muted)]">Free</span>
                       </div>
                     )}
                   </div>
@@ -1401,7 +1401,7 @@ export default function FacultyPortal() {
           }).map(([name, dept]) => {
             const colors = deptColors[dept];
             return (
-              <div key={name} className="flex items-center gap-2 text-xs text-gray-400">
+              <div key={name} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                 <div className={cn('w-3 h-3 rounded', colors.bg, 'border', colors.border)} />
                 <span>{name}</span>
               </div>
@@ -1413,10 +1413,10 @@ export default function FacultyPortal() {
         <GlassCard>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold">Next Week Preview</h3>
+              <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Next Week Preview</h3>
             </div>
-            <span className="text-xs text-gray-500">Mar 10 - Mar 15</span>
+            <span className="text-xs text-[var(--text-muted)]">Mar 10 - Mar 15</span>
           </div>
           <div className="space-y-2">
             {[
@@ -1426,11 +1426,11 @@ export default function FacultyPortal() {
               { day: 'Thursday', events: '1 class + Research Meeting', highlight: 'Paper review submission' },
               { day: 'Friday', events: '2 classes', highlight: 'ML Lab evaluation' },
             ].map((day, i) => (
-              <div key={day.day} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+              <div key={day.day} className="flex items-center gap-3 p-2.5 rounded-xl bg-[var(--glass-bg)] border border-white/[0.04]">
                 <div className="w-1 h-8 rounded-full bg-gradient-to-b from-purple-500 to-cyan-500 shrink-0" />
-                <div className="w-20 shrink-0 text-xs text-purple-400 font-medium">{day.day}</div>
-                <div className="flex-1 text-xs text-gray-400">{day.events}</div>
-                <div className="text-[10px] text-cyan-400 flex items-center gap-1">
+                <div className="w-20 shrink-0 text-xs text-purple-600 dark:text-purple-400 font-medium">{day.day}</div>
+                <div className="flex-1 text-xs text-[var(--text-secondary)]">{day.events}</div>
+                <div className="text-[10px] text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3" /> {day.highlight}
                 </div>
               </div>
@@ -1459,8 +1459,8 @@ export default function FacultyPortal() {
           {/* Agent Selector & Token Usage */}
           <div className="space-y-4">
             <GlassCard>
-              <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-                <BotIcon className="w-4 h-4 text-purple-400" /> Select Agent
+              <h3 className="text-[var(--text-primary)] font-semibold text-sm mb-3 flex items-center gap-2">
+                <BotIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Select Agent
               </h3>
               <div className="space-y-2">
                 {aiAgents.map(agent => (
@@ -1472,17 +1472,17 @@ export default function FacultyPortal() {
                       'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all',
                       selectedAgent === agent.id
                         ? 'bg-purple-500/10 border-purple-500/30'
-                        : 'bg-white/[0.02] border-white/[0.04] hover:border-white/[0.1]'
+                        : 'bg-[var(--glass-bg)] border-white/[0.04] hover:border-[var(--border-color)]'
                     )}
                   >
                     <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center',
-                      selectedAgent === agent.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/[0.04]'
+                      selectedAgent === agent.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-[var(--glass-bg)]'
                     )}>
-                      <agent.icon className={cn('w-4 h-4', selectedAgent === agent.id ? 'text-purple-400' : 'text-gray-400')} />
+                      <agent.icon className={cn('w-4 h-4', selectedAgent === agent.id ? 'text-purple-600 dark:text-purple-400' : 'text-[var(--text-secondary)]')} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={cn('text-sm font-medium', selectedAgent === agent.id ? 'text-purple-300' : 'text-white')}>{agent.name}</div>
-                      <div className="text-[10px] text-gray-500 truncate">{agent.description}</div>
+                      <div className={cn('text-sm font-medium', selectedAgent === agent.id ? 'text-purple-300' : 'text-[var(--text-primary)]')}>{agent.name}</div>
+                      <div className="text-[10px] text-[var(--text-muted)] truncate">{agent.description}</div>
                     </div>
                     <div className={cn('w-2 h-2 rounded-full', agent.active ? 'bg-green-400' : 'bg-gray-600')} />
                   </motion.button>
@@ -1492,21 +1492,21 @@ export default function FacultyPortal() {
 
             {/* Token Usage */}
             <GlassCard>
-              <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-cyan-400" /> Token Usage
+              <h3 className="text-[var(--text-primary)] font-semibold text-sm mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> Token Usage
               </h3>
               <div className="text-center mb-3">
-                <div className="text-3xl font-bold text-white"><AnimatedCounter value={totalTokens} /></div>
-                <div className="text-xs text-gray-500">tokens used today</div>
+                <div className="text-3xl font-bold text-[var(--text-primary)]"><AnimatedCounter value={totalTokens} /></div>
+                <div className="text-xs text-[var(--text-muted)]">tokens used today</div>
               </div>
               <div className="space-y-2">
                 {aiAgents.map(agent => (
                   <div key={agent.id}>
                     <div className="flex justify-between text-[10px] mb-1">
-                      <span className="text-gray-400">{agent.name}</span>
-                      <span className="text-gray-500">{agent.tokens.toLocaleString()}</span>
+                      <span className="text-[var(--text-secondary)]">{agent.name}</span>
+                      <span className="text-[var(--text-muted)]">{agent.tokens.toLocaleString()}</span>
                     </div>
-                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500"
                         style={{ width: `${(agent.tokens / totalTokens) * 100}%` }}
@@ -1522,13 +1522,13 @@ export default function FacultyPortal() {
           <div className="md:col-span-2 flex flex-col">
             <GlassCard className="flex-1 flex flex-col">
               {/* Chat Header */}
-              <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3 pb-3 border-b border-[var(--border-color)]">
                 <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                  {currentAgent && <currentAgent.icon className="w-4 h-4 text-purple-400" />}
+                  {currentAgent && <currentAgent.icon className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                 </div>
                 <div>
-                  <div className="text-sm text-white font-medium">{currentAgent?.name}</div>
-                  <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                  <div className="text-sm text-[var(--text-primary)] font-medium">{currentAgent?.name}</div>
+                  <div className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Active
                   </div>
                 </div>
@@ -1546,11 +1546,11 @@ export default function FacultyPortal() {
                     <div className={cn(
                       'max-w-[80%] rounded-2xl px-4 py-3',
                       msg.role === 'user'
-                        ? 'bg-purple-500/15 border border-purple-500/20 text-white'
-                        : 'bg-white/[0.03] border border-white/[0.06] text-gray-300'
+                        ? 'bg-purple-500/15 border border-purple-500/20 text-[var(--text-primary)]'
+                        : 'bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-secondary)]'
                     )}>
                       {msg.agent && (
-                        <div className="text-[10px] text-purple-400 font-medium mb-1">{msg.agent}</div>
+                        <div className="text-[10px] text-purple-600 dark:text-purple-400 font-medium mb-1">{msg.agent}</div>
                       )}
                       <p className="text-sm leading-relaxed">{msg.content}</p>
                     </div>
@@ -1559,7 +1559,7 @@ export default function FacultyPortal() {
               </div>
 
               {/* Suggested Prompts */}
-              <div className="py-2 border-t border-white/[0.06]">
+              <div className="py-2 border-t border-[var(--border-color)]">
                 <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-3">
                   {suggestedPrompts.map((prompt, i) => (
                     <motion.button
@@ -1567,7 +1567,7 @@ export default function FacultyPortal() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => { setChatInput(prompt); }}
-                      className="shrink-0 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs text-gray-400 hover:text-white hover:border-purple-500/20 transition-colors whitespace-nowrap"
+                      className="shrink-0 px-3 py-1.5 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-purple-500/20 transition-colors whitespace-nowrap"
                     >
                       {prompt}
                     </motion.button>
@@ -1576,14 +1576,14 @@ export default function FacultyPortal() {
               </div>
 
               {/* Chat Input */}
-              <div className="flex gap-3 pt-3 border-t border-white/[0.06]">
+              <div className="flex gap-3 pt-3 border-t border-[var(--border-color)]">
                 <input
                   type="text"
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSendChat()}
                   placeholder="Ask your AI assistant..."
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-gray-600"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-[var(--text-muted)]"
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -1616,6 +1616,26 @@ export default function FacultyPortal() {
   };
 
   // ─── Main Render ────────────────────────────────────────────────────
+
+  // Role guard: Only faculty or admin can access this portal
+  if (currentUser && currentUser.role !== 'faculty' && currentUser.role !== 'admin') {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Shield className="w-12 h-12 text-amber-600 dark:text-amber-400 mx-auto" />
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Access Restricted</h2>
+          <p className="text-sm text-[var(--text-muted)]">This portal is only available to faculty and admin users.</p>
+          <button
+            onClick={() => { setActiveRole((currentUser?.role as 'student' | 'faculty' | 'admin') || 'student'); setActiveSection('dashboard'); }}
+            className="px-4 py-2 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 text-sm font-medium hover:bg-purple-500/25 transition-colors"
+          >
+            Go to My Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1625,7 +1645,7 @@ export default function FacultyPortal() {
     >
       {/* Tab Navigation */}
       <div className="px-6 pt-4 pb-0">
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.02] border border-white/[0.06] overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] overflow-x-auto">
           {tabs.map(tab => (
             <motion.button
               key={tab.id}
@@ -1635,8 +1655,8 @@ export default function FacultyPortal() {
               className={cn(
                 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-purple-500/15 text-purple-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]'
-                  : 'text-gray-400 hover:text-gray-300 hover:bg-white/[0.03]'
+                  ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--glass-bg)]'
               )}
             >
               <tab.icon className="w-4 h-4" />

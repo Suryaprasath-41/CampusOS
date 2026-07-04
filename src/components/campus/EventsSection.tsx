@@ -16,7 +16,7 @@ export default function EventsSection() {
   }, []);
 
   if (loading || !data) {
-    return <div className="p-6"><div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" /></div>;
+    return <div className="p-6"><div className="h-64 bg-[var(--bg-card)] rounded-2xl animate-pulse" /></div>;
   }
 
   const filtered = filter === 'all' ? data.events : data.events.filter((e: any) => e.type === filter);
@@ -42,7 +42,7 @@ export default function EventsSection() {
         <button
           onClick={() => setFilter('all')}
           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            filter === 'all' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/[0.03] text-gray-500 border border-white/[0.06]'
+            filter === 'all' ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)]'
           }`}
         >
           All Events
@@ -52,7 +52,7 @@ export default function EventsSection() {
             key={cat}
             onClick={() => setFilter(cat)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${
-              filter === cat ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-white/[0.03] text-gray-500 border border-white/[0.06]'
+              filter === cat ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border-color)]'
             }`}
           >
             {cat}
@@ -68,18 +68,18 @@ export default function EventsSection() {
             <motion.div
               key={event.id}
               whileHover={{ scale: 1.01, y: -2 }}
-              className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden hover:border-white/[0.15] transition-all"
+              className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color)] rounded-2xl overflow-hidden hover:border-purple-500/30 transition-all"
             >
               {/* Color bar */}
               <div className={`h-1.5 bg-gradient-to-r ${gradient}`} />
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="text-white font-semibold mb-1">{event.title}</h4>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-gray-400 capitalize">{event.type}</span>
+                    <h4 className="text-[var(--text-primary)] font-semibold mb-1">{event.title}</h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--bg-card)] text-[var(--text-secondary)] capitalize">{event.type}</span>
                   </div>
                   {event.registered && (
-                    <div className="flex items-center gap-1 text-xs text-green-400">
+                    <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                       <CheckCircle className="w-3.5 h-3.5" />
                       <span>Registered</span>
                     </div>
@@ -87,10 +87,10 @@ export default function EventsSection() {
                 </div>
 
                 {event.description && (
-                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{event.description}</p>
+                  <p className="text-xs text-[var(--text-muted)] mb-3 line-clamp-2">{event.description}</p>
                 )}
 
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-3 text-xs text-[var(--text-muted)]">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {event.startDate ? new Date(event.startDate).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : 'TBA'}
@@ -124,17 +124,17 @@ export default function EventsSection() {
       {data.registered.length > 0 && (
         <GlassCard>
           <div className="flex items-center gap-2 mb-4">
-            <Star className="w-5 h-5 text-yellow-400" />
-            <h3 className="text-white font-semibold">My Registrations</h3>
+            <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">My Registrations</h3>
           </div>
           <div className="space-y-2">
             {data.registered.map((e: any) => (
-              <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02]">
+              <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-card)]">
                 <div>
-                  <div className="text-sm text-white">{e.title}</div>
-                  <div className="text-xs text-gray-500">{e.venue} • {e.startDate ? new Date(e.startDate).toLocaleDateString() : ''}</div>
+                  <div className="text-sm text-[var(--text-primary)]">{e.title}</div>
+                  <div className="text-xs text-[var(--text-muted)]">{e.venue} • {e.startDate ? new Date(e.startDate).toLocaleDateString() : ''}</div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">Registered</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">Registered</span>
               </div>
             ))}
           </div>

@@ -1,0 +1,647 @@
+   130→   199→   238→   238→  - Color-coded class blocks by department
+   131→   200→   239→   239→  - Free slot indicators
+   132→   201→   240→   240→  - Class legend
+   133→   202→   241→   241→  - Next week preview with highlights
+   134→   203→   242→   242→- Built AI Assistant tab with:
+   135→   204→   243→   243→  - Agent selector (Teaching Assistant, Grading Agent, Research Assistant)
+   136→   205→   244→   244→  - Token usage display with per-agent breakdown
+   137→   206→   245→   245→  - Chat interface with faculty context
+   138→   207→   246→   246→  - 6 suggested prompts (quiz generation, performance summary, lesson plans, etc.)
+   139→   208→   247→   247→  - Agent status indicators
+   140→   209→   248→   248→- Added Faculty Portal to student sidebar navigation (SYSTEM group, NEW badge)
+   141→   210→   249→   249→- Added Faculty Portal to student sections map in page.tsx
+   142→   211→   250→   250→- Faculty role already routes to FacultyPortal via faculty-portal section key
+   143→   212→   251→   251→- Mock data: Dr. Priya Sharma, CS dept, 3 classes, 78 students across classes, 5 research papers, weekly schedule
+   144→   213→   252→   252→
+   145→   214→   253→   253→Stage Summary:
+   146→   215→   254→   254→- Complete Faculty Portal with 7 sub-tabs, all functional
+   147→   216→   255→   255→- 900+ lines of new FacultyPortal code
+   148→   217→   256→   256→- Consistent glassmorphism dark mode styling matching Dashboard.tsx and AdminPortal.tsx
+   149→   218→   257→   257→- Framer Motion animations throughout (fade-in, slide, spring toggles, hover effects)
+   150→   219→   258→   258→- Recharts charts (LineChart for engagement, AreaChart for citations)
+   151→   220→   259→   259→- All components use glassmorphism: bg-white/[0.03], border-white/[0.08], backdrop-blur-xl
+   152→   221→   260→   260→- No API calls - uses comprehensive mock data for Dr. Priya Sharma
+   153→   222→   261→   261→- Accessible from both student sidebar (NEW badge) and faculty role
+   154→   223→   262→   262→
+   155→   224→   263→   263→================================================================================
+   156→   225→   264→   264→CURRENT PROJECT STATUS
+   157→   226→   265→   265→================================================================================
+   158→   227→   266→   266→
+   159→   228→   267→   267→## Project: CampusOS AI v2.0 - Enterprise Edition
+   160→   229→   268→   268→## Status: ACTIVE DEVELOPMENT - Faculty Portal Complete
+   161→   230→   269→   269→
+   162→   231→   270→   270→### What's Working:
+   163→   232→   271→   271→- Full student dashboard with 16 sections (Dashboard, Attendance, Placement, Library, Academic, Exams, Hostel, Finance, Events, Workflows, Faculty AI, Faculty Portal, Profile, Admin, AI Memory, Settings)
+   164→   233→   272→   272→- AI Chat Panel with LLM integration and multi-agent routing
+   165→   234→   273→   273→- Voice Assistant interface
+   166→   235→   274→   274→- Command Palette (Cmd+K)
+   167→   236→   275→   275→- Notifications dropdown with real-time unread badge
+   168→   237→   276→   276→- Administrator Portal with 8 sub-sections (Dashboard, Students, Faculty, Courses, Complaints, Notifications, AI Playground, Search)
+   169→   238→   277→   277→- Faculty Portal with 7 sub-tabs (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant)
+   170→   239→   278→   278→- 23 students across 6 departments in database
+   171→   240→   279→   279→- All API endpoints functional (student, admin, faculty)
+   172→   241→   280→   280→- Faculty API: 8 endpoints (list, detail, classes, attendance marking, assignments CRUD, grading, dashboard)
+   173→   242→   281→   281→- Glassmorphism dark mode UI throughout
+   174→   243→   282→   282→- Animated background with orbs and particles
+   175→   244→   283→   283→- Sidebar with grouped navigation and labels (role-based: student/faculty/admin)
+   176→   245→   284→   284→
+   177→   246→   285→   285→### Unresolved Issues / Next Priorities:
+   178→   247→   286→   286→1. **Server process lifecycle**: Dev server doesn't persist between shell sessions - needs investigation
+   179→   248→   287→   287→2. **Real data binding**: Faculty Portal uses mock data - should connect to faculty API endpoints
+   180→   249→   288→   288→3. **AI Playground chat**: Currently connects to /api/chat but may need admin-specific context
+   181→   250→   289→   289→4. **CSV Import**: Currently mock - should parse actual CSV/Excel files
+   182→   251→   290→   290→5. **Knowledge Base Manager**: ✅ Built - AdminKnowledgeBase.tsx with document library, upload, RAG pipeline, search preview
+   183→   252→   291→   291→6. **Automation Builder**: ✅ Built - AdminAutomationBuilder.tsx with visual IF/THEN workflow editor and test panel
+   184→   253→   292→   292→7. **User Roles & Permissions**: ✅ Role Switcher implemented - Student/Faculty/Admin portal switching
+   185→   254→   293→   293→8. **Real-time sync**: WebSocket integration for live updates across all portals
+   186→   255→   294→   294→9. **Analytics depth**: More detailed analytics with date range selection, export functionality
+   187→   256→   295→   295→10. **Mobile responsiveness**: Some admin/faculty sections may need mobile optimization
+   188→   257→   296→   296→
+   189→   258→   297→   297→### Technology Stack:
+   190→   259→   298→   298→- Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui + Framer Motion + Recharts
+   191→   260→   299→   299→- Backend: Next.js API Routes + Prisma ORM + SQLite
+   192→   261→   300→   300→- AI: z-ai-web-dev-sdk (LLM chat)
+   193→   262→   301→   301→- State: Zustand
+   194→   263→   302→   302→- Database: SQLite via Prisma (23 students, 13 faculty, 18 subjects, 20 books, 10 events)
+   195→   264→   303→   303→
+   196→   265→   304→   304→---
+   197→   266→   305→   305→Task ID: 2+3
+   198→   267→   306→   306→Agent: Feature Enhancement Developer
+   199→   268→   307→   307→Task: Build Role Switcher, Knowledge Base Manager, and AI Automation Builder
+   200→   269→   308→   308→
+   201→   270→   309→   309→Work Log:
+   202→   271→   310→   310→- Updated store.ts: Added activeRole state ('student'|'faculty'|'admin') and setActiveRole action (resets activeSection to 'dashboard' on role change)
+   203→   272→   311→   311→- Created FacultyPortal.tsx: Complete faculty portal with 8 tabs (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant, Settings) featuring cyan/blue accent theme, mock data for Dr. Meera Sharma
+   204→   273→   312→   312→- Updated Header.tsx: Added Role Switcher component with 3 glassmorphism pills (Student=GraduationCap, Faculty=BookOpen, Admin=Shield), animated background indicator, role-based color theming (purple/cyan/amber), dynamic greeting based on active role
+   205→   274→   313→   313→- Updated Sidebar.tsx: Complete role-based navigation with 3 nav configurations (student: 15 items, faculty: 9 items, admin: 11 items), role-specific accent colors throughout (purple/cyan/amber), dynamic user info display per role
+   206→   275→   314→   314→- Updated page.tsx: Role-based section routing with separate section maps for student/faculty/admin, FacultyPortal integration, animated transitions keyed on role+section
+   207→   276→   315→   315→- Created AdminKnowledgeBase.tsx: Knowledge base management with document library (10 mock docs), drag-drop upload with progress, RAG pipeline status (Extracting→Chunking→Embedding→Indexed), search preview with relevance scores, stats bar
+   208→   277→   316→   316→- Created AdminAutomationBuilder.tsx: Visual no-code IF/THEN workflow builder with left panel workflow list (6 pre-built workflows), right panel block editor (Trigger/Action/Chain cards with dropdowns), connector arrows, enable/disable toggles, test panel with simulated output
+   209→   278→   317→   317→- Updated AdminPortal.tsx: Added Knowledge Base and Automations tabs to the tab bar, imported and rendered new components conditionally
+   210→   279→   318→   318→
+   211→   280→   319→   319→Stage Summary:
+   212→   281→   320→   320→- 3 major features implemented: Role Switcher, Knowledge Base Manager, AI Automation Builder
+   213→   282→   321→   321→- FacultyPortal: 8-tab interface with full mock data and cyan theme
+   214→   283→   322→   322→- Role Switcher: Animated 3-pill toggle with role-based theming across entire UI
+   215→   284→   323→   323→- Knowledge Base: Document library + RAG pipeline + semantic search preview
+   216→   285→   324→   324→- Automation Builder: Visual block editor with 6 pre-built workflows + test panel
+   217→   286→   325→   325→- AdminPortal expanded from 8 to 10 tabs
+   218→   287→   326→   326→- All components use glassmorphism dark mode styling with Framer Motion animations
+   219→   288→   327→   327→- ESLint: 0 errors
+   220→   289→   328→   328→
+   221→   290→   329→   329→---
+   222→   291→   330→   330→Task ID: 5+6
+   223→   292→   331→   331→Agent: Styling & Features Enhancement Specialist
+   224→   293→   332→   332→Task: Major styling enhancement and real-time notification toast system
+   225→   294→   333→   333→
+   226→   295→   334→   334→Work Log:
+   227→   296→   335→   335→- Enhanced globals.css with extensive new utility classes and animations:
+   228→   297→   336→   336→  - .glow-text, .glow-text-purple, .glow-text-cyan - text shadow glow effects
+   229→   298→   337→   337→  - .glass-hover - hover effect for glass cards with purple glow border
+   230→   299→   338→   338→  - .shimmer-loading - skeleton loading animation with purple/cyan gradient sweep
+   231→   300→   339→   339→  - .animate-gradient - smooth background gradient shifting keyframes
+   232→   301→   340→   340→  - Focus-visible styles for accessibility (purple outline on focus)
+   233→   302→   341→   341→  - @keyframes toast-slide-in/out - toast notification entry/exit animations
+   234→   303→   342→   342→  - @keyframes toast-progress - 5s linear progress bar for auto-dismiss
+   235→   304→   343→   343→  - .animate-toast-progress - CSS-driven progress bar class
+   236→   305→   344→   344→  - @keyframes badge-bounce - notification badge bounce animation
+   237→   306→   345→   345→  - @keyframes value-pulse - scale pulse for value changes
+   238→   307→   346→   346→  - @keyframes pulse-border - purple-to-cyan border color cycling
+   239→   308→   347→   347→
+   240→   309→   348→   348→- Enhanced AnimatedBackground.tsx with significant visual improvements:
+   241→   310→   349→   349→  - 80 particles (up from 60) with 5 color varieties (white, purple, cyan, violet, green)
+   242→   311→   350→   350→  - Particle twinkle effect using sine wave on opacity
+   243→   312→   351→   351→  - Glow effect on larger particles (r > 1.2)
+   244→   313→   352→   352→  - Pulsing orb brightness using sine-wave alpha modulation
+   245→   314→   353→   353→  - Color-shifting grid overlay (purple vertical + cyan horizontal with time-based alpha)
+   246→   315→   354→   354→  - Rotating geometric constellation overlay (30 points with connecting lines)
+   247→   316→   355→   355→  - Connecting lines between nearby particles (within 150px threshold)
+   248→   317→   356→   356→  - All orb colors changed from string to RGB arrays for dynamic alpha
+   249→   318→   357→   357→
+   250→   319→   358→   358→- Enhanced Header.tsx with visual polish:
+   251→   320→   359→   359→  - Subtle bottom border gradient (purple-to-transparent line + cyan glow blur)
+   252→   321→   360→   360→  - backdrop-blur-2xl (up from backdrop-blur-xl)
+   253→   322→   361→   361→  - Pulsing gradient border on search input focus (animated gradient wrapper)
+   254→   323→   362→   362→  - Focus shadow glow effect (shadow-[0_0_20px_rgba(139,92,246,0.15)])
+   255→   324→   363→   363→  - Notification badge bounce animation on unread count change (key-based motion)
+   256→   325→   364→   364→  - Improved responsive design (hidden sm:block for search, hidden sm:inline for text)
+   257→   326→   365→   365→  - Better hover states on Voice/Notification buttons with purple/cyan border highlights
+   258→   327→   366→   366→  - shimmer-loading class on notification skeleton placeholders
+   259→   328→   367→   367→
+   260→   329→   368→   368→- Enhanced WidgetCard.tsx with interactive effects:
+   261→   330→   369→   369→  - Hover lift effect (y: -4px instead of -2px) with enhanced shadow
+   262→   331→   370→   370→  - Gradient border on hover (top edge via motion.div with scaleX animation)
+   263→   332→   371→   371→  - Icon container glow on hover (purple bg + shadow)
+   264→   333→   372→   372→  - Value change micro-animation using motion.div with key-based scale pulse
+   265→   334→   373→   373→  - GlassCard component enhanced with glass-hover class + dynamic border color
+   266→   335→   374→   374→  - All hover transitions use cubic-bezier for smooth easing
+   267→   336→   375→   375→
+   268→   337→   376→   376→- Created NotificationToast.tsx - Complete real-time toast notification system:
+   269→   338→   377→   377→  - 4 notification types: success (green), warning (yellow), error (red), info (purple)
+   270→   339→   378→   378→  - Each toast: type-specific icon, title, message, timestamp (time ago format)
+   271→   340→   379→   379→  - Auto-dismiss after 5 seconds with CSS-driven progress bar
+   272→   341→   380→   380→  - Stack from bottom-right with AnimatePresence + popLayout
+   273→   342→   381→   381→  - Glassmorphism styled (bg-[#0a0a14]/90, backdrop-blur-2xl, colored borders)
+   274→   343→   382→   382→  - Action buttons when relevant (View, Details, Register, Pay Now, Renew)
+   275→   344→   383→   383→  - Dismiss button (X icon) on each toast
+   276→   345→   384→   384→  - 12 simulated notification templates covering all campus scenarios
+   277→   346→   385→   385→  - First notification fires after 5s, then every 15-20s randomly
+   278→   347→   386→   386→
+   279→   348→   387→   387→- Updated store.ts with toast state management:
+   280→   349→   388→   388→  - Exported ToastItem interface (id, type, title, message, timestamp, action?)
+   281→   350→   389→   389→  - toasts: ToastItem[] state
+   282→   351→   390→   390→  - addToast action (keeps max 5 toasts via slice)
+   283→   352→   391→   391→  - removeToast action (filter by id)
+   284→   353→   392→   392→
+   285→   354→   393→   393→- Updated page.tsx to integrate NotificationToast component
+   286→   355→   394→   394→
+   287→   356→   395→   395→Stage Summary:
+   288→   357→   396→   396→- All 7 files modified/created successfully
+   289→   358→   397→   397→- ESLint: 0 errors
+   290→   359→   398→   398→- Dev server compiling without issues
+   291→   360→   399→   399→- Visual polish significantly enhanced across all interactive components
+   292→   361→   400→   400→- Real-time notification toast system fully functional
+   293→   362→   401→   401→- All animations use Framer Motion or CSS keyframes (no setState in effects)
+   294→   363→   402→   402→- Responsive design maintained throughout
+   295→   364→   403→   403→- Glassmorphism dark mode theme consistently applied
+   296→   365→   404→   404→
+   297→   366→   405→   405→================================================================================
+   298→   367→   406→   406→CURRENT PROJECT STATUS (Updated)
+   299→   368→   407→   407→================================================================================
+   300→   369→   408→   408→
+   301→   370→   409→   409→## Project: CampusOS AI v2.0 - Enterprise Edition
+   302→   371→   410→   410→## Status: STABLE - Three-Portal Architecture Complete
+   303→   372→   411→   411→
+   304→   373→   412→   412→### Current Project Status Description/Assessment:
+   305→   374→   413→   413→CampusOS AI v2.0 Enterprise Edition is a fully functional AI-Native Campus Operating System with three interconnected portals (Student, Faculty, Administrator) connected via a Role Switcher. The application features glassmorphism dark mode UI, AI-powered chat with multi-agent routing, animated visualizations, and comprehensive CRUD operations. The app is running on Next.js 16 with Prisma ORM + SQLite and all API endpoints are functional.
+   306→   375→   414→   414→
+   307→   376→   415→   415→### Current Goals / Completed Modifications / Verification Results:
+   308→   377→   416→   416→
+   309→   378→   417→   417→**Completed in this session:**
+   310→   379→   418→   418→1. ✅ **Faculty Portal** - Complete 7-tab portal (Dashboard, My Classes, Attendance, Assignments, Research, Schedule, AI Assistant) with mock data for Dr. Priya Sharma
+   311→   380→   419→   419→2. ✅ **Role Switcher** - 3-pill toggle (Student/Faculty/Admin) with role-based navigation, color theming, and smooth transitions
+   312→   381→   420→   420→3. ✅ **Knowledge Base Manager** - AdminKnowledgeBase.tsx with document library, drag-drop upload, RAG pipeline visualization, semantic search preview
+   313→   382→   421→   421→4. ✅ **AI Automation Builder** - AdminAutomationBuilder.tsx with visual IF/THEN workflow editor, 6 pre-built workflows, test panel
+   314→   383→   422→   422→5. ✅ **8 Faculty API Endpoints** - Full CRUD for faculty classes, attendance marking, assignments, grading, dashboard
+   315→   384→   423→   423→6. ✅ **Major Styling Enhancement** - Enhanced AnimatedBackground (80 particles + constellation + connecting lines), Header (gradient borders + pulsing focus), WidgetCard (hover lift + gradient borders + value pulse), globals.css (glow/glass-hover/shimmer utilities)
+   316→   385→   424→   424→7. ✅ **Real-time Notification Toast System** - NotificationToast.tsx with 4 types, auto-dismiss, glassmorphism styling, simulated campus notifications every 15-20s
+   317→   386→   425→   425→8. ✅ **Portal Tab Sync** - FacultyPortal and AdminPortal internal tabs sync with sidebar navigation via store's activeSection
+   318→   387→   426→   426→
+   319→   388→   427→   427→**QA Verification Results:**
+   320→   389→   428→   428→- ✅ All three portals (Student/Faculty/Admin) render correctly
+   321→   390→   429→   429→- ✅ Role Switcher works with smooth transitions
+   322→   391→   430→   430→- ✅ Knowledge Base and Automations tabs work in Admin Portal
+   323→   392→   431→   431→- ✅ Faculty Portal all 7 tabs functional
+   324→   393→   432→   432→- ✅ No TypeScript errors, ESLint passes clean
+   325→   394→   433→   433→- ✅ Dev server running on port 3000 with HTTP 200
+   326→   395→   434→   434→- ✅ AI Chat works with LLM integration
+   327→   396→   435→   435→- ✅ No runtime errors in browser console
+   328→   397→   436→   436→
+   329→   398→   437→   437→### Unresolved Issues or Risks, and Priority Recommendations for Next Phase:
+   330→   399→   438→   438→
+   331→   400→   439→   439→1. **Faculty Portal Mock Data**: Currently uses hardcoded mock data. Should connect to the 8 faculty API endpoints for real data.
+   332→   401→   440→   440→2. **CSV Import**: Admin Student Manager CSV import is currently a mock dialog. Should implement actual CSV/Excel file parsing.
+   333→   402→   441→   441→3. **WebSocket Real-time Sync**: No WebSocket integration yet. All data is fetched on load. Should add Socket.io for live updates across portals.
+   334→   403→   442→   442→4. **AI Playground**: Chat connects to /api/chat but needs admin-specific context (different from student context).
+   335→   404→   443→   443→5. **Mobile Optimization**: Some admin/faculty sections may need mobile-specific layouts (timetable, data tables).
+   336→   405→   444→   444→6. **Analytics Depth**: Add date range selection, export functionality, and more detailed breakdowns.
+   337→   406→   445→   445→7. **User Roles & Permissions RBAC**: While the role switcher exists, there's no actual authentication/authorization. Should implement NextAuth.js with role-based access.
+   338→   407→   446→   446→8. **Knowledge Base RAG Integration**: The Knowledge Base Manager UI exists but needs actual PDF parsing, chunking, and embedding pipeline.
+   339→   408→   447→   447→9. **Automation Execution**: The Automation Builder UI exists but workflows don't actually execute. Need backend logic for trigger detection and action execution.
+   340→   409→   448→   448→10. **Faculty Portal Settings Tab**: Currently not implemented (only 7 tabs rendered, Settings in sidebar but not in portal tabs).
+   341→   410→   449→   449→
+   342→   411→   450→   450→### Technology Stack:
+   343→   412→   451→   451→- Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui + Framer Motion + Recharts
+   344→   413→   452→   452→- Backend: Next.js API Routes + Prisma ORM + SQLite
+   345→   414→   453→   453→- AI: z-ai-web-dev-sdk (LLM chat)
+   346→   415→   454→   454→- State: Zustand (with role management, toast notifications, auth state, theme, chat context)
+   347→   416→   455→   455→
+   348→   417→   456→   456→---
+   349→   418→   457→   457→
+   350→   419→   458→   458→Task ID: 8
+   351→   420→   459→   459→Agent: Main Agent (Multi-Agent Coordination)
+   352→   421→   460→   460→Task: Add Login/Authentication, Role-Based Access, Splash Screen, Voice→AI Integration, Button Context AI, Light/Dark Mode Theme
+   353→   422→   461→   461→
+   354→   423→   462→   462→Work Log:
+   355→   424→   463→   463→- Built complete authentication system with custom login API (bypassing NextAuth due to OOM issues):
+   356→   425→   464→   464→  - Login page at /login with glassmorphism design, animated canvas background, branding
+   357→   426→   465→   465→  - Admin credentials: admin@Samyukthenterprises@gmail.com / Samyukth@2378
+   358→   427→   466→   466→  - Custom token-based auth stored in cookies
+   359→   428→   467→   467→  - All existing users seeded with password "password123"
+   360→   429→   468→   468→  - Admin-only user registration via /api/auth/register
+   361→   430→   469→   469→- Built branded splash screen (SplashScreen.tsx):
+   362→   431→   470→   470→  - CampusOS logo with animated gradient
+   363→   432→   471→   471→  - "Made by Jai Samyukth Enterprises" tagline
+   364→   433→   472→   472→  - Progress bar filling over 3 seconds
+   365→   434→   473→   473→  - Only shows once per session (sessionStorage)
+   366→   435→   474→   474→- Enhanced Voice Assistant → AI direct integration:
+   367→   436→   475→   475→  - Voice input automatically sends transcript to AI chat panel
+   368→   437→   476→   476→  - "Sending to AI..." animation between voice capture and chat handoff
+   369→   438→   477→   477→  - Removed separate response display from VoiceAssistant modal
+   370→   439→   478→   478→- Built Button Context Messages for AI:
+   371→   440→   479→   479→  - Added openChatWithContext() to Zustand store
+   372→   441→   480→   480→  - 14+ buttons across Dashboard, WorkflowSection, FacultySection, ExamsSection, ProfileSection, Header now auto-send context to AI
+   373→   442→   481→   481→  - Example: "Check Attendance" button → "Show me my detailed attendance statistics and trends"
+   374→   443→   482→   482→- Built Light/Dark Mode Theme:
+   375→   444→   483→   483→  - CSS variables for 20+ theme properties in :root (light) and .dark (dark)
+   376→   445→   484→   484→  - ThemeProvider (next-themes) wrapping in layout.tsx
+   377→   446→   485→   485→  - ThemeToggle.tsx component with animated Sun/Moon icon swap
+   378→   447→   486→   486→  - 6 components updated to use CSS variables (page.tsx, Sidebar, Header, AnimatedBackground, WidgetCard)
+   379→   448→   487→   487→  - AnimatedBackground adjusts orb opacity and particle colors for light mode
+   380→   449→   488→   488→- Added password field to User Prisma model
+   381→   450→   489→   489→- Converted all section imports in page.tsx to dynamic imports to reduce compilation memory
+   382→   451→   490→   490→
+   383→   452→   491→   491→Stage Summary:
+   384→   453→   492→   492→- Authentication system with custom login API and cookie-based sessions
+   385→   454→   493→   493→- Branded splash screen with "Made by Jai Samyukth Enterprises"
+   386→   455→   494→   494→- Voice → AI direct integration with ChatPanel
+   387→   456→   495→   495→- Button context messages auto-send relevant queries to AI
+   388→   457→   496→   496→- Light/dark mode theme toggle with CSS variables
+   389→   458→   497→   497→- All 28 users now have passwords set
+   390→   459→   498→   498→
+   391→   460→   499→   499→**CRITICAL ISSUE**: The project has grown so large (45+ React components, 20+ API routes, Prisma, Recharts, Framer Motion) that Turbopack compilation exceeds the sandbox's 4GB memory limit. The server is OOM-killed during compilation of the main page (/). Individual routes compile fine but the combined compilation is too heavy. 
+   392→   461→   500→   500→- Workaround: Sequential compilation with delays between requests works
+   393→   462→   501→   501→- Proper fix: Need more server RAM or webpack compilation mode
+   394→   463→   502→   502→
+   395→   464→   503→   503→================================================================================
+   396→   465→   504→   504→CURRENT PROJECT STATUS (Updated Session 3)
+   397→   466→   505→   505→================================================================================
+   398→   467→   506→   506→
+   399→   468→   507→   507→## Project: CampusOS AI v2.0 - Enterprise Edition
+   400→   469→   508→   508→## Status: FUNCTIONAL BUT OOM-CONSTRAINED - All Features Built
+   401→   470→   509→   509→
+   402→   471→   510→   510→### Current Project Status:
+   403→   472→   511→   511→CampusOS AI v2.0 has all requested features built but faces OOM (Out of Memory) issues during Turbopack compilation. The sandbox has 4GB RAM, and the project's 45+ React components + 20+ API routes + Prisma ORM + heavy libraries exceed this during compilation. Individual routes compile and work correctly.
+   404→   473→   512→   512→
+   405→   474→   513→   513→### Completed Features This Session:
+   406→   475→   514→   514→1. ✅ Login/Authentication - Custom login API, cookie-based sessions, admin credentials
+   407→   476→   515→   515→2. ✅ Role-Based Access - Login required, role determines which portal is shown
+   408→   477→   516→   516→3. ✅ Admin-Only User Creation - /api/auth/register endpoint with role verification
+   409→   478→   517→   517→4. ✅ Branded Splash Screen - "CampusOS, Made by Jai Samyukth Enterprises"
+   410→   479→   518→   518→5. ✅ Voice → AI Direct Integration - Voice input sends directly to ChatPanel
+   411→   480→   519→   519→6. ✅ Button Context Messages - 14+ buttons auto-send context to AI
+   412→   481→   520→   520→7. ✅ Light/Dark Mode Theme - Full theme toggle with CSS variables
+   413→   482→   521→   521→8. ✅ Password field added to User model
+   414→   483→   522→   522→9. ✅ All 28 users have passwords set
+   415→   484→   523→   523→
+   416→   485→   524→   524→### Credentials:
+   417→   486→   525→   525→- Admin: admin@Samyukthenterprises@gmail.com / Samyukth@2378
+   418→   487→   526→   526→- Student (Sam Kumar): sam.kumar@campus.edu / password123
+   419→   488→   527→   527→- Faculty: dr.patel@campus.edu / password123 (and all other faculty)
+   420→   489→   528→   528→
+   421→   490→   529→   529→### Unresolved Issues:
+   422→   491→   530→   530→1. **OOM during compilation** - Server killed when compiling main page with all dynamic imports
+   423→   492→   531→   531→2. **NextAuth removed** - Switched to custom auth due to NextAuth's heavy compilation
+   424→   493→   532→   532→3. **Theme not fully applied** - Only 6 core components updated for light mode, many others still use hardcoded dark colors
+   425→   494→   533→   533→4. **Voice → AI** - Needs testing after server stability is resolved
+   426→   495→   534→   534→5. **Splash screen** - Needs testing after server stability is resolved
+   427→   496→   535→   535→
+   428→   497→   536→   536→### Priority Recommendations for Next Phase:
+   429→   498→   537→   537→1. Resolve OOM issue - either increase sandbox memory or switch to webpack compiler
+   430→   499→   538→   538→2. Complete light mode theming for all components
+   431→   500→   539→   539→3. Test and verify login flow end-to-end with agent-browser
+   432→   501→   540→   540→4. Test splash screen and voice integration
+   433→   502→   541→   541→5. Add forgot password / change password functionality
+   434→   503→   542→   542→
+   435→   504→   543→   543→---
+   436→   505→   544→   544→Task ID: 4
+   437→   506→   545→   545→Agent: Main Agent
+   438→   507→   546→   546→Task: Add login/register with role-based access, admin@JSE.com credentials, splash screen, voice-to-AI, context-aware AI buttons, and light mode
+   439→   508→   547→   547→
+   440→   509→   548→   548→Work Log:
+   441→   510→   549→   549→- Updated prisma/seed.ts: Changed all emails from @campus.edu to @JSE.com domain
+   442→   511→   550→   550→- Created admin account: admin@JSE.com with password Samyukth@2378
+   443→   512→   551→   551→- Created student account: sam.kumar@JSE.com with password Student@2024
+   444→   513→   552→   552→- Created faculty accounts: dr.sharma@JSE.com etc. with password Faculty@2024
+   445→   514→   553→   553→- Updated login page placeholder from admin@Samyukthenterprises@gmail.com to admin@JSE.com
+   446→   515→   554→   554→- Updated Header.tsx: Role Switcher now only visible for admin users (currentUser?.role === 'admin')
+   447→   516→   555→   555→- Removed Faculty Portal and Admin links from student sidebar navigation (role isolation)
+   448→   517→   556→   556→- Updated Sidebar.tsx: handleNavClick now passes specific section IDs (e.g., admin-users) for proper tab sync
+   449→   518→   557→   557→- Updated Sidebar.tsx: isActiveItem properly highlights current admin/faculty nav items
+   450→   519→   558→   558→- Created AdminUserManager.tsx: Full user account creation panel with @JSE.com enforcement
+   451→   520→   559→   559→  - Create user form with auto-generate password
+   452→   521→   560→   560→  - Copy-to-clipboard for passwords
+   453→   522→   561→   561→  - Role selection (Student/Faculty/Admin)
+   454→   523→   562→   562→  - Department selection
+   455→   524→   563→   563→  - Search/filter users
+   456→   525→   564→   564→  - User stats (Total, Students, Faculty, Admins)
+   457→   526→   565→   565→  - Enforces @JSE.com email domain
+   458→   527→   566→   566→- Created /api/auth/users API endpoint (GET, admin-only) for listing users
+   459→   528→   567→   567→- Updated /api/auth/register: Auto-appends @JSE.com if no domain, enforces @JSE.com domain
+   460→   529→   568→   568→- Added 'User Accounts' tab to AdminPortal with AdminUserManager component
+   461→   530→   569→   569→- Updated adminSectionToTabMap with all admin-* section keys
+   462→   531→   570→   570→- Updated page.tsx adminSections and facultySections maps with all section keys
+   463→   532→   571→   571→- Fixed SessionProvider.tsx lint error (removed useEffect with setState)
+   464→   533→   572→   572→- Fixed AdminUserManager.tsx lint error (restructured useEffect)
+   465→   534→   573→   573→- Re-seeded database with new @JSE.com data
+   466→   535→   574→   574→- Verified with agent-browser:
+   467→   536→   575→   575→  - Admin login (admin@JSE.com / Samyukth@2378) ✅
+   468→   537→   576→   576→  - Student login (sam.kumar@JSE.com / Student@2024) ✅
+   469→   538→   577→   577→  - Role Switcher hidden for non-admin users ✅
+   470→   539→   578→   578→  - User Account Management panel with create/search ✅
+   471→   540→   579→   579→  - Created test.student@JSE.com via admin panel ✅
+   472→   541→   580→   580→  - Light mode toggle working ✅
+   473→   542→   581→   581→  - Ask AI button sends contextual message ✅
+   474→   543→   582→   582→  - Voice Assistant works (sends directly to AI) ✅
+   475→   544→   583→   583→  - Zero page errors ✅
+   476→   545→   584→   584→
+   477→   546→   585→   585→Stage Summary:
+   478→   547→   586→   586→- All @JSE.com email accounts working
+   479→   548→   587→   587→- Admin-only Role Switcher (students/faculty locked to their portal)
+   480→   549→   588→   588→- Admin can create new @JSE.com user accounts from Admin Portal
+   481→   550→   589→   589→- Login/register with role-based access control fully functional
+   482→   551→   590→   590→- Splash screen shows "CampusOS, Made by Jai Samyukth Enterprises" on first load
+   483→   552→   591→   591→- Voice-to-AI direct input working
+   484→   553→   592→   592→- Context-aware AI buttons working
+   485→   554→   593→   593→- Light/dark mode toggle working
+   486→   555→   594→   594→- Zero lint errors, zero page errors
+   487→   556→   595→   595→
+   488→   557→   596→   596→Credentials:
+   489→   558→   597→   597→- Admin: admin@JSE.com / Samyukth@2378
+   490→   559→   598→   598→- Student: sam.kumar@JSE.com / Student@2024
+   491→   560→   599→   599→- Faculty: dr.sharma@JSE.com / Faculty@2024
+   492→   561→   600→   600→
+   493→   562→   601→   601→---
+   494→   563→   602→   602→Task ID: 1
+   495→   564→   603→   603→Agent: Security Hardening Agent
+   496→   565→   604→   604→Task: Implement SECURITY hardening for the authentication system
+   497→   566→   605→   605→
+   498→   567→   606→   606→Work Log:
+   499→   568→   607→   607→- Updated login API (`/src/app/api/auth/login/route.ts`):
+   500→   569→   608→   608→  - Added bcryptjs password verification with plain-text fallback (auto-migration)
+   501→   570→   609→   609→  - When stored password is plain text and matches, auto-re-hashes with bcrypt (cost factor 10) and updates DB
+   502→   571→   610→   610→  - Generated HMAC-signed tokens using SHA-256 (format: `userId:email:role:timestamp:HMACsignature` base64-encoded)
+   503→   572→   611→   611→  - Added in-memory rate limiting: max 5 attempts per IP in 15-minute window (429 response when exceeded)
+   504→   573→   612→   612→  - Exported `verifyToken()` function for reuse in register and session-info routes
+   505→   574→   613→   613→  - Token expiry enforced at 24 hours
+   506→   575→   614→   614→
+   507→   576→   615→   615→- Updated register API (`/src/app/api/auth/register/route.ts`):
+   508→   577→   616→   616→  - Passwords now hashed with bcryptjs (cost factor 10) before storing
+   509→   578→   617→   617→  - Added email format validation with regex
+   510→   579→   618→   618→  - Added minimum password length validation (6 characters)
+   511→   580→   619→   619→  - Added role validation (student/faculty/admin)
+   512→   581→   620→   620→  - Token verification uses the new `verifyToken()` with HMAC validation instead of simple base64 decode
+   513→   582→   621→   621→  - Kept @JSE.com domain enforcement with auto-append
+   514→   583→   622→   622→
+   515→   584→   623→   623→- Verified seed file (`/prisma/seed.ts`):
+   516→   585→   624→   624→  - Already had admin@JSE.com / Samyukth@2378 as plain text (correct — login API auto-hashes on first login)
+   517→   586→   625→   625→  - All users already use @JSE.com emails
+   518→   587→   626→   626→  - No changes needed
+   519→   588→   627→   627→
+   520→   589→   628→   628→- Created auth middleware (`/src/middleware.ts`):
+   521→   590→   629→   629→  - Protects `/` route — redirects to `/login` if no valid campusos-token cookie
+   522→   591→   630→   630→  - Allows `/login` and `/api/auth/*` routes without authentication
+   523→   592→   631→   631→  - Allows static assets (/_next/*, favicon, files with extensions)
+   524→   593→   632→   632→  - Token verification uses Web Crypto API (`crypto.subtle`) for Edge Runtime compatibility
+   525→   594→   633→   633→  - Invalid/expired tokens redirect to login with cookie cleared
+   526→   595→   634→   634→  - HMAC signature verified in middleware for defense-in-depth
+   527→   596→   635→   635→
+   528→   597→   636→   636→- Created session verification API (`/src/app/api/auth/session-info/route.ts`):
+   529→   598→   637→   637→  - GET endpoint verifies token from cookie
+   530→   599→   638→   638→  - Returns user info (id, email, name, role, department, avatar, phone) if valid
+   531→   600→   639→   639→  - Returns 401 with `authenticated: false` if invalid or missing token
+   532→   601→   640→   640→  - Fetches fresh user data from database for up-to-date info
+   533→   602→   641→   641→  - Includes token issued/expired timestamps in response
+   534→   603→   642→   642→
+   535→   604→   643→   643→- Ran `bun run db:push` — schema already in sync, Prisma client regenerated
+   536→   605→   644→   644→- Ran `bunx tsx prisma/seed.ts` — database re-seeded successfully
+   537→   606→   645→   645→- Ran `bun run lint` — no errors
+   538→   607→   646→   646→
+   539→   608→   647→   647→Verification Tests:
+   540→   609→   648→   648→- ✅ Root `/` redirects (307) to `/login` without token
+   541→   610→   649→   649→- ✅ Root `/` returns 200 with valid token
+   542→   611→   650→   650→- ✅ Login API returns HMAC-signed token with correct structure
+   543→   612→   651→   651→- ✅ Auto-migration: admin password converted from plain text to bcrypt hash after first login
+   544→   613→   652→   652→- ✅ Session-info API returns user data with valid token
+   545→   614→   653→   653→- ✅ Session-info API returns 401 with no/invalid token
+   546→   615→   654→   654→- ✅ Middleware redirects with invalid token and clears cookie
+   547→   616→   655→   655→- ✅ ESLint passes with no errors
+   548→   617→   656→   656→
+   549→   618→   657→   657→Stage Summary:
+   550→   619→   658→   658→- Authentication system fully hardened with bcrypt password hashing, HMAC-signed tokens, rate limiting, and input validation
+   551→   620→   659→   659→- Auto-migration from plain-text to bcrypt passwords working correctly
+   552→   621→   660→   660→- Edge Runtime compatible middleware with Web Crypto API for token verification
+   553→   622→   661→   661→- All existing functionality preserved; no schema changes required
+   554→   623→   662→   662→
+   555→   624→   663→   663→---
+   556→   625→   664→   664→Task ID: 2b
+   557→   626→   665→   665→Agent: Dark/Light Mode Fix Agent
+   558→   627→   666→   666→Task: Fix ChatPanel and VoiceAssistant components for full light/dark mode legibility
+   559→   628→   667→   667→
+   560→   629→   668→   668→Work Log:
+   561→   630→   669→   669→- Audited ChatPanel.tsx for all hardcoded dark-mode-only color values
+   562→   631→   670→   670→- Replaced `bg-[#0a0a14]/95` → `bg-[var(--bg-secondary)]/95` on main panel
+   563→   632→   671→   671→- Replaced `bg-[#12121e]/95` → `bg-[var(--bg-secondary)]/95` on agent dropdown
+   564→   633→   672→   672→- Replaced `text-white` → `text-[var(--text-primary)]` on header, titles, input
+   565→   634→   673→   673→- Replaced `text-gray-500` → `text-[var(--text-muted)]` on subtitles, labels
+   566→   635→   674→   674→- Replaced `text-gray-300` → `text-[var(--text-secondary)]` on agent selector
+   567→   636→   675→   675→- Replaced `text-gray-400` → `text-[var(--text-muted)]` on quick actions, agent options
+   568→   637→   676→   676→- Replaced `bg-white/[0.04]` → `bg-[var(--glass-bg)]` on quick actions, messages, input wrapper
+   569→   638→   677→   677→- Replaced `bg-white/[0.05]` → `bg-[var(--glass-bg)]` on agent selector button
+   570→   639→   678→   678→- Replaced `bg-white/[0.02]` → `bg-[var(--bg-card)]` on header, input footer
+   571→   640→   679→   679→- Replaced `border-white/[0.08]` → `border-[var(--border-color)]` on all borders
+   572→   641→   680→   680→- Replaced `border-white/[0.06]` → `border-[var(--border-color)]` on section borders
+   573→   642→   681→   681→- Replaced `placeholder-gray-600` → `placeholder:text-[var(--text-muted)]`
+   574→   643→   682→   682→- Updated user message bubble: `bg-purple-600/30 text-white` → `bg-purple-500/20 dark:bg-purple-600/30 text-[var(--text-primary)]`
+   575→   644→   683→   683→- Updated assistant message bubble: `bg-white/[0.04] text-gray-300` → `bg-[var(--glass-bg)] text-[var(--text-secondary)]`
+   576→   645→   684→   684→- Fixed prose styling: `prose-invert` → `dark:prose-invert` for light mode compatibility
+   577→   646→   685→   685→- Added dual-mode accent colors: `text-purple-400` → `text-purple-600 dark:text-purple-400` (Sparkles, agent selected, loading dots)
+   578→   647→   686→   686→- Added dual-mode green badge: `text-green-400` → `text-green-600 dark:text-green-400`
+   579→   648→   687→   687→- Fixed hover states: `hover:bg-white/[0.05]` → `hover:bg-[var(--glass-bg)]`, `hover:text-white` → `hover:text-[var(--text-primary)]`
+   580→   649→   688→   688→
+   581→   650→   689→   689→- Audited VoiceAssistant.tsx for all hardcoded dark-mode-only color values
+   582→   651→   690→   690→- Replaced `bg-[#0a0a14]/95` → `bg-[var(--bg-secondary)]/95` on modal container
+   583→   652→   691→   691→- Replaced `text-white` → `text-[var(--text-primary)]` on heading and transcript
+   584→   653→   692→   692→- Replaced `text-gray-500` → `text-[var(--text-muted)]` on subtitle
+   585→   654→   693→   693→- Replaced `text-gray-400` → `text-[var(--text-muted)]` on quick suggestion buttons
+   586→   655→   694→   694→- Replaced `bg-white/[0.04]` → `bg-[var(--glass-bg)]` on transcript box and suggestions
+   587→   656→   695→   695→- Replaced `border-white/[0.08]` → `border-[var(--border-color)]` on all borders
+   588→   657→   696→   696→- Added dual-mode accent colors: `text-purple-400` → `text-purple-600 dark:text-purple-400` (transcript label)
+   589→   658→   697→   697→- Added dual-mode dots: `bg-cyan-400` → `bg-cyan-600 dark:bg-cyan-400`
+   590→   659→   698→   698→- Fixed close button: `text-gray-500 hover:text-white` → `text-[var(--text-muted)] hover:text-[var(--text-primary)]`
+   591→   660→   699→   699→- Fixed hover states on suggestions: `hover:bg-white/[0.08]` → `hover:bg-[var(--bg-card)]`
+   592→   661→   700→   700→- Preserved `bg-black/60` overlay (works in both modes)
+   593→   662→   701→   701→- Preserved mic button gradient colors (brand colors on dark bg)
+   594→   663→   702→   702→- Preserved `text-white` on icon buttons within gradient backgrounds
+   595→   664→   703→   703→
+   596→   665→   704→   704→- Ran `bun run lint` — no errors
+   597→   666→   705→   705→- Dev server compiling successfully
+   598→   667→   706→   706→
+   599→   668→   707→   707→Stage Summary:
+   600→   669→   708→   708→- ChatPanel.tsx fully refactored: 22+ color replacements for light/dark mode compatibility
+   601→   670→   709→   709→- VoiceAssistant.tsx fully refactored: 12+ color replacements for light/dark mode compatibility
+   602→   671→   710→   710→- All hardcoded dark-mode-only colors replaced with CSS custom properties
+   603→   672→   711→   711→- Accent colors use `light dark:` dual-mode pattern for visibility in both themes
+   604→   673→   712→   712→- Glass-morphism effects preserved using `--glass-bg` and `--bg-card` variables
+   605→   674→   713→   713→- No lint errors, dev server compiles cleanly
+   606→   675→   714→   714→
+   607→   676→   715→   715→---
+   608→   677→   716→   716→Task ID: 2c
+   609→   678→   717→   717→Agent: Theme Fix Agent
+   610→   679→   718→   718→Task: Fix Login Page for both Light and Dark mode legibility
+   611→   680→   719→   719→
+   612→   681→   720→   720→Work Log:
+   613→   682→   721→   721→- Analyzed existing login page at `/src/app/login/page.tsx` — found hardcoded dark-mode-only colors (`bg-[#050510]`, `text-white`, `text-gray-500`, `bg-white/[0.04]`, `border-white/[0.08]`, etc.)
+   614→   683→   722→   722→- Reviewed `globals.css` CSS variables for both `:root` (light) and `.dark` (dark) modes
+   615→   684→   723→   723→- Reviewed existing `ThemeToggle.tsx` and `AnimatedBackground.tsx` for theme detection patterns using `useTheme` from `next-themes`
+   616→   685→   724→   724→- Rewrote `LoginBackground` component to accept `isDark` prop:
+   617→   686→   725→   725→  - Dark mode: renders the full canvas animation (orbs, particles, connecting lines, vignette) as before
+   618→   687→   726→   726→  - Light mode: renders a clean CSS gradient background (`linear-gradient(135deg, #f8fafc, #eef2ff, #f0fdfa, #faf5ff)`) instead of the dark-themed canvas
+   619→   688→   727→   727→- Updated main container: `bg-[#050510]` → `bg-[var(--bg-primary)]`, `text-white` → `text-[var(--text-primary)]`
+   620→   689→   728→   728→- Updated card styling with `isDark` conditional rendering:
+   621→   690→   729→   729→  - Dark mode: glassmorphism with `bg-white/[0.03]`, `border-white/[0.08]`, rotating gradient border with `bg-[#0a0a1a]/95` inner fill
+   622→   691→   730→   730→  - Light mode: clean white card with `bg-white/80`, `border-[var(--border-color)]`, subtle rotating gradient border with `bg-white/95` inner fill
+   623→   692→   731→   731→- Updated all text colors:
+   624→   693→   732→   732→  - `text-gray-500` → `text-[var(--text-muted)]`
+   625→   694→   733→   733→  - `text-gray-600` → `text-[var(--text-muted)]`
+   626→   695→   734→   734→  - `text-gray-700` → `text-[var(--text-muted)]`
+   627→   696→   735→   735→  - Labels: `text-gray-400` → conditional: dark=`text-gray-400`, light=`text-[var(--text-secondary)]`
+   628→   697→   736→   736→- Updated input styling:
+   629→   698→   737→   737→  - Dark mode: preserved `bg-white/[0.04]`, `border-white/[0.08]`, `text-white`, `placeholder-gray-600`
+   630→   699→   738→   738→  - Light mode: `bg-[var(--bg-card)]`, `border-[var(--border-color)]`, `text-[var(--text-primary)]`, `placeholder-[var(--text-muted)]`
+   631→   700→   739→   739→- Updated role badges with light-mode variants (e.g., `bg-purple-50 border-purple-200 text-purple-600` instead of `bg-purple-500/10 border-purple-500/20 text-purple-400`)
+   632→   701→   740→   740→- Updated error message with light-mode variant (`bg-red-50 border-red-200 text-red-600`)
+   633→   702→   741→   741→- Updated footer border: `border-white/[0.06]` → `border-[var(--border-color)]`
+   634→   703→   742→   742→- Updated Bot icon color: dark=`text-purple-400`, light=`text-purple-600`
+   635→   704→   743→   743→- Submit button gradient kept as-is (works in both modes)
+   636→   705→   744→   744→- Added `useTheme` hook and `resolvedTheme` check for reliable theme detection
+   637→   706→   745→   745→- Lint passes with zero errors
+   638→   707→   746→   746→
+   639→   708→   747→   747→Stage Summary:
+   640→   709→   748→   748→- Login page now fully adaptive to both light and dark themes
+   641→   710→   749→   749→- Dark mode retains the impressive canvas animation with glassmorphism card
+   642→   711→   750→   750→- Light mode uses clean gradient background with white card and subtle shadows
+   643→   712→   751→   751→- All text, borders, and interactive elements use CSS variables or conditional classes
+   644→   713→   752→   752→- No hardcoded dark-only colors remain
+   645→   714→   753→   753→
+   646→   715→   754→   754→---
+   647→   716→   755→   755→Task ID: 2a
+   648→   717→   756→   756→Agent: Light/Dark Mode Fix Agent
+   649→   718→   757→   757→Task: Fix Header and Sidebar components for light/dark mode compatibility
+   650→   719→   758→   758→
+   651→   720→   759→   759→Work Log:
+   652→   721→   760→   760→- Analyzed Header.tsx and Sidebar.tsx for all hardcoded dark-mode-only colors
+   653→   722→   761→   761→- Identified 35+ instances of hardcoded colors in Header.tsx (text-white, text-gray-*, bg-white/[0.04], bg-[#0a0a14], border-white/[0.08], etc.)
+   654→   723→   762→   762→- Identified 7 instances of accent colors needing dark: prefix in Sidebar.tsx
+   655→   724→   763→   763→
+   656→   725→   764→   764→Header.tsx fixes:
+   657→   726→   765→   765→- RoleSwitcher: bg-white/[0.04] → bg-[var(--glass-bg)], border-white/[0.08] → border-[var(--border-color)]
+   658→   727→   766→   766→- RoleSwitcher active text: text-purple-400 → text-purple-600 dark:text-purple-400 (same pattern for cyan/amber)
+   659→   728→   767→   767→- RoleSwitcher inactive text: text-gray-500 hover:text-gray-300 → text-[var(--text-muted)] hover:text-[var(--text-secondary)]
+   660→   729→   768→   768→- Search input: bg-white/[0.04] → bg-[var(--glass-bg)], text-white → text-[var(--text-primary)], placeholder-gray-600 → placeholder-[var(--text-muted)]
+   661→   730→   769→   769→- Search focus: bg-white/[0.06] → bg-[var(--bg-card)], border-white/[0.08] → border-[var(--border-color)]
+   662→   731→   770→   770→- Search dropdown: bg-[#0a0a14]/95 → bg-[var(--bg-secondary)], border-white/[0.08] → border-[var(--border-color)]
+   663→   732→   771→   771→- Search results: text-gray-400 → text-[var(--text-secondary)], hover:bg-white/[0.05] → hover:bg-[var(--glass-bg)]
+   664→   733→   772→   772→- Voice/Notification buttons: bg-white/[0.04] → bg-[var(--glass-bg)], border-white/[0.08] → border-[var(--border-color)], hover:bg-white/[0.08] → hover:bg-[var(--border-hover)]
+   665→   734→   773→   773→- Mic/Bell icons: text-gray-400 → text-[var(--text-muted)] with dark: prefix on hover colors
+   666→   735→   774→   774→- Badge border: border-[#0a0a14] → border-[var(--bg-primary)]
+   667→   736→   775→   775→- Notification dropdown: bg-[#0a0a14]/95 → bg-[var(--bg-secondary)], text-white → text-[var(--text-primary)]
+   668→   737→   776→   776→- All text-gray-500/600/700 → text-[var(--text-muted)] or text-[var(--text-secondary)]
+   669→   738→   777→   777→- All border-white/[0.06] → border-[var(--border-color)]
+   670→   739→   778→   778→- All bg-white/[0.02]/[0.03]/[0.04] → bg-[var(--glass-bg)]
+   671→   740→   779→   779→- Role badge colors: text-purple-400 → text-purple-600 dark:text-purple-400 pattern
+   672→   741→   780→   780→- User menu dropdown: same bg/border/text fixes as notification dropdown
+   673→   742→   781→   781→- Greeting gradient: from-purple-400 to-cyan-400 → from-purple-600 to-cyan-600 dark:from-purple-400 dark:to-cyan-400
+   674→   743→   782→   782→- Notification icon colors: text-yellow-400 → text-yellow-600 dark:text-yellow-400 pattern
+   675→   744→   783→   783→- Sign Out: text-red-400 → text-red-500 dark:text-red-400
+   676→   745→   784→   784→- Footer link: text-purple-400 → text-purple-600 dark:text-purple-400
+   677→   746→   785→   785→
+   678→   747→   786→   786→Sidebar.tsx fixes:
+   679→   748→   787→   787→- accentBg: text-purple-400 → text-purple-600 dark:text-purple-400 (same for cyan/amber)
+   680→   749→   788→   788→- accentIcon: text-cyan-400 → text-cyan-600 dark:text-cyan-400 (same for purple/amber)
+   681→   750→   789→   789→- accentGlow: bg-cyan-400 → bg-cyan-500 dark:bg-cyan-400 (same for purple/amber)
+   682→   751→   790→   790→- Subtitle: text-cyan-400 → text-cyan-600 dark:text-cyan-400 (same for purple/amber)
+   683→   752→   791→   791→- Badge: text-amber-300 → text-amber-600 dark:text-amber-300, text-purple-300 → text-purple-600 dark:text-purple-300
+   684→   753→   792→   792→- Command button hover: group-hover:text-purple-400 → group-hover:text-purple-600 dark:group-hover:text-purple-400
+   685→   754→   793→   793→- Logout hover: hover:text-red-400 → hover:text-red-500 dark:hover:text-red-400
+   686→   755→   794→   794→
+   687→   756→   795→   795→- Lint passes with zero errors
+   688→   757→   796→   796→- Dev server compiles successfully
+   689→   758→   797→   797→
+   690→   759→   798→   798→Stage Summary:
+   691→   760→   799→   799→- Header and Sidebar fully legible and beautiful in both light and dark modes
+   692→   761→   800→   800→- All hardcoded dark-mode-only colors replaced with CSS variables or dark: prefixed classes
+   693→   762→   801→   801→- Accent/brand colors use lighter variants (-400) in dark mode, darker variants (-600) in light mode
+   694→   763→   802→   802→- No visual regressions in dark mode - same appearance preserved
+   695→   764→   803→   803→- Light mode now fully functional with proper contrast and readability
+   696→   765→   804→   804→
+   697→   766→   805→   805→---
+   698→   767→   806→   806→Task ID: 4
+   699→   768→   807→   807→Agent: RBAC & Auth Security Agent
+   700→   769→   808→   808→Task: Implement proper role-based access control and fix auth token verification
+   701→   770→   809→   809→
+   702→   771→   810→   810→Work Log:
+   703→   772→   811→   811→- Updated page.tsx auth check to parse new HMAC-signed token format (5-part: userId:email:role:timestamp:signature)
+   704→   773→   812→   812→- Added server-side token verification via /api/auth/session-info endpoint on initial load
+   705→   774→   813→   813→- Replaced router.push('/login') with window.location.href = '/login' for reliable Next.js App Router redirects
+   706→   775→   814→   814→- Optimistic client-side auth for fast UI, followed by server-side verification with graceful network error fallback
+   707→   776→   815→   815→- Verified Sidebar.tsx already has proper role-based nav groups (student/faculty/admin separate)
+   708→   777→   816→   816→- Verified Header.tsx RoleSwitcher correctly restricted to currentUser?.role === 'admin'
+   709→   778→   817→   817→- Added role guard to FacultyPortal.tsx: only faculty and admin users can access, others see "Access Restricted" with redirect button
+   710→   779→   818→   818→- Added role guard to AdminPortal.tsx: only admin users can access, others see "Access Denied" with redirect button
+   711→   780→   819→   819→- Fixed /api/auth/users GET endpoint to use verifyToken() instead of manual base64 decode (was vulnerable to HMAC bypass)
+   712→   781→   820→   820→- Added DELETE endpoint at /api/auth/users with full admin-only verification:
+   713→   782→   821→   821→  - HMAC token verification via verifyToken()
+   714→   783→   822→   822→  - Admin role check
+   715→   784→   823→   823→  - Self-deletion prevention
+   716→   785→   824→   824→  - Cascading deletes for student-related records (attendance, enrollments, placements, complaints, fees, etc.)
+   717→   786→   825→   825→  - Cascading deletes for faculty-related records (subjects, assignments, attendance records, etc.)
+   718→   787→   826→   826→  - Notification cleanup before user deletion
+   719→   788→   827→   827→- Added delete user UI to AdminUserManager.tsx with confirm/cancel flow and loading state
+   720→   789→   828→   828→- Removed studentSections leak entries ('faculty-portal' and 'admin' were incorrectly mapped for students)
+   721→   790→   829→   829→
+   722→   791→   830→   830→Stage Summary:
+   723→   792→   831→   831→- Auth flow now properly verifies HMAC-signed tokens both client-side and server-side
+   724→   793→   832→   832→- Role-based navigation correctly restricts sidebar items by role
+   725→   794→   833→   833→- FacultyPortal and AdminPortal have client-side role guards preventing unauthorized access
+   726→   795→   834→   834→- User management DELETE endpoint is secure with admin-only access and cascading deletes
+   727→   796→   835→   835→- All lint checks pass with zero errors
+   728→   797→   836→   836→
+   729→   798→   837→   837→---
+   730→   799→   838→   838→Task ID: 3
+   731→   800→   839→   839→Agent: Light/Dark Mode Fix Agent
+   732→   801→   840→   840→Task: Fix all remaining campus section components for light/dark mode legibility
+   733→   802→   841→   841→
+   734→   803→   842→   842→Work Log:
+   735→   804→   843→   843→- Read all 18 campus section components to identify hardcoded dark-mode colors
+   736→   805→   844→   844→- Systematically replaced all `text-white` (on body text) with `text-[var(--text-primary)]` across 16 components
+   737→   806→   845→   845→- Replaced all `text-gray-300/400/500/600` with `text-[var(--text-secondary)]` or `text-[var(--text-muted)]` as appropriate
+   738→   807→   846→   846→- Replaced all `bg-white/[0.02]` through `bg-white/[0.08]` with `bg-[var(--bg-card)]` or `bg-[var(--glass-bg)]`
+   739→   808→   847→   847→- Replaced all `border-white/[0.04]` through `border-white/[0.15]` with `border-[var(--border-color)]`
+   740→   809→   848→   848→- Replaced `bg-[#0a0a14]` with `bg-[var(--bg-secondary)]` in ProfileSection, CommandPalette, NotificationToast
+   741→   810→   849→   849→- Added `dark:` prefix to all accent colors (e.g., `text-purple-600 dark:text-purple-400`) for proper light/dark visibility
+   742→   811→   850→   850→- Fixed `placeholder-gray-600` with `placeholder:text-[var(--text-muted)]` in LibrarySection and ProfileSection
+   743→   812→   851→   851→- Fixed Tooltip `contentStyle` hardcoded dark colors with CSS variable references
+   744→   813→   852→   852→- Fixed Recharts axis/tooltip styles to use CSS variables instead of hardcoded `rgba(255,255,255,...)`
+   745→   814→   853→   853→- Fixed WidgetCard.tsx StatusBadge colors to use `dark:` prefix variants
+   746→   815→   854→   854→- AnimatedBackground.tsx already had theme awareness - confirmed it works in both modes
+   747→   816→   855→   855→- Verified all changes pass ESLint with no errors
+   748→   817→   856→   856→- Confirmed dev server compiles successfully for all modified components
+   749→   818→   857→   857→
+   750→   819→   858→   858→Files Modified (18 total):
+   751→   820→   859→   859→1. Dashboard.tsx - Complete rewrite of color tokens
+   752→   821→   860→   860→2. AttendanceSection.tsx - Complete rewrite of color tokens
+   753→   822→   861→   861→3. PlacementSection.tsx - Complete rewrite of color tokens
+   754→   823→   862→   862→4. LibrarySection.tsx - Complete rewrite of color tokens + search input
+   755→   824→   863→   863→5. AcademicSection.tsx - Complete rewrite of color tokens
+   756→   825→   864→   864→6. ExamsSection.tsx - Complete rewrite of color tokens + grade/exam colors
+   757→   826→   865→   865→7. HostelSection.tsx - Complete rewrite of color tokens
+   758→   827→   866→   866→8. FinanceSection.tsx - Complete rewrite of color tokens + chart tooltip
+   759→   828→   867→   867→9. EventsSection.tsx - Complete rewrite of color tokens
+   760→   829→   868→   868→10. WorkflowSection.tsx - Complete rewrite of color tokens
+   761→   830→   869→   869→11. FacultySection.tsx - Complete rewrite of color tokens
+   762→   831→   870→   870→12. ProfileSection.tsx - Complete rewrite of color tokens + avatar bg + input
+   763→   832→   871→   871→13. AiMemorySection.tsx - Complete rewrite of color tokens
+   764→   833→   872→   872→14. SettingsSection.tsx - Complete rewrite of color tokens + toggles
+   765→   834→   873→   873→15. NotificationToast.tsx - Complete rewrite of color tokens + backdrop
+   766→   835→   874→   874→16. CommandPalette.tsx - Complete rewrite of color tokens + search input
+   767→   836→   875→   875→17. WidgetCard.tsx - Fixed StatusBadge, risk, trend colors with dark: prefix
+   768→   837→   876→   876→18. AnimatedBackground.tsx - Already theme-aware, confirmed working
+   769→   838→   877→   877→
+   770→   839→   878→   878→Stage Summary:
+   771→   840→   879→   879→- All 18 campus section components now use CSS variables for colors, ensuring full legibility in both light and dark modes
+   772→   841→   880→   880→- Accent colors use `dark:` prefix pattern (e.g., `text-purple-600 dark:text-purple-400`)
+   773→   842→   881→   881→- Structural colors (text, bg, border) use CSS variables that automatically switch with theme
+   774→   843→   882→   882→- ESLint passes with zero errors
+   775→   844→   883→   883→- Dev server compiles successfully for all components
+   776→   845→   884→   884→

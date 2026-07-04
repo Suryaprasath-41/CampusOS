@@ -40,8 +40,8 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
         borderColor: isHovered ? 'var(--accent-purple)' : 'var(--glass-border)',
         background: isHovered ? 'var(--border-hover)' : 'var(--glass-bg)',
         boxShadow: isHovered
-          ? '0 12px 40px rgba(139, 92, 246, 0.12), 0 0 0 1px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
-          : 'var(--shadow)',
+          ? 'var(--shadow-lg), 0 0 0 1px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+          : 'var(--shadow-sm)',
       }}
     >
       {/* Gradient border on hover - top edge */}
@@ -57,7 +57,7 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
       <div className="flex justify-between items-start mb-3">
         <span className="text-[var(--text-secondary)] text-sm font-medium">{title}</span>
         <div className={cn(
-          "p-2 rounded-xl bg-white/[0.05] transition-all duration-300",
+          "p-2 rounded-xl bg-[var(--bg-card)] transition-all duration-300",
           isHovered && "bg-purple-500/10 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
         )}>{icon}</div>
       </div>
@@ -74,9 +74,9 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
       {risk && (
         <div className={cn(
           "inline-block text-xs px-2 py-0.5 rounded-full mt-2 font-medium",
-          risk === 'HIGH' && "bg-red-500/20 text-red-400",
-          risk === 'MEDIUM' && "bg-yellow-500/20 text-yellow-400",
-          risk === 'LOW' && "bg-green-500/20 text-green-400",
+          risk === 'HIGH' && "bg-red-500/20 text-red-600 dark:text-red-400",
+          risk === 'MEDIUM' && "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
+          risk === 'LOW' && "bg-green-500/20 text-green-600 dark:text-green-400",
         )}>
           Risk: {risk}
         </div>
@@ -84,9 +84,9 @@ export default function WidgetCard({ title, value, icon, subtitle, risk, trend, 
       {trend && (
         <span className={cn(
           "text-xs ml-2",
-          trend === 'up' && "text-green-400",
-          trend === 'down' && "text-red-400",
-          trend === 'neutral' && "text-gray-400",
+          trend === 'up' && "text-green-600 dark:text-green-400",
+          trend === 'down' && "text-red-600 dark:text-red-400",
+          trend === 'neutral' && "text-[var(--text-muted)]",
         )}>
           {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
         </span>
@@ -146,17 +146,25 @@ export function GlassCard({ children, className, ...props }: { children: React.R
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "relative bg-[var(--glass-bg)] backdrop-blur-xl border rounded-2xl p-6",
-        "transition-all duration-300 glass-hover",
+        "transition-all duration-300 card-lift glass-hover",
         isHovered ? "border-purple-500/20" : "border-[var(--glass-border)]",
         className
       )}
       style={{
         boxShadow: isHovered
-          ? '0 8px 32px rgba(139, 92, 246, 0.08), 0 0 0 1px rgba(139, 92, 246, 0.08)'
-          : 'none',
+          ? 'var(--shadow-lg), 0 0 0 1px rgba(139, 92, 246, 0.08)'
+          : 'var(--shadow-sm)',
       }}
       {...props}
     >
+      {/* Gradient top-edge highlight on hover */}
+      {isHovered && (
+        <motion.div
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"
+        />
+      )}
       {children}
     </div>
   );
@@ -164,39 +172,54 @@ export function GlassCard({ children, className, ...props }: { children: React.R
 
 export function SectionTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <motion.h2
+    <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className={cn("text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-muted)] mb-6", className)}
+      className="mb-6"
     >
-      {children}
-    </motion.h2>
+      <h2
+        className={cn(
+          "text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] via-purple-500/80 to-[var(--text-muted)]",
+          className
+        )}
+      >
+        {children}
+      </h2>
+      {/* Decorative underline accent */}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
+        className="h-0.5 mt-2 bg-gradient-to-r from-purple-500/50 via-cyan-500/30 to-transparent rounded-full origin-left"
+        style={{ maxWidth: '120px' }}
+      />
+    </motion.div>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    HIGH: 'bg-red-500/20 text-red-400 border-red-500/30',
-    MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    LOW: 'bg-green-500/20 text-green-400 border-green-500/30',
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    submitted: 'bg-green-500/20 text-green-400 border-green-500/30',
-    approved: 'bg-green-500/20 text-green-400 border-green-500/30',
-    rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-    applied: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    interview: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    open: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    in_progress: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    closed: 'bg-green-500/20 text-green-400 border-green-500/30',
-    borrowed: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    eligible: 'bg-green-500/20 text-green-400 border-green-500/30',
-    not_eligible: 'bg-red-500/20 text-red-400 border-red-500/30',
-    seeking: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    placed: 'bg-green-500/20 text-green-400 border-green-500/30',
+    HIGH: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+    MEDIUM: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+    LOW: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+    pending: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+    submitted: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+    approved: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+    rejected: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+    applied: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    interview: 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30',
+    open: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
+    in_progress: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    closed: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+    borrowed: 'bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30',
+    eligible: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+    not_eligible: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+    seeking: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    placed: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
   };
 
   return (
-    <span className={`inline-block text-xs px-2.5 py-1 rounded-full border font-medium ${map[status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+    <span className={`badge-shimmer inline-block text-xs px-2.5 py-1 rounded-full border font-medium ${map[status] || 'bg-gray-500/20 text-[var(--text-muted)] border-gray-500/30'}`}>
       {status.replace('_', ' ').toUpperCase()}
     </span>
   );

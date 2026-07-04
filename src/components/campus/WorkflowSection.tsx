@@ -113,21 +113,21 @@ export default function WorkflowSection() {
             <Workflow className="w-7 h-7 text-white" />
           </motion.div>
           <div className="flex-1">
-            <h3 className="text-white font-bold text-lg">Multi-Agent Orchestration</h3>
-            <p className="text-sm text-gray-400">AI agents collaborate automatically to handle complex campus workflows</p>
+            <h3 className="text-[var(--text-primary)] font-bold text-lg">Multi-Agent Orchestration</h3>
+            <p className="text-sm text-[var(--text-secondary)]">AI agents collaborate automatically to handle complex campus workflows</p>
           </div>
           <div className="flex gap-6 text-center">
             <div>
-              <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">4</div>
-              <div className="text-[10px] text-gray-500">Active</div>
+              <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-cyan-600 dark:from-purple-400 dark:to-cyan-400">4</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Active</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-400">1</div>
-              <div className="text-[10px] text-gray-500">Completed</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">1</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Completed</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-yellow-400">3</div>
-              <div className="text-[10px] text-gray-500">In Progress</div>
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">3</div>
+              <div className="text-[10px] text-[var(--text-muted)]">In Progress</div>
             </div>
           </div>
         </div>
@@ -145,14 +145,14 @@ export default function WorkflowSection() {
             <GlassCard className="h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
-                    <Zap className="w-5 h-5 text-purple-400" />
+                  <div className="w-10 h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <h4 className="text-white font-semibold text-sm">{wf.title}</h4>
+                    <h4 className="text-[var(--text-primary)] font-semibold text-sm">{wf.title}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <StatusBadge status={wf.status} />
-                      <span className="text-[10px] text-gray-600 flex items-center gap-1">
+                      <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                         <Clock className="w-3 h-3" />{wf.lastRun}
                       </span>
                     </div>
@@ -160,17 +160,17 @@ export default function WorkflowSection() {
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 mb-3">{wf.description}</p>
+              <p className="text-xs text-[var(--text-muted)] mb-3">{wf.description}</p>
 
               {/* Trigger */}
               <div className="bg-purple-500/[0.05] border border-purple-500/15 rounded-xl p-3 mb-4">
-                <div className="text-[10px] text-purple-400 uppercase mb-1">Trigger</div>
-                <p className="text-xs text-gray-300 italic">"{wf.trigger}"</p>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 uppercase mb-1">Trigger</div>
+                <p className="text-xs text-[var(--text-secondary)] italic">&quot;{wf.trigger}&quot;</p>
               </div>
 
               {/* Steps */}
               <div className="space-y-2">
-                <div className="text-[10px] text-gray-500 uppercase mb-1">Agent Pipeline</div>
+                <div className="text-[10px] text-[var(--text-muted)] uppercase mb-1">Agent Pipeline</div>
                 {wf.steps.map((step, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="flex flex-col items-center">
@@ -178,18 +178,18 @@ export default function WorkflowSection() {
                         {step.agent[0]}
                       </div>
                       {i < wf.steps.length - 1 && (
-                        <div className={`w-0.5 h-4 ${step.done ? 'bg-purple-500/30' : 'bg-white/[0.05]'}`} />
+                        <div className={`w-0.5 h-4 ${step.done ? 'bg-purple-500/30' : 'bg-[var(--border-color)]'}`} />
                       )}
                     </div>
                     <div className="flex-1 flex items-center justify-between py-1">
                       <div>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.04] text-gray-400 mr-2">{step.agent}</span>
-                        <span className={`text-xs ${step.done ? 'text-gray-300' : 'text-gray-500'}`}>{step.action}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] mr-2">{step.agent}</span>
+                        <span className={`text-xs ${step.done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'}`}>{step.action}</span>
                       </div>
                       {step.done ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0" />
                       ) : (
-                        <Clock className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                        <Clock className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                       )}
                     </div>
                   </div>
@@ -203,8 +203,8 @@ export default function WorkflowSection() {
       {/* Available Templates */}
       <GlassCard>
         <div className="flex items-center gap-2 mb-4">
-          <Bot className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-white font-semibold">Workflow Templates</h3>
+          <Bot className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <h3 className="text-[var(--text-primary)] font-semibold">Workflow Templates</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
@@ -219,12 +219,12 @@ export default function WorkflowSection() {
               key={i}
               whileHover={{ scale: 1.02, y: -2 }}
               onClick={() => openChatWithContext(`Help me set up the "${tpl.name}" workflow. ${tpl.desc}`)}
-              className="text-left p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/30 hover:bg-white/[0.04] transition-all group"
+              className="text-left p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-purple-500/30 hover:bg-[var(--glass-bg)] transition-all group"
             >
               <div className="text-2xl mb-2">{tpl.icon}</div>
-              <h4 className="text-sm text-white font-medium mb-1 group-hover:text-purple-300 transition-colors">{tpl.name}</h4>
-              <p className="text-xs text-gray-500">{tpl.desc}</p>
-              <div className="flex items-center gap-1 mt-2 text-[10px] text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              <h4 className="text-sm text-[var(--text-primary)] font-medium mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">{tpl.name}</h4>
+              <p className="text-xs text-[var(--text-muted)]">{tpl.desc}</p>
+              <div className="flex items-center gap-1 mt-2 text-[10px] text-purple-600 dark:text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
                 Create <ArrowRight className="w-3 h-3" />
               </div>
             </motion.button>

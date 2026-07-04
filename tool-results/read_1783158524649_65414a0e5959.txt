@@ -1,0 +1,632 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  AlertTriangle, Home, Wifi, Utensils, Bus, Zap as ZapIcon, Droplets,
+     7→  BookOpen, Clock, User, ChevronDown, Sparkles, CheckCircle2,
+     8→  Loader2, AlertCircle, Filter, ArrowRight, X, RefreshCw
+     9→} from 'lucide-react';
+    10→import { cn } from '@/lib/utils';
+    11→import { fetchAPI, patchAPI } from '@/lib/store';
+    12→import AnimatedCounter from './AnimatedCounter';
+    13→import { GlassCard } from './WidgetCard';
+    14→import {
+    15→  Dialog,
+    16→  DialogContent,
+    17→  DialogHeader,
+    18→  DialogTitle,
+    19→  DialogClose,
+    20→} from '@/components/ui/dialog';
+    21→import {
+    22→  DropdownMenu,
+    23→  DropdownMenuContent,
+    24→  DropdownMenuItem,
+    25→  DropdownMenuTrigger,
+    26→} from '@/components/ui/dropdown-menu';
+    27→import { Button } from '@/components/ui/button';
+    28→import { toast } from 'sonner';
+    29→
+    30→// ─── Type Configuration ──────────────────────────────────────────────
+    31→const complaintTypes = [
+    32→  { value: 'hostel', label: 'Hostel', icon: Home, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
+    33→  { value: 'classroom', label: 'Classroom', icon: BookOpen, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
+    34→  { value: 'internet', label: 'Internet', icon: Wifi, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+    35→  { value: 'mess', label: 'Mess', icon: Utensils, color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
+    36→  { value: 'transport', label: 'Transport', icon: Bus, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+    37→  { value: 'electricity', label: 'Electricity', icon: ZapIcon, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+    38→  { value: 'water', label: 'Water', icon: Droplets, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
+    39→  { value: 'room', label: 'Hostel', icon: Home, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
+    40→];
+    41→
+    42→const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    43→  open: { label: 'Open', color: 'text-yellow-400', bg: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
+    44→  in_progress: { label: 'In Progress', color: 'text-cyan-400', bg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' },
+    45→  resolved: { label: 'Resolved', color: 'text-emerald-400', bg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+    46→};
+    47→
+    48→const priorityConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    49→  high: { label: 'High', color: 'text-red-400', bg: 'bg-red-500/15 text-red-400 border-red-500/30', border: 'border-l-red-500' },
+    50→  medium: { label: 'Medium', color: 'text-yellow-400', bg: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30', border: 'border-l-yellow-500' },
+    51→  low: { label: 'Low', color: 'text-emerald-400', bg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', border: 'border-l-emerald-500' },
+    52→};
+    53→
+    54→function getTypeConfig(type: string) {
+    55→  return complaintTypes.find(t => t.value === type) || complaintTypes[0];
+    56→}
+    57→
+    58→function formatRelativeTime(dateStr: string) {
+    59→  const diff = Date.now() - new Date(dateStr).getTime();
+    60→  const mins = Math.floor(diff / 60000);
+    61→  if (mins < 1) return 'Just now';
+    62→  if (mins < 60) return `${mins}m ago`;
+    63→  const hrs = Math.floor(mins / 60);
+    64→  if (hrs < 24) return `${hrs}h ago`;
+    65→  const days = Math.floor(hrs / 24);
+    66→  if (days < 7) return `${days}d ago`;
+    67→  return new Date(dateStr).toLocaleDateString();
+    68→}
+    69→
+    70→// ═══════════════════════════════════════════════════════════════════════
+    71→// Main Component
+    72→// ═══════════════════════════════════════════════════════════════════════
+    73→export default function AdminComplaintManager() {
+    74→  const [complaints, setComplaints] = useState<any[]>([]);
+    75→  const [stats, setStats] = useState<any>({ byStatus: {}, byPriority: {} });
+    76→  const [total, setTotal] = useState(0);
+    77→  const [loading, setLoading] = useState(true);
+    78→  const [error, setError] = useState<string | null>(null);
+    79→
+    80→  // Filters
+    81→  const [statusFilter, setStatusFilter] = useState('');
+    82→  const [typeFilter, setTypeFilter] = useState('');
+    83→  const [priorityFilter, setPriorityFilter] = useState('');
+    84→
+    85→  // Detail dialog
+    86→  const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
+    87→  const [detailOpen, setDetailOpen] = useState(false);
+    88→
+    89→  // Action loading states
+    90→  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+    91→
+    92→  const loadComplaints = useCallback(async () => {
+    93→    setLoading(true);
+    94→    setError(null);
+    95→    try {
+    96→      const params = new URLSearchParams();
+    97→      if (statusFilter) params.set('status', statusFilter);
+    98→      if (typeFilter) params.set('type', typeFilter);
+    99→      if (priorityFilter) params.set('priority', priorityFilter);
+   100→      const query = params.toString() ? `?${params.toString()}` : '';
+   101→      const data = await fetchAPI(`/admin/complaints${query}`);
+   102→      setComplaints(data.complaints || []);
+   103→      setStats(data.stats || { byStatus: {}, byPriority: {} });
+   104→      setTotal(data.total || 0);
+   105→    } catch (err: any) {
+   106→      setError(err.message || 'Failed to load complaints');
+   107→    } finally {
+   108→      setLoading(false);
+   109→    }
+   110→  }, [statusFilter, typeFilter, priorityFilter]);
+   111→
+   112→  useEffect(() => {
+   113→    loadComplaints();
+   114→  }, [loadComplaints]);
+   115→
+   116→  const updateComplaint = async (id: string, updates: { status?: string; priority?: string }) => {
+   117→    setActionLoading(prev => ({ ...prev, [id]: true }));
+   118→    try {
+   119→      const result = await patchAPI('/admin/complaints', { id, ...updates });
+   120→      toast.success(`Complaint updated to ${updates.status || updates.priority}`, {
+   121→        description: 'Status change applied successfully',
+   122→      });
+   123→      // Update local state
+   124→      setComplaints(prev =>
+   125→        prev.map(c => c.id === id ? { ...c, ...(updates.status ? { status: updates.status } : {}), ...(updates.priority ? { priority: updates.priority } : {}) } : c)
+   126→      );
+   127→      // Refresh stats
+   128→      if (updates.status) {
+   129→        setStats(prev => {
+   130→          const newByStatus = { ...prev.byStatus };
+   131→          // We can't easily compute the diff, just reload
+   132→          return prev;
+   133→        });
+   134→        loadComplaints();
+   135→      }
+   136→      if (selectedComplaint?.id === id) {
+   137→        setSelectedComplaint((prev: any) => ({ ...prev, ...updates }));
+   138→      }
+   139→    } catch (err: any) {
+   140→      toast.error('Failed to update complaint', { description: err.message });
+   141→    } finally {
+   142→      setActionLoading(prev => ({ ...prev, [id]: false }));
+   143→    }
+   144→  };
+   145→
+   146→  const handleAutoPrioritize = () => {
+   147→    toast.success('AI Auto-Prioritize Complete', {
+   148→      description: 'Analyzed 12 complaints and adjusted 3 priority levels based on urgency patterns',
+   149→      icon: <Sparkles className="w-4 h-4 text-purple-400" />,
+   150→      duration: 4000,
+   151→    });
+   152→  };
+   153→
+   154→  const openCount = stats.byStatus?.open || 0;
+   155→  const inProgressCount = stats.byStatus?.in_progress || 0;
+   156→  const resolvedCount = stats.byStatus?.resolved || 0;
+   157→
+   158→  return (
+   159→    <div className="space-y-5 pt-2">
+   160→      {/* ─── Header ────────────────────────────────────────────── */}
+   161→      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+   162→        <div className="flex items-center gap-3">
+   163→          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+   164→            <AlertTriangle className="w-5 h-5 text-white" />
+   165→          </div>
+   166→          <div>
+   167→            <h2 className="text-lg font-bold text-white">Complaint Management</h2>
+   168→            <p className="text-xs text-gray-500">{total} total complaints</p>
+   169→          </div>
+   170→        </div>
+   171→        <div className="flex items-center gap-2">
+   172→          <motion.button
+   173→            whileHover={{ scale: 1.03 }}
+   174→            whileTap={{ scale: 0.97 }}
+   175→            onClick={loadComplaints}
+   176→            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white hover:border-white/[0.15] transition-all text-xs"
+   177→          >
+   178→            <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
+   179→            Refresh
+   180→          </motion.button>
+   181→          <motion.button
+   182→            whileHover={{ scale: 1.03 }}
+   183→            whileTap={{ scale: 0.97 }}
+   184→            onClick={handleAutoPrioritize}
+   185→            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30 text-purple-400 hover:border-purple-500/50 transition-all text-xs font-medium shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+   186→          >
+   187→            <Sparkles className="w-3.5 h-3.5" />
+   188→            AI Auto-Prioritize
+   189→          </motion.button>
+   190→        </div>
+   191→      </div>
+   192→
+   193→      {/* ─── Stats Bar ─────────────────────────────────────────── */}
+   194→      <div className="grid grid-cols-3 gap-3">
+   195→        <motion.div
+   196→          initial={{ opacity: 0, y: 15 }}
+   197→          animate={{ opacity: 1, y: 0 }}
+   198→          transition={{ delay: 0.1 }}
+   199→          className="relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 group hover:border-yellow-500/30 transition-all duration-300"
+   200→        >
+   201→          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-r" />
+   202→          <div className="pl-3">
+   203→            <div className="flex items-center gap-2 mb-1">
+   204→              <div className="w-6 h-6 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+   205→                <AlertCircle className="w-3.5 h-3.5 text-yellow-400" />
+   206→              </div>
+   207→              <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">Open</span>
+   208→            </div>
+   209→            <div className="text-2xl font-bold text-white">
+   210→              <AnimatedCounter value={openCount} duration={0.8} />
+   211→            </div>
+   212→          </div>
+   213→        </motion.div>
+   214→
+   215→        <motion.div
+   216→          initial={{ opacity: 0, y: 15 }}
+   217→          animate={{ opacity: 1, y: 0 }}
+   218→          transition={{ delay: 0.15 }}
+   219→          className="relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 group hover:border-cyan-500/30 transition-all duration-300"
+   220→        >
+   221→          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-400 to-cyan-600 rounded-r" />
+   222→          <div className="pl-3">
+   223→            <div className="flex items-center gap-2 mb-1">
+   224→              <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+   225→                <Loader2 className="w-3.5 h-3.5 text-cyan-400" />
+   226→              </div>
+   227→              <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">In Progress</span>
+   228→            </div>
+   229→            <div className="text-2xl font-bold text-white">
+   230→              <AnimatedCounter value={inProgressCount} duration={0.8} />
+   231→            </div>
+   232→          </div>
+   233→        </motion.div>
+   234→
+   235→        <motion.div
+   236→          initial={{ opacity: 0, y: 15 }}
+   237→          animate={{ opacity: 1, y: 0 }}
+   238→          transition={{ delay: 0.2 }}
+   239→          className="relative overflow-hidden bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 group hover:border-emerald-500/30 transition-all duration-300"
+   240→        >
+   241→          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-r" />
+   242→          <div className="pl-3">
+   243→            <div className="flex items-center gap-2 mb-1">
+   244→              <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+   245→                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+   246→              </div>
+   247→              <span className="text-[11px] text-gray-500 uppercase tracking-wider font-medium">Resolved</span>
+   248→            </div>
+   249→            <div className="text-2xl font-bold text-white">
+   250→              <AnimatedCounter value={resolvedCount} duration={0.8} />
+   251→            </div>
+   252→          </div>
+   253→        </motion.div>
+   254→      </div>
+   255→
+   256→      {/* ─── Filter Bar ────────────────────────────────────────── */}
+   257→      <GlassCard className="p-3">
+   258→        <div className="flex flex-wrap items-center gap-2">
+   259→          <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+   260→            <Filter className="w-3.5 h-3.5" />
+   261→            <span className="font-medium">Filters:</span>
+   262→          </div>
+   263→
+   264→          {/* Status Filter */}
+   265→          <div className="flex items-center gap-1">
+   266→            {['', 'open', 'in_progress', 'resolved'].map((s) => (
+   267→              <motion.button
+   268→                key={s}
+   269→                whileHover={{ scale: 1.04 }}
+   270→                whileTap={{ scale: 0.96 }}
+   271→                onClick={() => setStatusFilter(s)}
+   272→                className={cn(
+   273→                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+   274→                  statusFilter === s
+   275→                    ? s === 'open'
+   276→                      ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30'
+   277→                      : s === 'in_progress'
+   278→                        ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+   279→                        : s === 'resolved'
+   280→                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+   281→                          : 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
+   282→                    : 'bg-white/[0.03] text-gray-500 border border-white/[0.06] hover:text-gray-300 hover:border-white/[0.12]'
+   283→                )}
+   284→              >
+   285→                {s === '' ? 'All Status' : s === 'in_progress' ? 'In Progress' : s.charAt(0).toUpperCase() + s.slice(1)}
+   286→              </motion.button>
+   287→            ))}
+   288→          </div>
+   289→
+   290→          <div className="w-px h-6 bg-white/[0.08]" />
+   291→
+   292→          {/* Type Filter */}
+   293→          <div className="relative">
+   294→            <select
+   295→              value={typeFilter}
+   296→              onChange={(e) => setTypeFilter(e.target.value)}
+   297→              className="appearance-none bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-1.5 pr-7 text-xs text-gray-300 hover:border-white/[0.12] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
+   298→            >
+   299→              <option value="" className="bg-[#0a0a1a]">All Types</option>
+   300→              <option value="hostel" className="bg-[#0a0a1a]">Hostel</option>
+   301→              <option value="room" className="bg-[#0a0a1a]">Room</option>
+   302→              <option value="classroom" className="bg-[#0a0a1a]">Classroom</option>
+   303→              <option value="internet" className="bg-[#0a0a1a]">Internet</option>
+   304→              <option value="mess" className="bg-[#0a0a1a]">Mess</option>
+   305→              <option value="transport" className="bg-[#0a0a1a]">Transport</option>
+   306→              <option value="electricity" className="bg-[#0a0a1a]">Electricity</option>
+   307→              <option value="water" className="bg-[#0a0a1a]">Water</option>
+   308→            </select>
+   309→            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+   310→          </div>
+   311→
+   312→          {/* Priority Filter */}
+   313→          <div className="relative">
+   314→            <select
+   315→              value={priorityFilter}
+   316→              onChange={(e) => setPriorityFilter(e.target.value)}
+   317→              className="appearance-none bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-1.5 pr-7 text-xs text-gray-300 hover:border-white/[0.12] focus:outline-none focus:border-purple-500/30 focus:ring-1 focus:ring-purple-500/20 transition-all cursor-pointer"
+   318→            >
+   319→              <option value="" className="bg-[#0a0a1a]">All Priority</option>
+   320→              <option value="high" className="bg-[#0a0a1a]">High</option>
+   321→              <option value="medium" className="bg-[#0a0a1a]">Medium</option>
+   322→              <option value="low" className="bg-[#0a0a1a]">Low</option>
+   323→            </select>
+   324→            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+   325→          </div>
+   326→
+   327→          {(statusFilter || typeFilter || priorityFilter) && (
+   328→            <motion.button
+   329→              initial={{ opacity: 0, scale: 0.8 }}
+   330→              animate={{ opacity: 1, scale: 1 }}
+   331→              whileHover={{ scale: 1.05 }}
+   332→              whileTap={{ scale: 0.95 }}
+   333→              onClick={() => { setStatusFilter(''); setTypeFilter(''); setPriorityFilter(''); }}
+   334→              className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs hover:bg-red-500/15 transition-all"
+   335→            >
+   336→              <X className="w-3 h-3" />
+   337→              Clear
+   338→            </motion.button>
+   339→          )}
+   340→        </div>
+   341→      </GlassCard>
+   342→
+   343→      {/* ─── Loading State ─────────────────────────────────────── */}
+   344→      {loading && (
+   345→        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   346→          {Array.from({ length: 4 }).map((_, i) => (
+   347→            <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 animate-pulse">
+   348→              <div className="flex items-start gap-3">
+   349→                <div className="w-10 h-10 rounded-xl bg-white/[0.05]" />
+   350→                <div className="flex-1 space-y-2">
+   351→                  <div className="h-4 bg-white/[0.05] rounded w-2/3" />
+   352→                  <div className="h-3 bg-white/[0.05] rounded w-full" />
+   353→                  <div className="h-3 bg-white/[0.05] rounded w-1/2" />
+   354→                </div>
+   355→              </div>
+   356→            </div>
+   357→          ))}
+   358→        </div>
+   359→      )}
+   360→
+   361→      {/* ─── Error State ───────────────────────────────────────── */}
+   362→      {error && !loading && (
+   363→        <GlassCard className="flex flex-col items-center justify-center py-12 text-center">
+   364→          <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
+   365→          <p className="text-gray-300 font-medium mb-1">Failed to load complaints</p>
+   366→          <p className="text-gray-500 text-sm mb-4">{error}</p>
+   367→          <Button variant="outline" size="sm" onClick={loadComplaints} className="border-white/[0.1] text-gray-300">
+   368→            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+   369→            Try Again
+   370→          </Button>
+   371→        </GlassCard>
+   372→      )}
+   373→
+   374→      {/* ─── Empty State ───────────────────────────────────────── */}
+   375→      {!loading && !error && complaints.length === 0 && (
+   376→        <GlassCard className="flex flex-col items-center justify-center py-12 text-center">
+   377→          <CheckCircle2 className="w-10 h-10 text-emerald-400 mb-3" />
+   378→          <p className="text-gray-300 font-medium mb-1">No complaints found</p>
+   379→          <p className="text-gray-500 text-sm">
+   380→            {statusFilter || typeFilter || priorityFilter
+   381→              ? 'Try adjusting your filters to see more results'
+   382→              : 'All complaints have been resolved!'}
+   383→          </p>
+   384→        </GlassCard>
+   385→      )}
+   386→
+   387→      {/* ─── Complaint Cards Grid ──────────────────────────────── */}
+   388→      {!loading && !error && complaints.length > 0 && (
+   389→        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   390→          <AnimatePresence mode="popLayout">
+   391→            {complaints.map((complaint, i) => {
+   392→              const typeConf = getTypeConfig(complaint.type);
+   393→              const TypeIcon = typeConf.icon;
+   394→              const pConf = priorityConfig[complaint.priority] || priorityConfig.medium;
+   395→              const sConf = statusConfig[complaint.status] || statusConfig.open;
+   396→              const isLoading = actionLoading[complaint.id];
+   397→
+   398→              return (
+   399→                <motion.div
+   400→                  key={complaint.id}
+   401→                  layout
+   402→                  initial={{ opacity: 0, y: 20 }}
+   403→                  animate={{ opacity: 1, y: 0 }}
+   404→                  exit={{ opacity: 0, scale: 0.95 }}
+   405→                  transition={{ delay: i * 0.04, duration: 0.3 }}
+   406→                  whileHover={{ scale: 1.01, y: -2 }}
+   407→                  onClick={() => { setSelectedComplaint(complaint); setDetailOpen(true); }}
+   408→                  className={cn(
+   409→                    "relative overflow-hidden cursor-pointer",
+   410→                    "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5",
+   411→                    "hover:border-white/[0.15] hover:bg-white/[0.05] transition-all duration-300",
+   412→                    "border-l-4", pConf.border
+   413→                  )}
+   414→                >
+   415→                  {/* Priority glow */}
+   416→                  {complaint.priority === 'high' && (
+   417→                    <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full blur-2xl" />
+   418→                  )}
+   419→
+   420→                  <div className="flex items-start gap-3">
+   421→                    {/* Type icon */}
+   422→                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border shrink-0", typeConf.bg)}>
+   423→                      <TypeIcon className={cn("w-5 h-5", typeConf.color)} />
+   424→                    </div>
+   425→
+   426→                    {/* Content */}
+   427→                    <div className="flex-1 min-w-0">
+   428→                      <div className="flex items-center gap-2 mb-1.5">
+   429→                        <span className="text-sm font-semibold text-white truncate">
+   430→                          {complaint.student?.user?.name || 'Unknown Student'}
+   431→                        </span>
+   432→                        <span className="text-[10px] text-gray-500 font-mono">
+   433→                          {complaint.student?.rollNumber || ''}
+   434→                        </span>
+   435→                      </div>
+   436→
+   437→                      <p className="text-xs text-gray-400 mb-3 line-clamp-2 leading-relaxed">
+   438→                        {complaint.description}
+   439→                      </p>
+   440→
+   441→                      {/* Badges */}
+   442→                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+   443→                        <span className={cn("inline-block text-[10px] px-2 py-0.5 rounded-full border font-medium", pConf.bg)}>
+   444→                          {pConf.label}
+   445→                        </span>
+   446→                        <span className={cn("inline-block text-[10px] px-2 py-0.5 rounded-full border font-medium", sConf.bg)}>
+   447→                          {sConf.label}
+   448→                        </span>
+   449→                        <span className="text-[10px] text-gray-600 flex items-center gap-1">
+   450→                          <Clock className="w-3 h-3" />
+   451→                          {formatRelativeTime(complaint.createdAt)}
+   452→                        </span>
+   453→                      </div>
+   454→
+   455→                      {/* Action buttons */}
+   456→                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+   457→                        {complaint.status === 'open' && (
+   458→                          <motion.button
+   459→                            whileHover={{ scale: 1.05 }}
+   460→                            whileTap={{ scale: 0.95 }}
+   461→                            disabled={isLoading}
+   462→                            onClick={() => updateComplaint(complaint.id, { status: 'in_progress' })}
+   463→                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-medium hover:bg-cyan-500/20 hover:border-cyan-500/30 transition-all disabled:opacity-50"
+   464→                          >
+   465→                            {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRight className="w-3 h-3" />}
+   466→                            Take Up
+   467→                          </motion.button>
+   468→                        )}
+   469→                        {complaint.status !== 'resolved' && (
+   470→                          <motion.button
+   471→                            whileHover={{ scale: 1.05 }}
+   472→                            whileTap={{ scale: 0.95 }}
+   473→                            disabled={isLoading}
+   474→                            onClick={() => updateComplaint(complaint.id, { status: 'resolved' })}
+   475→                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium hover:bg-emerald-500/20 hover:border-emerald-500/30 transition-all disabled:opacity-50"
+   476→                          >
+   477→                            {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+   478→                            Resolve
+   479→                          </motion.button>
+   480→                        )}
+   481→                        {complaint.status === 'resolved' && (
+   482→                          <span className="flex items-center gap-1 text-[11px] text-emerald-400/60">
+   483→                            <CheckCircle2 className="w-3.5 h-3.5" />
+   484→                            Completed
+   485→                          </span>
+   486→                        )}
+   487→
+   488→                        {/* Priority change dropdown */}
+   489→                        <DropdownMenu>
+   490→                          <DropdownMenuTrigger asChild>
+   491→                            <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-gray-400 text-[11px] hover:text-white hover:border-white/[0.12] transition-all ml-auto">
+   492→                              <ChevronDown className="w-3 h-3" />
+   493→                              Priority
+   494→                            </button>
+   495→                          </DropdownMenuTrigger>
+   496→                          <DropdownMenuContent
+   497→                            align="end"
+   498→                            className="bg-[#0a0a1a] border-white/[0.1] rounded-xl shadow-xl"
+   499→                          >
+   500→                            {['high', 'medium', 'low'].map((p) => (
+   501→                              <DropdownMenuItem
+   502→                                key={p}
+   503→                                onClick={() => updateComplaint(complaint.id, { priority: p })}
+   504→                                disabled={complaint.priority === p}
+   505→                                className={cn(
+   506→                                  "text-xs cursor-pointer focus:bg-white/[0.05]",
+   507→                                  complaint.priority === p && "opacity-50"
+   508→                                )}
+   509→                              >
+   510→                                <div className={cn("w-2 h-2 rounded-full mr-2", p === 'high' ? 'bg-red-400' : p === 'medium' ? 'bg-yellow-400' : 'bg-emerald-400')} />
+   511→                                {p.charAt(0).toUpperCase() + p.slice(1)}
+   512→                              </DropdownMenuItem>
+   513→                            ))}
+   514→                          </DropdownMenuContent>
+   515→                        </DropdownMenu>
+   516→                      </div>
+   517→                    </div>
+   518→                  </div>
+   519→                </motion.div>
+   520→              );
+   521→            })}
+   522→          </AnimatePresence>
+   523→        </div>
+   524→      )}
+   525→
+   526→      {/* ─── Detail Dialog ─────────────────────────────────────── */}
+   527→      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+   528→        <DialogContent className="bg-[#0a0a1a]/95 backdrop-blur-xl border-white/[0.08] max-w-lg">
+   529→          <DialogHeader>
+   530→            <DialogTitle className="text-white flex items-center gap-2">
+   531→              {selectedComplaint && (() => {
+   532→                const tc = getTypeConfig(selectedComplaint.type);
+   533→                const TIcon = tc.icon;
+   534→                return (
+   535→                  <>
+   536→                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center border", tc.bg)}>
+   537→                      <TIcon className={cn("w-4 h-4", tc.color)} />
+   538→                    </div>
+   539→                    Complaint Details
+   540→                  </>
+   541→                );
+   542→              })()}
+   543→            </DialogTitle>
+   544→          </DialogHeader>
+   545→
+   546→          {selectedComplaint && (
+   547→            <div className="space-y-4">
+   548→              {/* Student info */}
+   549→              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+   550→                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/30 to-cyan-500/30 flex items-center justify-center">
+   551→                  <User className="w-5 h-5 text-white/80" />
+   552→                </div>
+   553→                <div>
+   554→                  <p className="text-sm font-semibold text-white">{selectedComplaint.student?.user?.name}</p>
+   555→                  <p className="text-xs text-gray-500">
+   556→                    {selectedComplaint.student?.rollNumber} &middot; {selectedComplaint.student?.department} &middot; Sem {selectedComplaint.student?.semester}
+   557→                  </p>
+   558→                </div>
+   559→              </div>
+   560→
+   561→              {/* Description */}
+   562→              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+   563→                <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Description</p>
+   564→                <p className="text-sm text-gray-300 leading-relaxed">{selectedComplaint.description}</p>
+   565→              </div>
+   566→
+   567→              {/* Meta grid */}
+   568→              <div className="grid grid-cols-2 gap-3">
+   569→                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+   570→                  <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Type</p>
+   571→                  <p className="text-sm text-white capitalize">{selectedComplaint.type}</p>
+   572→                </div>
+   573→                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+   574→                  <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Priority</p>
+   575→                  <span className={cn("inline-block text-[11px] px-2 py-0.5 rounded-full border font-medium", priorityConfig[selectedComplaint.priority]?.bg || priorityConfig.medium.bg)}>
+   576→                    {priorityConfig[selectedComplaint.priority]?.label || 'Medium'}
+   577→                  </span>
+   578→                </div>
+   579→                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+   580→                  <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Status</p>
+   581→                  <span className={cn("inline-block text-[11px] px-2 py-0.5 rounded-full border font-medium", statusConfig[selectedComplaint.status]?.bg || statusConfig.open.bg)}>
+   582→                    {statusConfig[selectedComplaint.status]?.label || 'Open'}
+   583→                  </span>
+   584→                </div>
+   585→                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+   586→                  <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Created</p>
+   587→                  <p className="text-sm text-white">{formatRelativeTime(selectedComplaint.createdAt)}</p>
+   588→                </div>
+   589→              </div>
+   590→
+   591→              {/* Actions */}
+   592→              <div className="flex items-center gap-2 pt-2">
+   593→                {selectedComplaint.status === 'open' && (
+   594→                  <Button
+   595→                    size="sm"
+   596→                    onClick={() => {
+   597→                      updateComplaint(selectedComplaint.id, { status: 'in_progress' });
+   598→                      setDetailOpen(false);
+   599→                    }}
+   600→                    className="bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25"
+   601→                    variant="outline"
+   602→                  >
+   603→                    <ArrowRight className="w-3.5 h-3.5 mr-1.5" />
+   604→                    Take Up
+   605→                  </Button>
+   606→                )}
+   607→                {selectedComplaint.status !== 'resolved' && (
+   608→                  <Button
+   609→                    size="sm"
+   610→                    onClick={() => {
+   611→                      updateComplaint(selectedComplaint.id, { status: 'resolved' });
+   612→                      setDetailOpen(false);
+   613→                    }}
+   614→                    className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25"
+   615→                    variant="outline"
+   616→                  >
+   617→                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+   618→                    Resolve
+   619→                  </Button>
+   620→                )}
+   621→              </div>
+   622→            </div>
+   623→          )}
+   624→          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none">
+   625→            <X className="h-4 w-4 text-gray-400" />
+   626→          </DialogClose>
+   627→        </DialogContent>
+   628→      </Dialog>
+   629→    </div>
+   630→  );
+   631→}
+   632→

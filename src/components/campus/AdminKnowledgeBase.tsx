@@ -64,10 +64,10 @@ export default function AdminKnowledgeBase() {
   const lastIndexed = '5 min ago';
 
   const stats = [
-    { label: 'Total Documents', value: documents.length, icon: FileText, color: 'purple', gradient: 'from-purple-500 to-violet-600', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-400' },
-    { label: 'Total Chunks', value: totalChunks, icon: Layers, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-400' },
-    { label: 'Avg Relevance', value: avgRelevance, decimals: 1, suffix: '%', icon: BarChart3, color: 'green', gradient: 'from-green-500 to-emerald-600', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-400' },
-    { label: 'Last Indexed', value: 0, displayValue: lastIndexed, icon: Clock, color: 'orange', gradient: 'from-orange-500 to-amber-600', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-400' },
+    { label: 'Total Documents', value: documents.length, icon: FileText, color: 'purple', gradient: 'from-purple-500 to-violet-600', bg: 'bg-purple-500/10 border-purple-500/20', textColor: 'text-purple-600 dark:text-purple-400' },
+    { label: 'Total Chunks', value: totalChunks, icon: Layers, color: 'cyan', gradient: 'from-cyan-500 to-blue-600', bg: 'bg-cyan-500/10 border-cyan-500/20', textColor: 'text-cyan-600 dark:text-cyan-400' },
+    { label: 'Avg Relevance', value: avgRelevance, decimals: 1, suffix: '%', icon: BarChart3, color: 'green', gradient: 'from-green-500 to-emerald-600', bg: 'bg-green-500/10 border-green-500/20', textColor: 'text-green-600 dark:text-green-400' },
+    { label: 'Last Indexed', value: 0, displayValue: lastIndexed, icon: Clock, color: 'orange', gradient: 'from-orange-500 to-amber-600', bg: 'bg-orange-500/10 border-orange-500/20', textColor: 'text-orange-600 dark:text-orange-400' },
   ];
 
   const handleUpload = () => {
@@ -124,18 +124,18 @@ export default function AdminKnowledgeBase() {
 
   const getFileIcon = (type: DocType) => {
     switch (type) {
-      case 'PDF': return <File className="w-5 h-5 text-red-400" />;
-      case 'DOCX': return <FileText className="w-5 h-5 text-blue-400" />;
-      case 'TXT': return <FileText className="w-5 h-5 text-gray-400" />;
-      case 'CSV': return <FileSpreadsheet className="w-5 h-5 text-green-400" />;
+      case 'PDF': return <File className="w-5 h-5 text-red-600 dark:text-red-400" />;
+      case 'DOCX': return <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      case 'TXT': return <FileText className="w-5 h-5 text-[var(--text-secondary)]" />;
+      case 'CSV': return <FileSpreadsheet className="w-5 h-5 text-green-600 dark:text-green-400" />;
     }
   };
 
   const getStatusBadge = (status: DocStatus) => {
     const config = {
-      Indexed: { bg: 'bg-green-500/10 text-green-400 border-green-500/20', icon: CheckCircle2 },
-      Indexing: { bg: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', icon: Loader2 },
-      Failed: { bg: 'bg-red-500/10 text-red-400 border-red-500/20', icon: AlertCircle },
+      Indexed: { bg: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: CheckCircle2 },
+      Indexing: { bg: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20', icon: Loader2 },
+      Failed: { bg: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: AlertCircle },
     };
     const c = config[status];
     return (
@@ -161,19 +161,19 @@ export default function AdminKnowledgeBase() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             className={cn(
-              "bg-white/[0.03] backdrop-blur-xl border rounded-2xl p-4",
-              "hover:border-white/[0.15] transition-all duration-300",
+              "bg-[var(--glass-bg)] backdrop-blur-xl border rounded-2xl p-4",
+              "hover:border-[var(--border-color)] transition-all duration-300",
               stat.bg
             )}
           >
             <div className="flex items-center justify-between mb-2">
               <stat.icon className={cn("w-5 h-5", stat.textColor)} />
-              <ArrowUpRight className="w-3 h-3 text-gray-600" />
+              <ArrowUpRight className="w-3 h-3 text-[var(--text-muted)]" />
             </div>
             <div className={cn("text-2xl font-bold", stat.textColor)}>
               {stat.displayValue || <AnimatedCounter value={stat.value} decimals={stat.decimals || 0} suffix={stat.suffix || ''} />}
             </div>
-            <p className="text-gray-500 text-xs mt-1">{stat.label}</p>
+            <p className="text-[var(--text-muted)] text-xs mt-1">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -182,8 +182,8 @@ export default function AdminKnowledgeBase() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Drag & Drop Upload */}
         <GlassCard className="relative">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-            <Upload className="w-4 h-4 text-purple-400" /> Upload Documents
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <Upload className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Upload Documents
           </h3>
           <motion.div
             whileHover={{ scale: 1.01 }}
@@ -192,30 +192,30 @@ export default function AdminKnowledgeBase() {
               "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all",
               isUploading
                 ? "border-purple-500/40 bg-purple-500/5"
-                : "border-white/[0.1] hover:border-purple-500/30 hover:bg-white/[0.02]"
+                : "border-[var(--border-color)] hover:border-purple-500/30 hover:bg-[var(--glass-bg)]"
             )}
           >
             {isUploading ? (
               <div className="space-y-3">
-                <Loader2 className="w-8 h-8 text-purple-400 animate-spin mx-auto" />
-                <p className="text-sm text-gray-400">Uploading...</p>
-                <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                <Loader2 className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin mx-auto" />
+                <p className="text-sm text-[var(--text-secondary)]">Uploading...</p>
+                <div className="h-2 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${uploadProgress}%` }}
                     className="h-full bg-gradient-to-r from-purple-500 to-violet-600 rounded-full"
                   />
                 </div>
-                <p className="text-xs text-gray-500">{uploadProgress}%</p>
+                <p className="text-xs text-[var(--text-muted)]">{uploadProgress}%</p>
               </div>
             ) : (
               <div className="space-y-2">
-                <FileUp className="w-8 h-8 text-gray-600 mx-auto" />
-                <p className="text-sm text-gray-400">Drag & drop files here</p>
-                <p className="text-xs text-gray-600">or click to browse</p>
+                <FileUp className="w-8 h-8 text-[var(--text-muted)] mx-auto" />
+                <p className="text-sm text-[var(--text-secondary)]">Drag & drop files here</p>
+                <p className="text-xs text-[var(--text-muted)]">or click to browse</p>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   {['PDF', 'DOCX', 'TXT', 'CSV'].map(t => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-gray-500 border border-white/[0.06]">
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--glass-bg)] text-[var(--text-muted)] border border-[var(--border-color)]">
                       {t}
                     </span>
                   ))}
@@ -227,8 +227,8 @@ export default function AdminKnowledgeBase() {
 
         {/* RAG Pipeline Status */}
         <GlassCard>
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-cyan-400" /> RAG Pipeline
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> RAG Pipeline
           </h3>
           <div className="space-y-3">
             {pipelineStages.map((stage, i) => {
@@ -244,7 +244,7 @@ export default function AdminKnowledgeBase() {
                       "w-8 h-8 rounded-lg flex items-center justify-center border transition-all",
                       isComplete ? `bg-${stage.color}-500/20 border-${stage.color}-500/30` :
                       isCurrent ? `bg-${stage.color}-500/20 border-${stage.color}-500/30 animate-pulse` :
-                      "bg-white/[0.03] border-white/[0.06]"
+                      "bg-[var(--glass-bg)] border-[var(--border-color)]"
                     )}
                     style={isActive ? {
                       backgroundColor: isComplete || isCurrent ? `rgba(${stage.color === 'purple' ? '139,92,246' : stage.color === 'cyan' ? '6,182,212' : stage.color === 'green' ? '34,197,94' : '16,185,129'},0.15)` : undefined,
@@ -253,17 +253,17 @@ export default function AdminKnowledgeBase() {
                   >
                     <stage.icon className={cn(
                       "w-4 h-4",
-                      isComplete || isCurrent ? (stage.color === 'purple' ? 'text-purple-400' : stage.color === 'cyan' ? 'text-cyan-400' : stage.color === 'green' ? 'text-green-400' : 'text-emerald-400') : "text-gray-600"
+                      isComplete || isCurrent ? (stage.color === 'purple' ? 'text-purple-600 dark:text-purple-400' : stage.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' : stage.color === 'green' ? 'text-green-600 dark:text-green-400' : 'text-emerald-600 dark:text-emerald-400') : "text-[var(--text-muted)]"
                     )} />
                   </motion.div>
                   <div className="flex-1">
                     <div className={cn(
                       "text-sm font-medium",
-                      isActive ? "text-white" : "text-gray-600"
+                      isActive ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
                     )}>
                       {stage.label}
                     </div>
-                    <div className="h-1.5 mt-1 bg-white/[0.05] rounded-full overflow-hidden">
+                    <div className="h-1.5 mt-1 bg-[var(--glass-bg)] rounded-full overflow-hidden">
                       {(isComplete || isCurrent) && (
                         <motion.div
                           initial={{ width: 0 }}
@@ -279,8 +279,8 @@ export default function AdminKnowledgeBase() {
                       )}
                     </div>
                   </div>
-                  {isComplete && <CheckCircle2 className={cn("w-4 h-4", stage.color === 'purple' ? 'text-purple-400' : stage.color === 'cyan' ? 'text-cyan-400' : 'text-green-400')} />}
-                  {isCurrent && <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />}
+                  {isComplete && <CheckCircle2 className={cn("w-4 h-4", stage.color === 'purple' ? 'text-purple-600 dark:text-purple-400' : stage.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' : 'text-green-600 dark:text-green-400')} />}
+                  {isCurrent && <Loader2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />}
                 </div>
               );
             })}
@@ -293,8 +293,8 @@ export default function AdminKnowledgeBase() {
             className={cn(
               "w-full mt-4 py-2 rounded-xl text-sm font-medium transition-colors",
               pipelineActive
-                ? "bg-white/[0.03] text-gray-600 cursor-not-allowed"
-                : "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20"
+                ? "bg-[var(--glass-bg)] text-[var(--text-muted)] cursor-not-allowed"
+                : "bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20"
             )}
           >
             {pipelineActive ? 'Processing...' : 'Run Pipeline'}
@@ -303,8 +303,8 @@ export default function AdminKnowledgeBase() {
 
         {/* Search Preview */}
         <GlassCard>
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-            <Search className="w-4 h-4 text-green-400" /> Search Preview
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <Search className="w-4 h-4 text-green-600 dark:text-green-400" /> Search Preview
           </h3>
           <div className="flex gap-2 mb-3">
             <input
@@ -313,13 +313,13 @@ export default function AdminKnowledgeBase() {
               onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(false); }}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Test search across documents..."
-              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-green-500/40 transition-all"
+              className="flex-1 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-green-500/40 transition-all"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleSearch}
-              className="p-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 transition-colors"
+              className="p-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/20 transition-colors"
             >
               <Search className="w-4 h-4" />
             </motion.button>
@@ -332,16 +332,16 @@ export default function AdminKnowledgeBase() {
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]"
+                  className="p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)]"
                 >
-                  <p className="text-xs text-gray-300 line-clamp-2">{result.text}</p>
+                  <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{result.text}</p>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-[10px] text-gray-500">{result.source}</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">{result.source}</span>
                     <span className={cn(
                       "text-[10px] px-2 py-0.5 rounded-full font-medium",
-                      result.score >= 90 ? "bg-green-500/10 text-green-400 border border-green-500/20" :
-                      result.score >= 80 ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" :
-                      "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+                      result.score >= 90 ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20" :
+                      result.score >= 80 ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20" :
+                      "bg-gray-500/10 text-[var(--text-secondary)] border border-gray-500/20"
                     )}>
                       {result.score}% match
                     </span>
@@ -351,9 +351,9 @@ export default function AdminKnowledgeBase() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Database className="w-8 h-8 text-gray-700 mb-2" />
-              <p className="text-xs text-gray-600">Search across {indexedDocs.length} indexed documents</p>
-              <p className="text-[10px] text-gray-700 mt-1">RAG-powered semantic search</p>
+              <Database className="w-8 h-8 text-[var(--text-muted)] mb-2" />
+              <p className="text-xs text-[var(--text-muted)]">Search across {indexedDocs.length} indexed documents</p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-1">RAG-powered semantic search</p>
             </div>
           )}
         </GlassCard>
@@ -362,27 +362,27 @@ export default function AdminKnowledgeBase() {
       {/* Document Library */}
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-purple-400" /> Document Library
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Document Library
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
               {documents.length} docs
             </span>
           </h3>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[var(--text-muted)]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter documents..."
-                className="bg-white/[0.04] border border-white/[0.08] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/40 w-48 transition-all"
+                className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-purple-500/40 w-48 transition-all"
               />
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white transition-colors"
+              className="p-1.5 rounded-lg bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </motion.button>
@@ -399,28 +399,28 @@ export default function AdminKnowledgeBase() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all group"
+                className="p-4 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all group"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {getFileIcon(doc.type)}
                     <div>
-                      <h4 className="text-sm text-white font-medium line-clamp-1 group-hover:text-purple-400 transition-colors">
+                      <h4 className="text-sm text-[var(--text-primary)] font-medium line-clamp-1 group-hover:text-purple-600 dark:text-purple-400 transition-colors">
                         {doc.title}
                       </h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.05] text-gray-500 font-mono">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--glass-bg)] text-[var(--text-muted)] font-mono">
                           {doc.type}
                         </span>
-                        <span className="text-[10px] text-gray-600">{doc.size}</span>
+                        <span className="text-[10px] text-[var(--text-muted)]">{doc.size}</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1 rounded hover:bg-white/[0.05] text-gray-500 hover:text-white transition-colors">
+                    <button className="p-1 rounded hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                       <Eye className="w-3 h-3" />
                     </button>
-                    <button className="p-1 rounded hover:bg-white/[0.05] text-gray-500 hover:text-red-400 transition-colors">
+                    <button className="p-1 rounded hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-red-600 dark:text-red-400 transition-colors">
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
@@ -428,10 +428,10 @@ export default function AdminKnowledgeBase() {
                 <div className="flex items-center justify-between mt-3">
                   {getStatusBadge(doc.status)}
                   {doc.chunks > 0 && (
-                    <span className="text-[10px] text-gray-500">{doc.chunks} chunks</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">{doc.chunks} chunks</span>
                   )}
                 </div>
-                <div className="text-[10px] text-gray-600 mt-2">
+                <div className="text-[10px] text-[var(--text-muted)] mt-2">
                   Uploaded {doc.uploadDate}
                 </div>
               </motion.div>
@@ -441,8 +441,8 @@ export default function AdminKnowledgeBase() {
 
         {filteredDocs.length === 0 && (
           <div className="text-center py-8">
-            <FileText className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No documents found</p>
+            <FileText className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--text-muted)]">No documents found</p>
           </div>
         )}
       </GlassCard>

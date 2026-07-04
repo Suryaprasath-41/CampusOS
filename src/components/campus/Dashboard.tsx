@@ -22,7 +22,7 @@ export default function Dashboard() {
         animate={{ opacity: 1 }}
         className="p-6 space-y-4"
       >
-        <div className="h-28 w-full bg-white/[0.03] rounded-3xl animate-pulse" />
+        <div className="h-28 w-full bg-[var(--bg-card)] rounded-3xl animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
             <motion.div
@@ -30,13 +30,13 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="h-32 bg-white/[0.03] rounded-2xl animate-pulse"
+              className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse"
             />
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
-          <div className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />
+          <div className="h-64 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+          <div className="h-64 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
         </div>
       </motion.div>
     );
@@ -56,23 +56,23 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-white/[0.08] p-6"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600/10 via-violet-600/5 to-cyan-600/10 border border-[var(--border-color)] p-6"
       >
         {/* Shimmer/shine animation */}
         <span className="absolute inset-0 overflow-hidden rounded-3xl">
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-[shimmer_4s_ease-in-out_infinite]" style={{ transform: 'translateX(-100%)' }} />
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--glass-bg)] to-transparent animate-[shimmer_4s_ease-in-out_infinite]" style={{ transform: 'translateX(-100%)' }} />
         </span>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.15),transparent_50%)]" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-xs text-orange-300 uppercase tracking-wider">5-day streak active</span>
+              <Flame className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+              <span className="text-xs text-orange-600 dark:text-orange-300 uppercase tracking-wider">5-day streak active</span>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-1">
-              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{d.student.name}</span> 👋
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
+              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-cyan-600 dark:from-purple-400 dark:to-cyan-400">{d.student.name}</span> 👋
             </h2>
-            <p className="text-sm text-gray-400">You have {d.assignments.pending} assignments pending and {d.events.upcoming} events this week.</p>
+            <p className="text-sm text-[var(--text-secondary)]">You have {d.assignments.pending} assignments pending and {d.events.upcoming} events this week.</p>
           </div>
           <div className="flex gap-3">
             <motion.button
@@ -89,9 +89,9 @@ export default function Dashboard() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setVoiceOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white text-sm font-medium hover:bg-white/[0.08] transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--glass-bg)] transition-colors"
             >
-              <Mic className="w-4 h-4 text-cyan-400" />
+              <Mic className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               Voice
             </motion.button>
           </div>
@@ -104,7 +104,7 @@ export default function Dashboard() {
           <WidgetCard
             title="Attendance"
             value={`${att.percentage}%`}
-            icon={<TrendingUp className="w-5 h-5 text-purple-400" />}
+            icon={<TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
             risk={att.risk}
             onClick={() => setActiveSection('attendance')}
           />
@@ -113,7 +113,7 @@ export default function Dashboard() {
           <WidgetCard
             title="CGPA"
             value={d.student.cgpa}
-            icon={<BookOpen className="w-5 h-5 text-cyan-400" />}
+            icon={<BookOpen className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />}
             trend="up"
           />
         </motion.div>
@@ -121,7 +121,7 @@ export default function Dashboard() {
           <WidgetCard
             title="Assignments"
             value={d.assignments.pending}
-            icon={<AlertTriangle className="w-5 h-5 text-yellow-400" />}
+            icon={<AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />}
             subtitle="pending"
             onClick={() => setActiveSection('academic')}
           />
@@ -130,7 +130,7 @@ export default function Dashboard() {
           <WidgetCard
             title="Upcoming"
             value={d.events.upcoming}
-            icon={<Calendar className="w-5 h-5 text-blue-400" />}
+            icon={<Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
             subtitle="events"
             onClick={() => setActiveSection('events')}
           />
@@ -139,7 +139,7 @@ export default function Dashboard() {
           <WidgetCard
             title="Library Due"
             value={d.library.overdue}
-            icon={<Library className="w-5 h-5 text-orange-400" />}
+            icon={<Library className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
             subtitle="overdue"
             onClick={() => setActiveSection('library')}
           />
@@ -148,7 +148,7 @@ export default function Dashboard() {
           <WidgetCard
             title="Placement"
             value={`${d.readiness}%`}
-            icon={<Trophy className="w-5 h-5 text-green-400" />}
+            icon={<Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />}
             subtitle="readiness"
             onClick={() => setActiveSection('placement')}
           />
@@ -159,23 +159,23 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden"
+        className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden"
       >
-        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
+        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-[var(--border-color)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
-          <span className="text-[10px] text-green-400 uppercase tracking-wider font-semibold">Live</span>
+          <span className="text-[10px] text-green-600 dark:text-green-400 uppercase tracking-wider font-semibold">Live</span>
           {/* Pulse dot for live data */}
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500" />
           </span>
         </div>
-        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-white/[0.08]">
-          <span className="text-[10px] text-gray-600">Backend:</span>
-          <span className="text-[10px] text-green-400 font-medium flex items-center gap-1">
+        <div className="flex items-center gap-2 shrink-0 pr-3 border-r border-[var(--border-color)]">
+          <span className="text-[10px] text-[var(--text-muted)]">Backend:</span>
+          <span className="text-[10px] text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
@@ -187,18 +187,18 @@ export default function Dashboard() {
           <motion.div
             animate={{ x: ['0%', '-50%'] }}
             transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="flex gap-8 whitespace-nowrap text-xs text-gray-400"
+            className="flex gap-8 whitespace-nowrap text-xs text-[var(--text-secondary)]"
           >
-            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> AI Agent processed 6 conversations today</span>
-            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-400" /> Google interview scheduled for next week</span>
-            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-400" /> 3 new books added to library</span>
-            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
-            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-400" /> Tech Fest registration opens Friday</span>
-            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-400" /> AI Agent processed 6 conversations today</span>
-            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-400" /> Google interview scheduled for next week</span>
-            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-400" /> 3 new books added to library</span>
-            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
-            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-400" /> Tech Fest registration opens Friday</span>
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-600 dark:text-purple-400" /> AI Agent processed 6 conversations today</span>
+            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-600 dark:text-green-400" /> Google interview scheduled for next week</span>
+            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> 3 new books added to library</span>
+            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Tech Fest registration opens Friday</span>
+            <span className="flex items-center gap-1.5"><Activity className="w-3 h-3 text-purple-600 dark:text-purple-400" /> AI Agent processed 6 conversations today</span>
+            <span className="flex items-center gap-1.5"><Trophy className="w-3 h-3 text-green-600 dark:text-green-400" /> Google interview scheduled for next week</span>
+            <span className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> 3 new books added to library</span>
+            <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400" /> SVM Classifier assignment due in 3 days</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Tech Fest registration opens Friday</span>
           </motion.div>
         </div>
       </motion.div>
@@ -213,38 +213,38 @@ export default function Dashboard() {
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
               >
-                <Zap className="w-5 h-5 text-purple-400" />
+                <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </motion.div>
-              <h3 className="text-white font-semibold">AI Predictions</h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">Live</span>
+              <h3 className="text-[var(--text-primary)] font-semibold">AI Predictions</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">Live</span>
             </div>
-            <span className="text-xs text-gray-500">Updated 2 min ago</span>
+            <span className="text-xs text-[var(--text-muted)]">Updated 2 min ago</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Attendance Prediction</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={att.predicted} decimals={1} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Attendance Prediction</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={att.predicted} decimals={1} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--bg-card)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, att.predicted)}%` }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Placement Readiness</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={d.readiness} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Placement Readiness</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={d.readiness} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--bg-card)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${d.readiness}%` }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(34,211,238,0.4)]" />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1.5">
-                <span className="text-gray-400 text-sm">Stress Level</span>
-                <span className="text-white text-sm font-semibold"><AnimatedCounter value={d.stressLevel} suffix="%" /></span>
+                <span className="text-[var(--text-secondary)] text-sm">Stress Level</span>
+                <span className="text-[var(--text-primary)] text-sm font-semibold"><AnimatedCounter value={d.stressLevel} suffix="%" /></span>
               </div>
-              <div className="h-2.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div className="h-2.5 bg-[var(--bg-card)] rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${d.stressLevel}%` }} transition={{ duration: 1, ease: 'easeOut' }} className={`h-full rounded-full bg-gradient-to-r shadow-[0_0_10px_rgba(239,68,68,0.4)] ${d.stressLevel > 60 ? 'from-red-500 to-rose-600' : d.stressLevel > 40 ? 'from-yellow-500 to-amber-600' : 'from-green-500 to-emerald-600'}`} />
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function Dashboard() {
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={qa.action}
-            className="text-left p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] transition-all group"
+            className="text-left p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-purple-500/30 transition-all group"
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
               qa.color === 'purple' ? 'bg-purple-500/10 border border-purple-500/20' :
@@ -277,14 +277,14 @@ export default function Dashboard() {
               'bg-green-500/10 border border-green-500/20'
             }`}>
               <qa.icon className={`w-5 h-5 ${
-                qa.color === 'purple' ? 'text-purple-400' :
-                qa.color === 'cyan' ? 'text-cyan-400' :
-                qa.color === 'blue' ? 'text-blue-400' :
-                'text-green-400'
+                qa.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
+                qa.color === 'cyan' ? 'text-cyan-600 dark:text-cyan-400' :
+                qa.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
+                'text-green-600 dark:text-green-400'
               }`} />
             </div>
-            <div className="text-sm text-white font-medium group-hover:text-purple-300 transition-colors">{qa.label}</div>
-            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+            <div className="text-sm text-[var(--text-primary)] font-medium group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">{qa.label}</div>
+            <div className="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-0.5">
               {qa.desc}
               <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
             </div>
@@ -298,10 +298,10 @@ export default function Dashboard() {
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-white font-semibold">Today&apos;s Schedule</h3>
+              <Clock className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Today&apos;s Schedule</h3>
             </div>
-            <button onClick={() => setActiveSection('academic')} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+            <button onClick={() => setActiveSection('academic')} className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 flex items-center gap-1">
               View all <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -314,13 +314,13 @@ export default function Dashboard() {
               <motion.div
                 key={i}
                 whileHover={{ x: 4 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all"
+                className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] border border-[var(--border-color)] transition-all"
               >
                 <div className="w-1 h-10 rounded-full bg-gradient-to-b from-purple-500 to-cyan-500 shrink-0" />
-                <div className="text-xs text-purple-400 font-mono w-20 shrink-0">{item.time}</div>
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-mono w-20 shrink-0">{item.time}</div>
                 <div className="flex-1">
-                  <div className="text-sm text-white">{item.subject}</div>
-                  <div className="text-xs text-gray-500">{item.room}</div>
+                  <div className="text-sm text-[var(--text-primary)]">{item.subject}</div>
+                  <div className="text-xs text-[var(--text-muted)]">{item.room}</div>
                 </div>
               </motion.div>
             ))}
@@ -331,10 +331,10 @@ export default function Dashboard() {
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold">Recent Notifications</h3>
+              <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Recent Notifications</h3>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">{d.notifications.unread} new</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">{d.notifications.unread} new</span>
           </div>
           <div className="space-y-2">
             {[
@@ -348,19 +348,19 @@ export default function Dashboard() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors cursor-pointer border-l-2 ${
+                className={`flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--glass-bg)] transition-colors cursor-pointer border-l-2 ${
                   n.type === 'warning' ? 'border-l-yellow-500/60' :
                   n.type === 'success' ? 'border-l-green-500/60' : 'border-l-blue-500/60'
                 }`}
               >
                 <span className="text-base shrink-0">{n.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white">{n.title}</div>
-                  <div className="text-xs text-gray-500 truncate">{n.desc}</div>
+                  <div className="text-sm text-[var(--text-primary)]">{n.title}</div>
+                  <div className="text-xs text-[var(--text-muted)] truncate">{n.desc}</div>
                 </div>
                 <div className={`w-1.5 h-1.5 rounded-full mt-2 shrink-0 ${
-                  n.type === 'warning' ? 'bg-yellow-400' :
-                  n.type === 'success' ? 'bg-green-400' : 'bg-blue-400'
+                  n.type === 'warning' ? 'bg-yellow-500' :
+                  n.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
                 }`} />
               </motion.div>
             ))}
@@ -373,10 +373,10 @@ export default function Dashboard() {
         <GlassCard className="md:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-green-400" />
-              <h3 className="text-white font-semibold">Your Skills</h3>
+              <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold">Your Skills</h3>
             </div>
-            <span className="text-xs text-gray-500">{d.student.skills.length} skills</span>
+            <span className="text-xs text-[var(--text-muted)]">{d.student.skills.length} skills</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {d.student.skills.map((skill: string, i: number) => (
@@ -386,7 +386,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
                 whileHover={{ scale: 1.05 }}
-                className="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium cursor-default hover:bg-purple-500/20 hover:border-purple-500/40 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-300 text-xs font-medium cursor-default hover:bg-purple-500/20 hover:border-purple-500/40 transition-colors"
               >
                 {skill}
               </motion.span>
@@ -398,15 +398,15 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5" />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <Bot className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-white font-semibold text-sm">AI Insight</h3>
+              <Bot className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              <h3 className="text-[var(--text-primary)] font-semibold text-sm">AI Insight</h3>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed mb-3">
-              Based on your skills & CGPA, you&apos;re <span className="text-cyan-400 font-semibold">{d.readiness}% ready</span> for placements. Focus on System Design & DSA to reach 95%.
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+              Based on your skills & CGPA, you&apos;re <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{d.readiness}% ready</span> for placements. Focus on System Design & DSA to reach 95%.
             </p>
             <button
               onClick={() => openChatWithContext("Create a personalized plan for my academic and placement improvement")}
-              className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium"
+              className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 flex items-center gap-1 font-medium"
             >
               Get personalized plan <ChevronRight className="w-3 h-3" />
             </button>

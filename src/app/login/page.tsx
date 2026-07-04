@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Eye, EyeOff, Loader2, Sparkles, Shield, GraduationCap, BookOpen } from 'lucide-react';
 import { useCampusStore } from '@/lib/store';
 
-function LoginBackground() {
+function LoginBackground({ isDark }: { isDark: boolean }) {
   useEffect(() => {
+    if (!isDark) return;
+
     const canvas = document.getElementById('login-canvas') as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -143,7 +146,20 @@ function LoginBackground() {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [isDark]);
+
+  if (!isDark) {
+    // Light mode: use a clean CSS gradient background instead of canvas
+    return (
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 30%, #f0fdfa 60%, #faf5ff 100%)',
+        }}
+      />
+    );
+  }
 
   return (
     <canvas
@@ -156,6 +172,7 @@ function LoginBackground() {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
   const { setIsAuthenticated, setCurrentUser, setActiveRole } = useCampusStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -167,6 +184,8 @@ export default function LoginPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const isDark = resolvedTheme === 'dark';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,8 +233,8 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050510] text-white relative overflow-hidden">
-      <LoginBackground />
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] text-[var(--text-primary)] relative overflow-hidden">
+      <LoginBackground isDark={isDark} />
 
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -226,22 +245,47 @@ export default function LoginPage() {
         {/* Main Card */}
         <div className="relative">
           {/* Outer glow */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 via-cyan-600/20 to-purple-600/20 rounded-3xl blur-xl" />
+          <div className={`absolute -inset-1 rounded-3xl blur-xl ${
+            isDark
+              ? 'bg-gradient-to-r from-purple-600/20 via-cyan-600/20 to-purple-600/20'
+              : 'bg-gradient-to-r from-purple-400/15 via-cyan-400/15 to-purple-400/15'
+          }`} />
 
           {/* Card */}
-          <div className="relative bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 sm:p-10 shadow-2xl">
-            {/* Animated gradient border effect */}
-            <div className="absolute inset-0 rounded-3xl overflow-hidden">
-              <motion.div
-                className="absolute inset-0 rounded-3xl"
-                style={{
-                  background: 'conic-gradient(from 0deg, transparent, rgba(139,92,246,0.15), transparent, rgba(6,182,212,0.15), transparent)',
-                }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-              />
-              <div className="absolute inset-[1px] rounded-3xl bg-[#0a0a1a]/95" />
-            </div>
+          <div className={`relative backdrop-blur-2xl rounded-3xl p-8 sm:p-10 shadow-2xl ${
+            isDark
+              ? 'bg-white/[0.03] border border-white/[0.08]'
+              : 'bg-white/80 border border-[var(--border-color)]'
+          }`}>
+            {/* Animated gradient border effect - dark mode only */}
+            {isDark && (
+              <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                <motion.div
+                  className="absolute inset-0 rounded-3xl"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent, rgba(139,92,246,0.15), transparent, rgba(6,182,212,0.15), transparent)',
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="absolute inset-[1px] rounded-3xl bg-[#0a0a1a]/95" />
+              </div>
+            )}
+
+            {/* Light mode: subtle inner gradient border */}
+            {!isDark && (
+              <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+                <motion.div
+                  className="absolute inset-0 rounded-3xl"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent, rgba(124,58,237,0.08), transparent, rgba(6,182,212,0.08), transparent)',
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="absolute inset-[1px] rounded-3xl bg-white/95" />
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Logo Section */}
@@ -252,7 +296,11 @@ export default function LoginPage() {
                 className="text-center mb-8"
               >
                 <motion.div
-                  className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600/20 to-cyan-600/20 border border-purple-500/20 mb-4 relative"
+                  className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl border mb-4 relative ${
+                    isDark
+                      ? 'bg-gradient-to-br from-purple-600/20 to-cyan-600/20 border-purple-500/20'
+                      : 'bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border-purple-400/20'
+                  }`}
                   whileHover={{ scale: 1.05, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
@@ -267,7 +315,7 @@ export default function LoginPage() {
                     transition={{ duration: 3, repeat: Infinity }}
                     className="absolute inset-0 rounded-2xl"
                   />
-                  <Bot className="w-10 h-10 text-purple-400 relative z-10" />
+                  <Bot className={`w-10 h-10 relative z-10 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
                 </motion.div>
 
                 <motion.h1
@@ -285,8 +333,8 @@ export default function LoginPage() {
                 >
                   CampusOS AI
                 </motion.h1>
-                <p className="text-gray-500 text-sm">The AI-Native Campus Operating System</p>
-                <p className="text-gray-600 text-xs mt-1">Made by Jai Samyukth Enterprises</p>
+                <p className="text-[var(--text-muted)] text-sm">The AI-Native Campus Operating System</p>
+                <p className="text-[var(--text-muted)] text-xs mt-1">Made by Jai Samyukth Enterprises</p>
               </motion.div>
 
               {/* Role badges */}
@@ -306,10 +354,19 @@ export default function LoginPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border
-                      ${role.color === 'purple' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' :
-                        role.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400' :
-                        'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border ${
+                      role.color === 'purple'
+                        ? isDark
+                          ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+                          : 'bg-purple-50 border-purple-200 text-purple-600'
+                        : role.color === 'cyan'
+                          ? isDark
+                            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                            : 'bg-cyan-50 border-cyan-200 text-cyan-600'
+                          : isDark
+                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                            : 'bg-amber-50 border-amber-200 text-amber-600'
+                    }`}
                   >
                     <role.icon className="w-3 h-3" />
                     {role.label}
@@ -326,7 +383,11 @@ export default function LoginPage() {
                       initial={{ opacity: 0, y: -10, height: 0 }}
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       exit={{ opacity: 0, y: -10, height: 0 }}
-                      className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-center gap-2"
+                      className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${
+                        isDark
+                          ? 'bg-red-500/10 border border-red-500/20 text-red-400'
+                          : 'bg-red-50 border border-red-200 text-red-600'
+                      }`}
                     >
                       <Sparkles className="w-4 h-4 shrink-0" />
                       {error}
@@ -340,7 +401,9 @@ export default function LoginPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
                 >
-                  <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
+                  <label className={`block text-xs font-medium mb-2 uppercase tracking-wider ${
+                    isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'
+                  }`}>
                     Email Address
                   </label>
                   <div className="relative group">
@@ -351,7 +414,11 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@JSE.com"
                       required
-                      className="relative w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.06] transition-all duration-300"
+                      className={`relative w-full rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-purple-500/40 transition-all duration-300 ${
+                        isDark
+                          ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder-gray-600 focus:bg-white/[0.06]'
+                          : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:bg-white focus:border-purple-400/50'
+                      }`}
                     />
                   </div>
                 </motion.div>
@@ -362,7 +429,9 @@ export default function LoginPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 }}
                 >
-                  <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
+                  <label className={`block text-xs font-medium mb-2 uppercase tracking-wider ${
+                    isDark ? 'text-gray-400' : 'text-[var(--text-secondary)]'
+                  }`}>
                     Password
                   </label>
                   <div className="relative group">
@@ -373,12 +442,20 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       required
-                      className="relative w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.06] transition-all duration-300"
+                      className={`relative w-full rounded-xl px-4 py-3.5 pr-12 text-sm focus:outline-none focus:border-purple-500/40 transition-all duration-300 ${
+                        isDark
+                          ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder-gray-600 focus:bg-white/[0.06]'
+                          : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:bg-white focus:border-purple-400/50'
+                      }`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors z-10"
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors z-10 ${
+                        isDark
+                          ? 'text-gray-500 hover:text-gray-300'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                      }`}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -437,13 +514,13 @@ export default function LoginPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.0 }}
-                className="mt-8 pt-6 border-t border-white/[0.06] text-center"
+                className="mt-8 pt-6 border-t border-[var(--border-color)] text-center"
               >
-                <p className="text-gray-600 text-xs">
+                <p className="text-[var(--text-muted)] text-xs">
                   Secure authentication powered by CampusOS AI v2.0
                 </p>
-                <p className="text-gray-700 text-[10px] mt-1">
-                  © 2025 Jai Samyukth Enterprises. All rights reserved.
+                <p className="text-[var(--text-muted)] text-[10px] mt-1">
+                  &copy; 2025 Jai Samyukth Enterprises. All rights reserved.
                 </p>
               </motion.div>
             </div>

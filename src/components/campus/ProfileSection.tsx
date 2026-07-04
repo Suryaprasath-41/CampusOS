@@ -26,14 +26,14 @@ const achievementIcons: Record<string, React.ComponentType<{ className?: string 
 
 // Color map for unlocked achievements
 const achievementColors: Record<string, { text: string; bg: string; border: string; glow: string }> = {
-  purple: { text: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30', glow: 'shadow-[0_0_25px_rgba(139,92,246,0.25)]' },
-  cyan: { text: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', glow: 'shadow-[0_0_25px_rgba(6,182,212,0.25)]' },
-  green: { text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', glow: 'shadow-[0_0_25px_rgba(34,197,94,0.25)]' },
-  yellow: { text: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', glow: 'shadow-[0_0_25px_rgba(234,179,8,0.25)]' },
-  blue: { text: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/30', glow: 'shadow-[0_0_25px_rgba(14,165,233,0.25)]' },
-  orange: { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', glow: 'shadow-[0_0_25px_rgba(249,115,22,0.25)]' },
-  rose: { text: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', glow: 'shadow-[0_0_25px_rgba(244,63,94,0.25)]' },
-  violet: { text: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', glow: 'shadow-[0_0_25px_rgba(139,92,246,0.25)]' },
+  purple: { text: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30', glow: 'shadow-[0_0_25px_rgba(139,92,246,0.25)]' },
+  cyan: { text: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', glow: 'shadow-[0_0_25px_rgba(6,182,212,0.25)]' },
+  green: { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', glow: 'shadow-[0_0_25px_rgba(34,197,94,0.25)]' },
+  yellow: { text: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', glow: 'shadow-[0_0_25px_rgba(234,179,8,0.25)]' },
+  blue: { text: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/30', glow: 'shadow-[0_0_25px_rgba(14,165,233,0.25)]' },
+  orange: { text: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', glow: 'shadow-[0_0_25px_rgba(249,115,22,0.25)]' },
+  rose: { text: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', glow: 'shadow-[0_0_25px_rgba(244,63,94,0.25)]' },
+  violet: { text: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', glow: 'shadow-[0_0_25px_rgba(139,92,246,0.25)]' },
 };
 
 // Icon map for timeline
@@ -46,11 +46,11 @@ const timelineIcons: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 const timelineColors: Record<string, string> = {
-  bot: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-  target: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-  wallet: 'text-green-400 bg-green-500/10 border-green-500/30',
-  calendar: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
-  book: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+  bot: 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+  target: 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/30',
+  wallet: 'text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/30',
+  calendar: 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
+  book: 'text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30',
 };
 
 function formatRelativeTime(dateStr: string): string {
@@ -133,16 +133,16 @@ export default function ProfileSection() {
   if (loading) {
     return (
       <div className="p-6 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="h-8 w-64 bg-white/[0.03] rounded-xl animate-pulse" />
-        <div className="h-48 bg-white/[0.03] rounded-2xl animate-pulse" />
+        <div className="h-8 w-64 bg-[var(--bg-card)] rounded-xl animate-pulse" />
+        <div className="h-48 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-white/[0.03] rounded-2xl animate-pulse" />
+            <div key={i} className="h-28 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
           ))}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-36 bg-white/[0.03] rounded-2xl animate-pulse" />
+            <div key={i} className="h-36 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -155,13 +155,13 @@ export default function ProfileSection() {
       <div className="p-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
         <GlassCard className="text-center py-12">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-            <X className="w-7 h-7 text-red-400" />
+            <X className="w-7 h-7 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="text-white font-semibold mb-2">Unable to load profile</h3>
-          <p className="text-sm text-gray-400 mb-4">{error}</p>
+          <h3 className="text-[var(--text-primary)] font-semibold mb-2">Unable to load profile</h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">{error}</p>
           <button
             onClick={loadProfile}
-            className="px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm hover:bg-purple-500/30 transition-colors"
+            className="px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-sm hover:bg-purple-500/30 transition-colors"
           >
             Try again
           </button>
@@ -180,17 +180,17 @@ export default function ProfileSection() {
   const initials = student.name ? student.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'S';
 
   const statCards = [
-    { label: 'Total Classes', value: stats.totalClasses, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10', suffix: '' },
-    { label: 'Attendance', value: stats.attendancePct, icon: TrendingUp, color: 'text-cyan-400', bg: 'bg-cyan-500/10', suffix: '%' },
-    { label: 'Events Attended', value: stats.eventsAttended, icon: Award, color: 'text-yellow-400', bg: 'bg-yellow-500/10', suffix: '' },
-    { label: 'Conversations', value: stats.conversationsHad, icon: MessageSquare, color: 'text-green-400', bg: 'bg-green-500/10', suffix: '' },
+    { label: 'Total Classes', value: stats.totalClasses, icon: Calendar, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10', suffix: '' },
+    { label: 'Attendance', value: stats.attendancePct, icon: TrendingUp, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500/10', suffix: '%' },
+    { label: 'Events Attended', value: stats.eventsAttended, icon: Award, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10', suffix: '' },
+    { label: 'Conversations', value: stats.conversationsHad, icon: MessageSquare, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/10', suffix: '' },
   ];
 
   const contactInfo = [
-    { label: 'Email', value: student.email, icon: Mail, color: 'text-purple-400' },
-    { label: 'Phone', value: student.phone || 'N/A', icon: Phone, color: 'text-cyan-400' },
-    { label: 'Hostel Room', value: student.hostelRoom || 'Day Scholar', icon: Home, color: 'text-yellow-400' },
-    { label: 'Guardian', value: `${student.guardianName || 'N/A'} • ${student.guardianPhone || ''}`, icon: Users, color: 'text-green-400' },
+    { label: 'Email', value: student.email, icon: Mail, color: 'text-purple-600 dark:text-purple-400' },
+    { label: 'Phone', value: student.phone || 'N/A', icon: Phone, color: 'text-cyan-600 dark:text-cyan-400' },
+    { label: 'Hostel Room', value: student.hostelRoom || 'Day Scholar', icon: Home, color: 'text-yellow-600 dark:text-yellow-400' },
+    { label: 'Guardian', value: `${student.guardianName || 'N/A'} • ${student.guardianPhone || ''}`, icon: Users, color: 'text-green-600 dark:text-green-400' },
   ];
 
   return (
@@ -211,48 +211,48 @@ export default function ProfileSection() {
             className="shrink-0 relative"
           >
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-500 via-violet-500 to-cyan-500 p-[2px] shadow-[0_0_40px_rgba(139,92,246,0.4)]">
-              <div className="w-full h-full rounded-full bg-[#0a0a14] flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] flex items-center justify-center overflow-hidden">
                 {student.avatar ? (
                   <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-bold bg-gradient-to-br from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                  <span className="text-4xl font-bold bg-gradient-to-br from-purple-600 to-cyan-600 dark:from-purple-400 dark:to-cyan-400 bg-clip-text text-transparent">
                     {initials}
                   </span>
                 )}
               </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-green-500/20 border-2 border-[#0a0a14] flex items-center justify-center">
-              <Shield className="w-4 h-4 text-green-400" />
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-green-500/20 border-2 border-[var(--bg-secondary)] flex items-center justify-center">
+              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
           </motion.div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-white">{student.name}</h2>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)]">{student.name}</h2>
               <StatusBadge status={student.placementStatus} />
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-3">
-              <span className="font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)] mb-3">
+              <span className="font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
                 {student.rollNumber}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
                 {student.department}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+              <span className="px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
                 Sem {student.semester} • Sec {student.section}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                <TrendingUp className="w-4 h-4 text-green-400" />
-                <span className="text-gray-400">CGPA</span>
-                <span className="text-white font-bold">{student.cgpa?.toFixed(2)}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <span className="text-[var(--text-secondary)]">CGPA</span>
+                <span className="text-[var(--text-primary)] font-bold">{student.cgpa?.toFixed(2)}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                <Calendar className="w-4 h-4 text-purple-400" />
-                <span className="text-gray-400">Member since</span>
-                <span className="text-white font-medium">{memberSince}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+                <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-[var(--text-secondary)]">Member since</span>
+                <span className="text-[var(--text-primary)] font-medium">{memberSince}</span>
               </div>
             </div>
           </div>
@@ -265,8 +265,8 @@ export default function ProfileSection() {
             className={cn(
               'shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all',
               editMode
-                ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-300'
-                : 'bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'
+                ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-600 dark:text-cyan-300'
+                : 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-300 hover:bg-purple-500/20'
             )}
           >
             <Edit3 className="w-4 h-4" />
@@ -287,12 +287,12 @@ export default function ProfileSection() {
           >
             <GlassCard className="p-4 h-full">
               <div className="flex items-center gap-2 mb-2">
-                <div className={cn('p-1.5 rounded-lg bg-white/[0.04]', info.color)}>
+                <div className={cn('p-1.5 rounded-lg bg-[var(--bg-card)]', info.color)}>
                   <info.icon className="w-4 h-4" />
                 </div>
-                <span className="text-xs text-gray-500 uppercase tracking-wide">{info.label}</span>
+                <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{info.label}</span>
               </div>
-              <p className="text-sm text-white font-medium truncate" title={info.value}>
+              <p className="text-sm text-[var(--text-primary)] font-medium truncate" title={info.value}>
                 {info.value}
               </p>
             </GlassCard>
@@ -318,10 +318,10 @@ export default function ProfileSection() {
                     <stat.icon className={cn('w-5 h-5', stat.color)} />
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white">
+                <div className="text-3xl font-bold text-[var(--text-primary)]">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} decimals={stat.suffix === '%' ? 1 : 0} />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">{stat.label}</p>
               </GlassCard>
             </motion.div>
           ))}
@@ -333,8 +333,8 @@ export default function ProfileSection() {
         <div className="flex items-center justify-between mb-4">
           <SectionTitle className="text-xl mb-0">Achievements</SectionTitle>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20">
-            <Trophy className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-semibold text-purple-300">
+            <Trophy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-sm font-semibold text-purple-600 dark:text-purple-300">
               {unlockedCount}/{achievements.length} unlocked
             </span>
           </div>
@@ -355,27 +355,27 @@ export default function ProfileSection() {
                   'relative rounded-2xl p-4 border backdrop-blur-xl transition-all overflow-hidden',
                   ach.unlocked
                     ? cn(colors.bg, colors.border, colors.glow)
-                    : 'bg-white/[0.02] border-white/[0.05] opacity-60'
+                    : 'bg-[var(--bg-card)] border-[var(--border-color)] opacity-60'
                 )}
               >
                 {ach.unlocked && (
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/[0.05] to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[var(--glass-bg)] to-transparent rounded-bl-full pointer-events-none" />
                 )}
                 <div className="relative">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={cn('p-2 rounded-xl', ach.unlocked ? colors.bg : 'bg-white/[0.03]')}>
-                      <Icon className={cn('w-5 h-5', ach.unlocked ? colors.text : 'text-gray-500')} />
+                    <div className={cn('p-2 rounded-xl', ach.unlocked ? colors.bg : 'bg-[var(--bg-card)]')}>
+                      <Icon className={cn('w-5 h-5', ach.unlocked ? colors.text : 'text-[var(--text-muted)]')} />
                     </div>
                     {!ach.unlocked && (
-                      <div className="p-1.5 rounded-lg bg-white/[0.04]">
-                        <Lock className="w-3 h-3 text-gray-500" />
+                      <div className="p-1.5 rounded-lg bg-[var(--bg-card)]">
+                        <Lock className="w-3 h-3 text-[var(--text-muted)]" />
                       </div>
                     )}
                   </div>
-                  <h4 className={cn('text-sm font-semibold mb-1', ach.unlocked ? 'text-white' : 'text-gray-400')}>
+                  <h4 className={cn('text-sm font-semibold mb-1', ach.unlocked ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]')}>
                     {ach.title}
                   </h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">{ach.desc}</p>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">{ach.desc}</p>
                 </div>
               </motion.div>
             );
@@ -387,9 +387,9 @@ export default function ProfileSection() {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <h3 className="text-white font-semibold">Skills</h3>
-            <span className="text-xs text-gray-500 px-2 py-0.5 rounded-full bg-white/[0.04]">
+            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <h3 className="text-[var(--text-primary)] font-semibold">Skills</h3>
+            <span className="text-xs text-[var(--text-muted)] px-2 py-0.5 rounded-full bg-[var(--bg-card)]">
               {skills.length} skills
             </span>
           </div>
@@ -399,7 +399,7 @@ export default function ProfileSection() {
               animate={{ opacity: 1 }}
               onClick={handleSaveSkills}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/30 text-green-300 text-xs font-medium hover:bg-green-500/25 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/30 text-green-600 dark:text-green-300 text-xs font-medium hover:bg-green-500/25 transition-colors disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               {saving ? 'Saving...' : 'Save'}
@@ -418,7 +418,7 @@ export default function ProfileSection() {
                 exit={{ opacity: 0, scale: 0.5 }}
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border',
-                  'bg-purple-500/10 border-purple-500/25 text-purple-300'
+                  'bg-purple-500/10 border-purple-500/25 text-purple-600 dark:text-purple-300'
                 )}
               >
                 <span>{skill}</span>
@@ -447,11 +447,11 @@ export default function ProfileSection() {
                 onChange={(e) => setNewSkill(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') addSkill(); }}
                 placeholder="Add skill..."
-                className="bg-white/[0.04] border border-white/[0.1] rounded-full px-3 py-1.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 w-32"
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full px-3 py-1.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-purple-500/50 w-32"
               />
               <button
                 onClick={addSkill}
-                className="p-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-colors"
+                className="p-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 transition-colors"
                 aria-label="Add skill"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -460,7 +460,7 @@ export default function ProfileSection() {
           )}
 
           {!editMode && skills.length === 0 && (
-            <p className="text-sm text-gray-500 italic">No skills added yet. Click Edit to add some.</p>
+            <p className="text-sm text-[var(--text-muted)] italic">No skills added yet. Click Edit to add some.</p>
           )}
         </div>
       </GlassCard>
@@ -468,12 +468,12 @@ export default function ProfileSection() {
       {/* ============ ACTIVITY TIMELINE ============ */}
       <GlassCard>
         <div className="flex items-center gap-2 mb-6">
-          <Calendar className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-white font-semibold">Recent Activity</h3>
+          <Calendar className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <h3 className="text-[var(--text-primary)] font-semibold">Recent Activity</h3>
         </div>
 
         {timeline.length === 0 ? (
-          <p className="text-sm text-gray-500 italic text-center py-6">No recent activity to show.</p>
+          <p className="text-sm text-[var(--text-muted)] italic text-center py-6">No recent activity to show.</p>
         ) : (
           <div className="relative pl-8">
             {/* Vertical gradient line */}
@@ -500,9 +500,9 @@ export default function ProfileSection() {
                     >
                       <Icon className="w-2.5 h-2.5" />
                     </div>
-                    <div className="group p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] hover:bg-white/[0.04] transition-all">
-                      <p className="text-sm text-gray-200 mb-1">{item.title}</p>
-                      <p className="text-xs text-gray-500">{formatRelativeTime(item.date)}</p>
+                    <div className="group p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-purple-500/30 hover:bg-[var(--glass-bg)] transition-all">
+                      <p className="text-sm text-[var(--text-secondary)] mb-1">{item.title}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{formatRelativeTime(item.date)}</p>
                     </div>
                   </motion.div>
                 );
@@ -517,9 +517,9 @@ export default function ProfileSection() {
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
         onClick={() => openChatWithContext("Tell me about my profile, achievements, and skill roadmap. How can I improve my profile for better placements?")}
-        className="w-full p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-cyan-500/10 border border-white/[0.08] hover:border-purple-500/30 transition-all flex items-center justify-center gap-2 text-sm text-gray-300"
+        className="w-full p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-cyan-500/10 border border-[var(--border-color)] hover:border-purple-500/30 transition-all flex items-center justify-center gap-2 text-sm text-[var(--text-secondary)]"
       >
-        <Bot className="w-4 h-4 text-purple-400" />
+        <Bot className="w-4 h-4 text-purple-600 dark:text-purple-400" />
         Ask AI about my profile, achievements or skill roadmap
       </motion.button>
     </div>

@@ -19,7 +19,7 @@ function RoleSwitcher() {
   const { activeRole, setActiveRole } = useCampusStore();
 
   return (
-    <div className="relative flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl">
+    <div className="relative flex items-center gap-1 p-1 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] backdrop-blur-xl">
       {/* Animated background indicator */}
       <motion.div
         layout
@@ -49,11 +49,11 @@ function RoleSwitcher() {
               "relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-300",
               isActive
                 ? cn(
-                    activeRole === 'student' && "text-purple-400",
-                    activeRole === 'faculty' && "text-cyan-400",
-                    activeRole === 'admin' && "text-amber-400",
+                    activeRole === 'student' && "text-purple-600 dark:text-purple-400",
+                    activeRole === 'faculty' && "text-cyan-600 dark:text-cyan-400",
+                    activeRole === 'admin' && "text-amber-600 dark:text-amber-400",
                   )
-                : "text-gray-500 hover:text-gray-300"
+                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
             )}
           >
             <config.icon className="w-3.5 h-3.5" />
@@ -171,12 +171,12 @@ export default function Header() {
   }, []);
 
   const getNotifIcon = (type: string) => {
-    if (type === 'warning') return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
-    if (type === 'success') return <CheckCircle2 className="w-4 h-4 text-green-400" />;
-    return <Info className="w-4 h-4 text-blue-400" />;
+    if (type === 'warning') return <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />;
+    if (type === 'success') return <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />;
+    return <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
   };
 
-  const roleColorClass = activeRole === 'faculty' ? 'from-cyan-400 to-blue-400' : activeRole === 'admin' ? 'from-amber-400 to-orange-400' : 'from-purple-400 to-cyan-400';
+  const roleColorClass = activeRole === 'faculty' ? 'from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400' : activeRole === 'admin' ? 'from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400' : 'from-purple-600 to-cyan-600 dark:from-purple-400 dark:to-cyan-400';
 
   return (
     <header className="relative z-30">
@@ -196,9 +196,9 @@ export default function Header() {
               <p className="text-[10px] sm:text-xs text-[var(--text-muted)]">{roleSubtext}</p>
               <span className={cn(
                 "text-[10px] px-1.5 py-0.5 rounded-full border flex items-center gap-1",
-                activeRole === 'student' && "bg-purple-500/10 text-purple-400 border-purple-500/20",
-                activeRole === 'faculty' && "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-                activeRole === 'admin' && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                activeRole === 'student' && "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+                activeRole === 'faculty' && "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+                activeRole === 'admin' && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
               )}>
                 <span className={cn(
                   "w-1.5 h-1.5 rounded-full animate-pulse",
@@ -218,7 +218,7 @@ export default function Header() {
 
           {/* Search with pulsing gradient border on focus */}
           <div className={`relative transition-all duration-300 hidden sm:block ${searchFocused ? 'w-72' : 'w-48'}`}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 z-10" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] z-10" />
             {/* Pulsing gradient border wrapper */}
             <div className={cn(
               "absolute inset-0 rounded-xl transition-opacity duration-300",
@@ -231,22 +231,22 @@ export default function Header() {
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               className={cn(
-                "relative w-full bg-white/[0.04] border rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-gray-600 transition-all duration-300",
+                "relative w-full bg-[var(--glass-bg)] border rounded-xl pl-10 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-300",
                 searchFocused
-                  ? "border-purple-500/40 bg-white/[0.06] shadow-[0_0_20px_rgba(139,92,246,0.15)]"
-                  : "border-white/[0.08]"
+                  ? "border-purple-500/40 bg-[var(--bg-card)] shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+                  : "border-[var(--border-color)]"
               )}
             />
             {searchFocused && (
-              <div className="absolute top-full mt-2 left-0 right-0 bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-xl p-2 shadow-2xl z-50">
-                <div className="text-[10px] text-gray-600 uppercase px-2 py-1">Quick Search</div>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-400 hover:bg-white/[0.05] rounded-lg flex items-center gap-2">
+              <div className="absolute top-full mt-2 left-0 right-0 bg-[var(--bg-secondary)] backdrop-blur-2xl border border-[var(--border-color)] rounded-xl p-2 shadow-2xl z-50">
+                <div className="text-[10px] text-[var(--text-muted)] uppercase px-2 py-1">Quick Search</div>
+                <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] rounded-lg flex items-center gap-2">
                   <Search className="w-3 h-3" /> My attendance this week
                 </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-400 hover:bg-white/[0.05] rounded-lg flex items-center gap-2">
+                <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] rounded-lg flex items-center gap-2">
                   <Search className="w-3 h-3" /> Pending assignments
                 </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-400 hover:bg-white/[0.05] rounded-lg flex items-center gap-2">
+                <button className="w-full text-left px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] rounded-lg flex items-center gap-2">
                   <Search className="w-3 h-3" /> Library books available
                 </button>
               </div>
@@ -258,10 +258,10 @@ export default function Header() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setVoiceOpen(true)}
-            className="relative p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-cyan-500/20 transition-all group"
+            className="relative p-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:bg-[var(--border-hover)] hover:border-cyan-500/20 transition-all group"
             title="Voice Assistant"
           >
-            <Mic className="w-4 h-4 text-gray-400 group-hover:text-cyan-400 transition-colors" />
+            <Mic className="w-4 h-4 text-[var(--text-muted)] group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors" />
             <span className="absolute inset-0 rounded-xl border border-cyan-500/0 group-hover:border-cyan-500/30 animate-pulse" />
           </motion.button>
 
@@ -270,16 +270,16 @@ export default function Header() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => handleNotifToggle()}
-              className="relative p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-purple-500/20 transition-all"
+              className="relative p-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-color)] hover:bg-[var(--border-hover)] hover:border-purple-500/20 transition-all"
             >
-              <Bell className={`w-4 h-4 transition-colors ${notifOpen ? 'text-purple-400' : 'text-gray-400'}`} />
+              <Bell className={`w-4 h-4 transition-colors ${notifOpen ? 'text-purple-600 dark:text-purple-400' : 'text-[var(--text-muted)]'}`} />
               {unread > 0 && (
                 <motion.span
                   key={badgeBounceKey}
                   initial={{ scale: 0 }}
                   animate={{ scale: [1, 1.25, 1] }}
                   transition={{ duration: 0.6, ease: 'easeInOut' }}
-                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-purple-500 to-rose-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold border-2 border-[#0a0a14]"
+                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-purple-500 to-rose-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold border-2 border-[var(--bg-primary)]"
                 >
                   {unread}
                 </motion.span>
@@ -296,14 +296,14 @@ export default function Header() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-80 bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 top-full mt-2 w-80 bg-[var(--bg-secondary)] backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
-                  <div className="flex items-center justify-between p-3 border-b border-white/[0.06]">
+                  <div className="flex items-center justify-between p-3 border-b border-[var(--border-color)]">
                     <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-purple-400" />
-                      <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                      <Bell className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">Notifications</h3>
                       {unread > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/20">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/20">
                           {unread} new
                         </span>
                       )}
@@ -311,7 +311,7 @@ export default function Header() {
                     <button
                       onClick={markAllRead}
                       disabled={markingRead || unread === 0}
-                      className="text-[10px] text-gray-500 hover:text-purple-400 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="text-[10px] text-[var(--text-muted)] hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <CheckCheck className={`w-3 h-3 ${markingRead ? 'animate-pulse' : ''}`} /> {markingRead ? 'Marking...' : 'Mark all read'}
                     </button>
@@ -324,8 +324,8 @@ export default function Header() {
                         ))}
                       </div>
                     ) : notifications.length === 0 ? (
-                      <div className="p-8 text-center text-sm text-gray-500">
-                        <Bell className="w-8 h-8 mx-auto mb-2 text-gray-700" />
+                      <div className="p-8 text-center text-sm text-[var(--text-muted)]">
+                        <Bell className="w-8 h-8 mx-auto mb-2 text-[var(--text-muted)]" />
                         No notifications
                       </div>
                     ) : (
@@ -336,15 +336,15 @@ export default function Header() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.05 }}
                           onClick={() => !n.read && markOneRead(n.id)}
-                          className={`flex items-start gap-3 p-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] ${!n.read ? 'bg-purple-500/[0.02] cursor-pointer' : ''}`}
+                          className={`flex items-start gap-3 p-3 hover:bg-[var(--glass-bg)] transition-colors border-b border-[var(--border-color)] ${!n.read ? 'bg-purple-500/[0.04] cursor-pointer' : ''}`}
                         >
-                          <div className="p-1.5 rounded-lg bg-white/[0.04] shrink-0 mt-0.5">
+                          <div className="p-1.5 rounded-lg bg-[var(--glass-bg)] shrink-0 mt-0.5">
                             {getNotifIcon(n.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm text-white font-medium">{n.title}</div>
-                            <div className="text-xs text-gray-500 line-clamp-2">{n.message}</div>
-                            <div className="text-[10px] text-gray-600 mt-1">
+                            <div className="text-sm text-[var(--text-primary)] font-medium">{n.title}</div>
+                            <div className="text-xs text-[var(--text-secondary)] line-clamp-2">{n.message}</div>
+                            <div className="text-[10px] text-[var(--text-muted)] mt-1">
                               {new Date(n.createdAt).toLocaleString()}
                             </div>
                           </div>
@@ -353,8 +353,8 @@ export default function Header() {
                       ))
                     )}
                   </div>
-                  <div className="p-2 border-t border-white/[0.06] bg-white/[0.02]">
-                    <button className="w-full text-center text-xs text-purple-400 hover:text-purple-300 py-1.5">
+                  <div className="p-2 border-t border-[var(--border-color)] bg-[var(--glass-bg)]">
+                    <button className="w-full text-center text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 py-1.5">
                       View all notifications
                     </button>
                   </div>
@@ -366,7 +366,7 @@ export default function Header() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* User Menu / Logout */}
+          {/* User menu / Logout */}
           <div className="relative" ref={userMenuRef}>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -384,9 +384,9 @@ export default function Header() {
             >
               <User className={cn(
                 "w-4 h-4 transition-colors",
-                activeRole === 'faculty' ? "text-cyan-400"
-                  : activeRole === 'admin' ? "text-amber-400"
-                  : "text-purple-400"
+                activeRole === 'faculty' ? "text-cyan-600 dark:text-cyan-400"
+                  : activeRole === 'admin' ? "text-amber-600 dark:text-amber-400"
+                  : "text-purple-600 dark:text-purple-400"
               )} />
             </motion.button>
 
@@ -397,9 +397,9 @@ export default function Header() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-72 bg-[#0a0a14]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 top-full mt-2 w-72 bg-[var(--bg-secondary)] backdrop-blur-2xl border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
-                  <div className="p-4 border-b border-white/[0.06]">
+                  <div className="p-4 border-b border-[var(--border-color)]">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center",
@@ -409,16 +409,16 @@ export default function Header() {
                       )}>
                         <User className={cn(
                           "w-5 h-5",
-                          activeRole === 'faculty' ? "text-cyan-400"
-                            : activeRole === 'admin' ? "text-amber-400"
-                            : "text-purple-400"
+                          activeRole === 'faculty' ? "text-cyan-600 dark:text-cyan-400"
+                            : activeRole === 'admin' ? "text-amber-600 dark:text-amber-400"
+                            : "text-purple-600 dark:text-purple-400"
                         )} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-white truncate">
+                        <div className="text-sm font-semibold text-[var(--text-primary)] truncate">
                           {currentUser?.name || 'User'}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-[var(--text-secondary)] truncate">
                           {currentUser?.email || ''}
                         </div>
                       </div>
@@ -426,9 +426,9 @@ export default function Header() {
                     <div className="mt-2 flex items-center gap-1.5">
                       <span className={cn(
                         "text-[10px] px-1.5 py-0.5 rounded-full border",
-                        activeRole === 'student' && "bg-purple-500/10 text-purple-400 border-purple-500/20",
-                        activeRole === 'faculty' && "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-                        activeRole === 'admin' && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                        activeRole === 'student' && "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+                        activeRole === 'faculty' && "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+                        activeRole === 'admin' && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
                       )}>
                         {activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}
                       </span>
@@ -442,7 +442,7 @@ export default function Header() {
                           (window as any).__campusLogout();
                         }
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
