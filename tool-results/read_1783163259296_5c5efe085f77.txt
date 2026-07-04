@@ -1,0 +1,643 @@
+     1→import { PrismaClient } from '@prisma/client';
+     2→
+     3→const prisma = new PrismaClient();
+     4→
+     5→async function main() {
+     6→  console.log('🌱 Starting admin seed data...');
+     7→
+     8→  // ─── Check if already seeded ─────────────────────────────────────
+     9→  const existingStudents = await prisma.student.count();
+    10→  if (existingStudents > 5) {
+    11→    console.log('⏭️  Admin seed data already exists (found', existingStudents, 'students). Skipping.');
+    12→    return;
+    13→  }
+    14→
+    15→  // ─── Get existing faculties ──────────────────────────────────────
+    16→  const existingFaculties = await prisma.faculty.findMany();
+    17→  console.log(`📋 Found ${existingFaculties.length} existing faculties`);
+    18→
+    19→  // ─── Create Additional Faculty ───────────────────────────────────
+    20→  console.log('👨‍🏫 Creating additional faculty...');
+    21→
+    22→  const newFacultyData = [
+    23→    { email: 'dr.reddy@campus.edu', name: 'Dr. Suresh Reddy', department: 'Information Technology', designation: 'Associate Professor', cabin: 'Block B-201' },
+    24→    { email: 'dr.nair@campus.edu', name: 'Dr. Lakshmi Nair', department: 'Electronics & Communication', designation: 'Professor', cabin: 'Block C-102' },
+    25→    { email: 'dr.joshi@campus.edu', name: 'Dr. Ramesh Joshi', department: 'Electrical Engineering', designation: 'Associate Professor', cabin: 'Block D-205' },
+    26→    { email: 'dr.rao@campus.edu', name: 'Dr. Kiran Rao', department: 'Mechanical Engineering', designation: 'Professor', cabin: 'Block E-301' },
+    27→    { email: 'dr.banerjee@campus.edu', name: 'Dr. Ananya Banerjee', department: 'Civil Engineering', designation: 'Assistant Professor', cabin: 'Block F-108' },
+    28→    { email: 'dr.iyer@campus.edu', name: 'Dr. Venkat Iyer', department: 'Information Technology', designation: 'Assistant Professor', cabin: 'Block B-305' },
+    29→    { email: 'dr.das@campus.edu', name: 'Dr. Meera Das', department: 'Electronics & Communication', designation: 'Assistant Professor', cabin: 'Block C-210' },
+    30→  ];
+    31→
+    32→  const newFaculties = [];
+    33→  for (const fd of newFacultyData) {
+    34→    const user = await prisma.user.upsert({
+    35→      where: { email: fd.email },
+    36→      update: {},
+    37→      create: { email: fd.email, name: fd.name, role: 'faculty', department: fd.department, avatar: '' },
+    38→    });
+    39→    const faculty = await prisma.faculty.create({
+    40→      data: { userId: user.id, department: fd.department, designation: fd.designation, cabinLocation: fd.cabin },
+    41→    });
+    42→    newFaculties.push(faculty);
+    43→    console.log(`  ✅ Faculty: ${fd.name} (${fd.department})`);
+    44→  }
+    45→
+    46→  const allFaculties = [...existingFaculties, ...newFaculties];
+    47→
+    48→  // ─── Create Additional Subjects ──────────────────────────────────
+    49→  console.log('📚 Creating additional subjects...');
+    50→
+    51→  const newSubjectData = [
+    52→    { code: 'IT501', name: 'Web Technologies', department: 'Information Technology', semester: 5, credits: 4, facultyIdx: 0, days: ['Monday', 'Wednesday', 'Friday'], time: '10:00 AM - 11:00 AM', room: 'LH-203' },
+    53→    { code: 'IT502', name: 'Data Warehousing & Mining', department: 'Information Technology', semester: 5, credits: 3, facultyIdx: 5, days: ['Tuesday', 'Thursday'], time: '11:00 AM - 12:30 PM', room: 'LH-307' },
+    54→    { code: 'EC401', name: 'Digital Signal Processing', department: 'Electronics & Communication', semester: 4, credits: 4, facultyIdx: 1, days: ['Monday', 'Wednesday', 'Friday'], time: '9:00 AM - 10:00 AM', room: 'LH-104' },
+    55→    { code: 'EC402', name: 'VLSI Design', department: 'Electronics & Communication', semester: 4, credits: 3, facultyIdx: 6, days: ['Tuesday', 'Thursday'], time: '2:00 PM - 3:30 PM', room: 'LH-402' },
+    56→    { code: 'EE301', name: 'Power Systems', department: 'Electrical Engineering', semester: 3, credits: 4, facultyIdx: 2, days: ['Monday', 'Wednesday'], time: '11:00 AM - 12:30 PM', room: 'LH-201' },
+    57→    { code: 'EE302', name: 'Control Systems', department: 'Electrical Engineering', semester: 3, credits: 3, facultyIdx: 2, days: ['Friday'], time: '2:00 PM - 5:00 PM', room: 'Lab-201' },
+    58→    { code: 'ME601', name: 'Thermodynamics', department: 'Mechanical Engineering', semester: 6, credits: 4, facultyIdx: 3, days: ['Monday', 'Wednesday', 'Friday'], time: '10:00 AM - 11:00 AM', room: 'LH-302' },
+    59→    { code: 'ME602', name: 'Fluid Mechanics', department: 'Mechanical Engineering', semester: 6, credits: 3, facultyIdx: 3, days: ['Tuesday', 'Thursday'], time: '9:00 AM - 10:30 AM', room: 'LH-105' },
+    60→    { code: 'CE501', name: 'Structural Analysis', department: 'Civil Engineering', semester: 5, credits: 4, facultyIdx: 4, days: ['Monday', 'Wednesday'], time: '2:00 PM - 3:30 PM', room: 'LH-401' },
+    61→    { code: 'CE502', name: 'Geotechnical Engineering', department: 'Civil Engineering', semester: 5, credits: 3, facultyIdx: 4, days: ['Friday'], time: '10:00 AM - 1:00 PM', room: 'Lab-102' },
+    62→    { code: 'IT601', name: 'Cloud Computing', department: 'Information Technology', semester: 6, credits: 3, facultyIdx: 0, days: ['Tuesday', 'Thursday'], time: '2:00 PM - 3:30 PM', room: 'LH-204' },
+    63→    { code: 'EC601', name: 'Embedded Systems', department: 'Electronics & Communication', semester: 6, credits: 4, facultyIdx: 1, days: ['Monday', 'Wednesday'], time: '10:00 AM - 11:30 AM', room: 'LH-303' },
+    64→  ];
+    65→
+    66→  const newSubjects = [];
+    67→  for (const sd of newSubjectData) {
+    68→    const subject = await prisma.subject.upsert({
+    69→      where: { code: sd.code },
+    70→      update: {},
+    71→      create: {
+    72→        code: sd.code,
+    73→        name: sd.name,
+    74→        department: sd.department,
+    75→        semester: sd.semester,
+    76→        credits: sd.credits,
+    77→        facultyId: newFaculties[sd.facultyIdx].id,
+    78→        schedule: JSON.stringify({ days: sd.days, time: sd.time, room: sd.room }),
+    79→      },
+    80→    });
+    81→    newSubjects.push(subject);
+    82→    console.log(`  ✅ Subject: ${sd.code} - ${sd.name}`);
+    83→  }
+    84→
+    85→  // Also get existing subjects
+    86→  const existingSubjects = await prisma.subject.findMany();
+    87→  const allSubjects = [...existingSubjects, ...newSubjects];
+    88→
+    89→  // ─── Create Additional Students (20+) ────────────────────────────
+    90→  console.log('🎓 Creating additional students...');
+    91→
+    92→  const studentData = [
+    93→    // CS Department
+    94→    { email: 'priya.menon@campus.edu', name: 'Priya Menon', roll: 'CS2022015', dept: 'Computer Science', sem: 6, section: 'A', cgpa: 9.2, hostel: 'H2-101', guardian: 'Suresh Menon', guardianPhone: '+91 98111 22334', skills: ['Python', 'Java', 'React', 'AWS'], placement: 'placed' },
+    95→    { email: 'arjun.krishnan@campus.edu', name: 'Arjun Krishnan', roll: 'CS2022023', dept: 'Computer Science', sem: 6, section: 'A', cgpa: 8.5, hostel: 'H3-205', guardian: 'Krishnan R', guardianPhone: '+91 98222 33445', skills: ['C++', 'ML', 'TensorFlow', 'Docker'], placement: 'interview' },
+    96→    { email: 'neha.gupta@campus.edu', name: 'Neha Gupta', roll: 'CS2022037', dept: 'Computer Science', sem: 6, section: 'B', cgpa: 7.8, hostel: null, guardian: 'Rajesh Gupta', guardianPhone: '+91 98333 44556', skills: ['JavaScript', 'Node.js', 'MongoDB'], placement: 'seeking' },
+    97→    { email: 'rahul.verma@campus.edu', name: 'Rahul Verma', roll: 'CS2022042', dept: 'Computer Science', sem: 6, section: 'B', cgpa: 6.9, hostel: 'H4-310', guardian: 'Amit Verma', guardianPhone: '+91 98444 55667', skills: ['Java', 'Spring Boot', 'SQL'], placement: 'seeking' },
+    98→
+    99→    // IT Department
+   100→    { email: 'ananya.singh@campus.edu', name: 'Ananya Singh', roll: 'IT2022010', dept: 'Information Technology', sem: 5, section: 'A', cgpa: 8.9, hostel: 'H1-203', guardian: 'Manoj Singh', guardianPhone: '+91 98555 66778', skills: ['React', 'TypeScript', 'Node.js', 'GraphQL'], placement: 'placed' },
+   101→    { email: 'vikram.mehta@campus.edu', name: 'Vikram Mehta', roll: 'IT2022022', dept: 'Information Technology', sem: 5, section: 'A', cgpa: 7.5, hostel: 'H3-112', guardian: 'Deepak Mehta', guardianPhone: '+91 98666 77889', skills: ['Python', 'Django', 'PostgreSQL'], placement: 'interview' },
+   102→    { email: 'sneha.pillai@campus.edu', name: 'Sneha Pillai', roll: 'IT2022035', dept: 'Information Technology', sem: 5, section: 'B', cgpa: 9.5, hostel: 'H2-305', guardian: 'Pillai Kumar', guardianPhone: '+91 98777 88990', skills: ['ML', 'Python', 'Kubernetes', 'AWS', 'GCP'], placement: 'placed' },
+   103→    { email: 'rohan.das@campus.edu', name: 'Rohan Das', roll: 'IT2022041', dept: 'Information Technology', sem: 5, section: 'B', cgpa: 6.2, hostel: null, guardian: 'Arun Das', guardianPhone: '+91 98888 99001', skills: ['HTML', 'CSS', 'JavaScript'], placement: 'seeking' },
+   104→
+   105→    // ECE Department
+   106→    { email: 'divya.sharma@campus.edu', name: 'Divya Sharma', roll: 'EC2022008', dept: 'Electronics & Communication', sem: 4, section: 'A', cgpa: 8.1, hostel: 'H1-405', guardian: 'Sharma VK', guardianPhone: '+91 98999 00112', skills: ['Verilog', 'MATLAB', 'Signal Processing'], placement: 'seeking' },
+   107→    { email: 'karan.patel@campus.edu', name: 'Karan Patel', roll: 'EC2022019', dept: 'Electronics & Communication', sem: 4, section: 'A', cgpa: 7.3, hostel: 'H4-108', guardian: 'Patel Rajesh', guardianPhone: '+91 98000 11223', skills: ['VLSI', 'Embedded C', 'IoT'], placement: 'seeking' },
+   108→    { email: 'meera.nair@campus.edu', name: 'Meera Nair', roll: 'EC2022033', dept: 'Electronics & Communication', sem: 4, section: 'B', cgpa: 9.0, hostel: 'H2-210', guardian: 'Nair Suresh', guardianPhone: '+91 98111 22334', skills: ['DSP', 'Python', 'FPGA', 'PCB Design'], placement: 'interview' },
+   109→    { email: 'aditya.reddy@campus.edu', name: 'Aditya Reddy', roll: 'EC2022045', dept: 'Electronics & Communication', sem: 4, section: 'B', cgpa: 5.8, hostel: null, guardian: 'Reddy Kumar', guardianPhone: '+91 98222 33445', skills: ['C', 'Basic Electronics'], placement: 'seeking' },
+   110→
+   111→    // EEE Department
+   112→    { email: 'suresh.kumar@campus.edu', name: 'Suresh Kumar', roll: 'EE2022005', dept: 'Electrical Engineering', sem: 3, section: 'A', cgpa: 7.6, hostel: 'H3-315', guardian: 'Kumar Raja', guardianPhone: '+91 98333 44556', skills: ['Power Systems', 'MATLAB', 'PLC'], placement: 'seeking' },
+   113→    { email: 'pooja.agarwal@campus.edu', name: 'Pooja Agarwal', roll: 'EE2022017', dept: 'Electrical Engineering', sem: 3, section: 'A', cgpa: 8.4, hostel: 'H1-108', guardian: 'Agarwal Sunil', guardianPhone: '+91 98444 55667', skills: ['Control Systems', 'Simulink', 'Renewable Energy'], placement: 'seeking' },
+   114→    { email: 'deepak.rao@campus.edu', name: 'Deepak Rao', roll: 'EE2022029', dept: 'Electrical Engineering', sem: 3, section: 'B', cgpa: 6.5, hostel: null, guardian: 'Rao Venkat', guardianPhone: '+91 98555 66778', skills: ['Electrical Machines', 'AutoCAD'], placement: 'seeking' },
+   115→
+   116→    // ME Department
+   117→    { email: 'amit.singh@campus.edu', name: 'Amit Singh', roll: 'ME2022012', dept: 'Mechanical Engineering', sem: 6, section: 'A', cgpa: 7.9, hostel: 'H4-215', guardian: 'Singh Harjeet', guardianPhone: '+91 98666 77889', skills: ['AutoCAD', 'SolidWorks', 'ANSYS', 'CNC'], placement: 'interview' },
+   118→    { email: 'ritu.yadav@campus.edu', name: 'Ritu Yadav', roll: 'ME2022024', dept: 'Mechanical Engineering', sem: 6, section: 'A', cgpa: 8.7, hostel: 'H2-410', guardian: 'Yadav Mohan', guardianPhone: '+91 98777 88990', skills: ['Thermodynamics', 'CATIA', '3D Printing', 'MATLAB'], placement: 'placed' },
+   119→    { email: 'manish.tiwari@campus.edu', name: 'Manish Tiwari', roll: 'ME2022038', dept: 'Mechanical Engineering', sem: 6, section: 'B', cgpa: 5.9, hostel: null, guardian: 'Tiwari Ram', guardianPhone: '+91 98888 99001', skills: ['Basic Mechanics', 'Welding'], placement: 'seeking' },
+   120→
+   121→    // CE Department
+   122→    { email: 'sunita.kumari@campus.edu', name: 'Sunita Kumari', roll: 'CE2022007', dept: 'Civil Engineering', sem: 5, section: 'A', cgpa: 8.2, hostel: 'H1-310', guardian: 'Kumari Raj', guardianPhone: '+91 98999 00112', skills: ['AutoCAD', 'STAAD Pro', 'Project Management'], placement: 'seeking' },
+   123→    { email: 'rajesh.mishra@campus.edu', name: 'Rajesh Mishra', roll: 'CE2022021', dept: 'Civil Engineering', sem: 5, section: 'A', cgpa: 7.1, hostel: 'H3-408', guardian: 'Mishra Lal', guardianPhone: '+91 98000 11223', skills: ['Surveying', 'Revit', 'Concrete Tech'], placement: 'seeking' },
+   124→    { email: 'anita.choudhary@campus.edu', name: 'Anita Choudhary', roll: 'CE2022036', dept: 'Civil Engineering', sem: 5, section: 'B', cgpa: 9.4, hostel: 'H2-120', guardian: 'Choudhary PK', guardianPhone: '+91 98111 22334', skills: ['Structural Design', 'BIM', 'Python', 'GIS'], placement: 'placed' },
+   125→    { email: 'prakash.jha@campus.edu', name: 'Prakash Jha', roll: 'CE2022048', dept: 'Civil Engineering', sem: 5, section: 'B', cgpa: 6.8, hostel: null, guardian: 'Jha Suresh', guardianPhone: '+91 98222 33445', skills: ['AutoCAD', 'Estimation'], placement: 'seeking' },
+   126→  ];
+   127→
+   128→  const createdStudents = [];
+   129→  for (const sd of studentData) {
+   130→    const user = await prisma.user.upsert({
+   131→      where: { email: sd.email },
+   132→      update: {},
+   133→      create: {
+   134→        email: sd.email,
+   135→        name: sd.name,
+   136→        role: 'student',
+   137→        department: sd.dept,
+   138→        phone: sd.guardianPhone,
+   139→        avatar: '',
+   140→      },
+   141→    });
+   142→
+   143→    const student = await prisma.student.upsert({
+   144→      where: { rollNumber: sd.roll },
+   145→      update: {},
+   146→      create: {
+   147→        userId: user.id,
+   148→        rollNumber: sd.roll,
+   149→        department: sd.dept,
+   150→        semester: sd.sem,
+   151→        section: sd.section,
+   152→        cgpa: sd.cgpa,
+   153→        hostelRoom: sd.hostel,
+   154→        guardianName: sd.guardian,
+   155→        guardianPhone: sd.guardianPhone,
+   156→        skills: JSON.stringify(sd.skills),
+   157→        placementStatus: sd.placement,
+   158→      },
+   159→    });
+   160→    createdStudents.push({ ...student, _skills: sd.skills, _placement: sd.placement });
+   161→    console.log(`  ✅ Student: ${sd.name} (${sd.roll}) - CGPA: ${sd.cgpa} - ${sd.placement}`);
+   162→  }
+   163→
+   164→  // ─── Enroll Students in Subjects ─────────────────────────────────
+   165→  console.log('📖 Enrolling students in subjects...');
+   166→
+   167→  for (const student of createdStudents) {
+   168→    // Find subjects matching the student's department and semester
+   169→    const matchingSubjects = allSubjects.filter(
+   170→      s => s.department === student.department && s.semester === student.semester
+   171→    );
+   172→
+   173→    // Also add some cross-department math subjects if applicable
+   174→    const mathSubjects = allSubjects.filter(
+   175→      s => s.department === 'Mathematics' && s.semester === student.semester
+   176→    );
+   177→
+   178→    const subjectsToEnroll = [...matchingSubjects, ...mathSubjects];
+   179→
+   180→    for (const subject of subjectsToEnroll) {
+   181→      try {
+   182→        await prisma.subjectEnrollment.upsert({
+   183→          where: {
+   184→            studentId_subjectId: { studentId: student.id, subjectId: subject.id },
+   185→          },
+   186→          update: {},
+   187→          create: {
+   188→            studentId: student.id,
+   189→            subjectId: subject.id,
+   190→            semester: student.semester,
+   191→          },
+   192→        });
+   193→      } catch (e) {
+   194→        // Skip if already enrolled
+   195→      }
+   196→    }
+   197→  }
+   198→  console.log(`  ✅ Enrolled students in subjects`);
+   199→
+   200→  // ─── Create Attendance Records ───────────────────────────────────
+   201→  console.log('📋 Creating attendance records...');
+   202→
+   203→  const attendanceStatuses = ['present', 'present', 'present', 'present', 'present', 'present', 'absent', 'present', 'present', 'late'];
+   204→  let attendanceCount = 0;
+   205→
+   206→  for (const student of createdStudents) {
+   207→    // Create attendance for last 30 days (subset of students to keep it manageable)
+   208→    if (Math.random() > 0.6) continue; // Only ~60% of students get attendance records
+   209→
+   210→    const studentSubjects = allSubjects.filter(
+   211→      s => s.department === student.department && s.semester === student.semester
+   212→    );
+   213→
+   214→    if (studentSubjects.length === 0) continue;
+   215→
+   216→    const records: any[] = [];
+   217→    for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+   218→      const date = new Date();
+   219→      date.setDate(date.getDate() - dayOffset);
+   220→      const dayOfWeek = date.getDay();
+   221→      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+   222→
+   223→      for (const subject of studentSubjects.slice(0, 3)) { // Limit to 3 subjects per student
+   224→        const schedule = JSON.parse(subject.schedule || '{}');
+   225→        const days = schedule.days || [];
+   226→        const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek];
+   227→        if (!days.includes(dayName)) continue;
+   228→
+   229→        const status = attendanceStatuses[Math.floor(Math.random() * attendanceStatuses.length)];
+   230→        records.push({
+   231→          studentId: student.id,
+   232→          subjectId: subject.id,
+   233→          date: date,
+   234→          status: status,
+   235→        });
+   236→      }
+   237→    }
+   238→
+   239→    // Batch insert
+   240→    for (let i = 0; i < records.length; i += 50) {
+   241→      try {
+   242→        await prisma.attendance.createMany({ data: records.slice(i, i + 50), skipDuplicates: true });
+   243→      } catch (e) {
+   244→        // Skip duplicates
+   245→      }
+   246→    }
+   247→    attendanceCount += records.length;
+   248→  }
+   249→  console.log(`  ✅ Created ~${attendanceCount} attendance records`);
+   250→
+   251→  // ─── Create Internal Marks ───────────────────────────────────────
+   252→  console.log('📝 Creating internal marks...');
+   253→
+   254→  let marksCount = 0;
+   255→  for (const student of createdStudents) {
+   256→    if (Math.random() > 0.7) continue; // 70% get marks
+   257→
+   258→    const studentSubjects = allSubjects.filter(
+   259→      s => s.department === student.department && s.semester === student.semester
+   260→    );
+   261→
+   262→    for (const subject of studentSubjects.slice(0, 4)) {
+   263→      const test1 = 10 + Math.random() * 15;
+   264→      const test2 = 10 + Math.random() * 15;
+   265→      const assignment1 = 5 + Math.random() * 5;
+   266→      const assignment2 = 5 + Math.random() * 5;
+   267→      const total = Math.round((test1 + test2 + assignment1 + assignment2) * 100) / 100;
+   268→
+   269→      try {
+   270→        await prisma.internalMark.create({
+   271→          data: {
+   272→            studentId: student.id,
+   273→            subjectId: subject.id,
+   274→            test1,
+   275→            test2,
+   276→            assignment1,
+   277→            assignment2,
+   278→            total,
+   279→            maxMarks: 50,
+   280→            semester: student.semester,
+   281→          },
+   282→        });
+   283→        marksCount++;
+   284→      } catch (e) {
+   285→        // Skip if exists
+   286→      }
+   287→    }
+   288→  }
+   289→  console.log(`  ✅ Created ${marksCount} internal mark records`);
+   290→
+   291→  // ─── Create Fee Records ──────────────────────────────────────────
+   292→  console.log('💰 Creating fee records...');
+   293→
+   294→  let feeCount = 0;
+   295→  for (const student of createdStudents) {
+   296→    if (Math.random() > 0.8) continue; // 80% get fee records
+   297→
+   298→    const feeTypes = ['tuition', 'hostel', 'exam', 'library'];
+   299→    for (const type of feeTypes) {
+   300→      const isPaid = Math.random() > 0.3;
+   301→      const amount = type === 'tuition' ? 75000 : type === 'hostel' ? 30000 : type === 'exam' ? 5000 : 2000;
+   302→      const dueDate = new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000);
+   303→
+   304→      await prisma.fee.create({
+   305→        data: {
+   306→          studentId: student.id,
+   307→          type,
+   308→          amount,
+   309→          paid: isPaid,
+   310→          dueDate,
+   311→          paidDate: isPaid ? new Date(dueDate.getTime() - Math.random() * 10 * 24 * 60 * 60 * 1000) : null,
+   312→          semester: student.semester,
+   313→        },
+   314→      });
+   315→      feeCount++;
+   316→    }
+   317→  }
+   318→  console.log(`  ✅ Created ${feeCount} fee records`);
+   319→
+   320→  // ─── Create Complaint Records ────────────────────────────────────
+   321→  console.log('🔴 Creating complaint records...');
+   322→
+   323→  const complaintData = [
+   324→    { type: 'room', description: 'Water leakage in hostel room ceiling', priority: 'high' },
+   325→    { type: 'mess', description: 'Unhygienic food served in cafeteria', priority: 'high' },
+   326→    { type: 'wifi', description: 'WiFi not working in Block B since 2 days', priority: 'medium' },
+   327→    { type: 'room', description: 'Broken window in hostel room', priority: 'low' },
+   328→    { type: 'mess', description: 'Limited food options for vegetarians', priority: 'medium' },
+   329→    { type: 'wifi', description: 'Slow internet speed in library area', priority: 'medium' },
+   330→    { type: 'laundry', description: 'Washing machines not working in H2', priority: 'low' },
+   331→    { type: 'room', description: 'Fan not working in room H3-315', priority: 'high' },
+   332→    { type: 'other', description: 'Parking area needs better lighting', priority: 'low' },
+   333→    { type: 'mess', description: 'Cafeteria timings too short for dinner', priority: 'medium' },
+   334→    { type: 'wifi', description: 'No WiFi coverage in sports complex', priority: 'medium' },
+   335→    { type: 'room', description: 'Geyser not working in H4 bathroom', priority: 'high' },
+   336→  ];
+   337→
+   338→  const complaintStatuses = ['open', 'in_progress', 'resolved', 'open', 'in_progress'];
+   339→  let complaintCount = 0;
+   340→
+   341→  for (let i = 0; i < complaintData.length; i++) {
+   342→    const studentIdx = i % createdStudents.length;
+   343→    const status = complaintStatuses[Math.floor(Math.random() * complaintStatuses.length)];
+   344→    await prisma.complaint.create({
+   345→      data: {
+   346→        studentId: createdStudents[studentIdx].id,
+   347→        type: complaintData[i].type,
+   348→        description: complaintData[i].description,
+   349→        status,
+   350→        priority: complaintData[i].priority,
+   351→      },
+   352→    });
+   353→    complaintCount++;
+   354→  }
+   355→  console.log(`  ✅ Created ${complaintCount} complaint records`);
+   356→
+   357→  // ─── Create Leave Requests ───────────────────────────────────────
+   358→  console.log('📝 Creating leave requests...');
+   359→
+   360→  const leaveData = [
+   361→    { type: 'medical', reason: 'Dental surgery recovery', days: 3 },
+   362→    { type: 'personal', reason: 'Family function in hometown', days: 2 },
+   363→    { type: 'medical', reason: 'Viral fever', days: 4 },
+   364→    { type: 'academic', reason: 'Attending conference at IIT Delhi', days: 3 },
+   365→    { type: 'personal', reason: 'Sister\'s wedding', days: 5 },
+   366→    { type: 'medical', reason: 'Eye checkup at specialized hospital', days: 1 },
+   367→    { type: 'academic', reason: 'Paper presentation at IEEE conference', days: 2 },
+   368→    { type: 'personal', reason: 'Family emergency', days: 3 },
+   369→    { type: 'medical', reason: 'Sports injury - ankle sprain', days: 2 },
+   370→    { type: 'academic', reason: 'Hackathon at another college', days: 2 },
+   371→  ];
+   372→
+   373→  const leaveStatuses = ['approved', 'pending', 'rejected', 'approved', 'pending'];
+   374→  let leaveCount = 0;
+   375→
+   376→  for (let i = 0; i < leaveData.length; i++) {
+   377→    const studentIdx = i % createdStudents.length;
+   378→    const status = leaveStatuses[Math.floor(Math.random() * leaveStatuses.length)];
+   379→    const startDate = new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000);
+   380→    const endDate = new Date(startDate.getTime() + leaveData[i].days * 24 * 60 * 60 * 1000);
+   381→
+   382→    await prisma.leaveRequest.create({
+   383→      data: {
+   384→        studentId: createdStudents[studentIdx].id,
+   385→        type: leaveData[i].type,
+   386→        startDate,
+   387→        endDate,
+   388→        reason: leaveData[i].reason,
+   389→        status,
+   390→        approvedBy: status === 'approved' ? 'Dr. Rajesh Sharma' : null,
+   391→      },
+   392→    });
+   393→    leaveCount++;
+   394→  }
+   395→  console.log(`  ✅ Created ${leaveCount} leave request records`);
+   396→
+   397→  // ─── Create Book Transactions ────────────────────────────────────
+   398→  console.log('📚 Creating book transactions...');
+   399→
+   400→  const existingBooks = await prisma.book.findMany();
+   401→  let transactionCount = 0;
+   402→
+   403→  for (let i = 0; i < 15; i++) {
+   404→    const studentIdx = Math.floor(Math.random() * createdStudents.length);
+   405→    const bookIdx = Math.floor(Math.random() * existingBooks.length);
+   406→    const isReturned = Math.random() > 0.4;
+   407→    const borrowDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+   408→    const dueDate = new Date(borrowDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+   409→
+   410→    try {
+   411→      await prisma.bookTransaction.create({
+   412→        data: {
+   413→          bookId: existingBooks[bookIdx].id,
+   414→          studentId: createdStudents[studentIdx].id,
+   415→          borrowDate,
+   416→          dueDate,
+   417→          returnDate: isReturned ? new Date(borrowDate.getTime() + Math.random() * 10 * 24 * 60 * 60 * 1000) : null,
+   418→          fine: isReturned && Math.random() > 0.7 ? Math.round(Math.random() * 50 * 100) / 100 : 0,
+   419→          status: isReturned ? 'returned' : 'borrowed',
+   420→        },
+   421→      });
+   422→      transactionCount++;
+   423→    } catch (e) {
+   424→      // Skip on error
+   425→    }
+   426→  }
+   427→  console.log(`  ✅ Created ${transactionCount} book transaction records`);
+   428→
+   429→  // ─── Create Placement Records ────────────────────────────────────
+   430→  console.log('💼 Creating placement records...');
+   431→
+   432→  const placementCompanies = [
+   433→    { company: 'Google', role: 'SDE Intern', package: 45000 },
+   434→    { company: 'Microsoft', role: 'Software Engineer Intern', package: 40000 },
+   435→    { company: 'Amazon', role: 'SDE Intern', package: 42000 },
+   436→    { company: 'TCS', role: 'Systems Engineer', package: 7000 },
+   437→    { company: 'Infosys', role: 'Power Programmer', package: 10000 },
+   438→    { company: 'Wipro', role: 'Project Engineer', package: 6000 },
+   439→    { company: 'Deloitte', role: 'Analyst', package: 15000 },
+   440→    { company: 'Flipkart', role: 'SDE-1', package: 32000 },
+   441→    { company: 'Adobe', role: 'MTS Intern', package: 38000 },
+   442→    { company: 'Oracle', role: 'Application Engineer', package: 25000 },
+   443→    { company: 'Samsung', role: 'R&D Engineer', package: 20000 },
+   444→    { company: 'L&T', role: 'GET', package: 8000 },
+   445→    { company: 'Tata Motors', role: 'Graduate Trainee', package: 7500 },
+   446→    { company: 'ISRO', role: 'Scientist/Engineer', package: 12000 },
+   447→    { company: 'Infosys', role: 'SP', package: 12000 },
+   448→  ];
+   449→
+   450→  const placementStatuses = ['applied', 'interview', 'offered', 'rejected', 'placed'];
+   451→  let placementCount = 0;
+   452→
+   453→  // Place students with "placed" or "interview" status
+   454→  for (const student of createdStudents) {
+   455→    if (student._placement === 'placed') {
+   456→      // Give them 1-2 placed records
+   457→      for (let j = 0; j < 1 + Math.floor(Math.random() * 2); j++) {
+   458→        const company = placementCompanies[Math.floor(Math.random() * placementCompanies.length)];
+   459→        await prisma.placement.create({
+   460→          data: {
+   461→            studentId: student.id,
+   462→            companyName: company.company,
+   463→            role: company.role,
+   464→            package: company.package,
+   465→            status: 'placed',
+   466→            interviewDate: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000),
+   467→          },
+   468→        });
+   469→        placementCount++;
+   470→      }
+   471→    } else if (student._placement === 'interview') {
+   472→      // Give them 1-2 interview records
+   473→      for (let j = 0; j < 1 + Math.floor(Math.random() * 2); j++) {
+   474→        const company = placementCompanies[Math.floor(Math.random() * placementCompanies.length)];
+   475→        await prisma.placement.create({
+   476→          data: {
+   477→            studentId: student.id,
+   478→            companyName: company.company,
+   479→            role: company.role,
+   480→            package: company.package,
+   481→            status: j === 0 ? 'interview' : 'applied',
+   482→            interviewDate: new Date(Date.now() + Math.random() * 20 * 24 * 60 * 60 * 1000),
+   483→          },
+   484→        });
+   485→        placementCount++;
+   486→      }
+   487→    } else {
+   488→      // Give them 1-2 applied records
+   489→      if (Math.random() > 0.4) {
+   490→        for (let j = 0; j < 1 + Math.floor(Math.random() * 2); j++) {
+   491→          const company = placementCompanies[Math.floor(Math.random() * placementCompanies.length)];
+   492→          await prisma.placement.create({
+   493→            data: {
+   494→              studentId: student.id,
+   495→              companyName: company.company,
+   496→              role: company.role,
+   497→              package: company.package,
+   498→              status: Math.random() > 0.3 ? 'applied' : 'rejected',
+   499→            },
+   500→          });
+   501→          placementCount++;
+   502→        }
+   503→      }
+   504→    }
+   505→  }
+   506→  console.log(`  ✅ Created ${placementCount} placement records`);
+   507→
+   508→  // ─── Create Additional Books ─────────────────────────────────────
+   509→  console.log('📖 Creating additional books...');
+   510→
+   511→  const newBookData = [
+   512→    { title: 'Signals and Systems', author: 'Oppenheim, Willsky', isbn: '978-0138147570', category: 'Electronics', shelf: 'C2-05', total: 6, available: 4, desc: 'Fundamental text on signals and systems analysis.' },
+   513→    { title: 'Power Electronics', author: 'Rashid Muhammad', isbn: '978-0133125900', category: 'Electrical', shelf: 'D1-08', total: 4, available: 3, desc: 'Comprehensive guide to power electronics devices and circuits.' },
+   514→    { title: 'Manufacturing Technology Vol. 1', author: 'P.N. Rao', isbn: '978-0070087993', category: 'Mechanical', shelf: 'E1-02', total: 5, available: 4, desc: 'Foundations of manufacturing processes and technology.' },
+   515→    { title: 'Strength of Materials', author: 'R.K. Rajput', isbn: '978-8131808147', category: 'Civil', shelf: 'F1-10', total: 7, available: 5, desc: 'Comprehensive coverage of mechanics of materials.' },
+   516→    { title: 'Fluid Mechanics and Hydraulic Machines', author: 'R.K. Rajput', isbn: '978-8131808161', category: 'Mechanical', shelf: 'E2-04', total: 5, available: 3, desc: 'Complete text on fluid mechanics and hydraulic machinery.' },
+   517→    { title: 'Digital Logic and Computer Design', author: 'M. Morris Mano', isbn: '978-0132145109', category: 'Electronics', shelf: 'C3-01', total: 6, available: 4, desc: 'Classic text on digital logic design fundamentals.' },
+   518→    { title: 'Software Testing: Principles and Practices', author: 'Srinivasan Desikan', isbn: '978-8131759083', category: 'Software Engineering', shelf: 'D3-06', total: 4, available: 3, desc: 'Comprehensive guide to software testing methodologies.' },
+   519→    { title: 'Cloud Computing: Concepts and Technology', author: 'Thomas Erl', isbn: '978-0133387526', category: 'Cloud Computing', shelf: 'A5-03', total: 3, available: 2, desc: 'In-depth coverage of cloud computing architecture and patterns.' },
+   520→    { title: 'Engineering Mathematics Vol. 2', author: 'B.S. Grewal', isbn: '978-8174092313', category: 'Mathematics', shelf: 'G1-01', total: 10, available: 7, desc: 'Essential mathematics for engineering students.' },
+   521→    { title: 'Embedded Systems: Architecture and Programming', author: 'Raj Kamal', isbn: '978-0070154234', category: 'Electronics', shelf: 'C4-08', total: 4, available: 2, desc: 'Introduction to embedded system design and programming.' },
+   522→    { title: 'Data Structures Through C', author: 'G.S. Baluja', isbn: '978-8173712050', category: 'Computer Science', shelf: 'A2-07', total: 8, available: 5, desc: 'Practical approach to data structures using C language.' },
+   523→    { title: 'Environmental Engineering', author: 'S.K. Garg', isbn: '978-8174092306', category: 'Civil', shelf: 'F2-03', total: 5, available: 4, desc: 'Comprehensive coverage of environmental engineering principles.' },
+   524→  ];
+   525→
+   526→  let bookCount = 0;
+   527→  for (const bd of newBookData) {
+   528→    try {
+   529→      await prisma.book.create({
+   530→        data: {
+   531→          title: bd.title,
+   532→          author: bd.author,
+   533→          isbn: bd.isbn,
+   534→          category: bd.category,
+   535→          shelfLocation: bd.shelf,
+   536→          totalCopies: bd.total,
+   537→          availableCopies: bd.available,
+   538→          description: bd.desc,
+   539→        },
+   540→      });
+   541→      bookCount++;
+   542→    } catch (e) {
+   543→      // Skip if exists
+   544→    }
+   545→  }
+   546→  console.log(`  ✅ Created ${bookCount} additional books`);
+   547→
+   548→  // ─── Create Additional Events ────────────────────────────────────
+   549→  console.log('🎉 Creating additional events...');
+   550→
+   551→  const newEventData = [
+   552→    { title: 'Robotics Challenge 2025', desc: 'Build and program robots to navigate an obstacle course. Team event with prizes worth ₹1,00,000.', type: 'hackathon', organizer: 'Robotics Club', startOffset: 12, endOffset: 13, venue: 'Robotics Lab', max: 40 },
+   553→    { title: 'National Science Symposium', desc: 'Annual science symposium featuring talks by leading researchers and paper presentations by students.', type: 'seminar', organizer: 'Science Forum', startOffset: 20, endOffset: 21, venue: 'Main Auditorium', max: 300 },
+   554→    { title: 'Inter-College Sports Meet', desc: 'Annual athletics and sports competition between 15 colleges. Events include cricket, football, basketball, and track & field.', type: 'sports', organizer: 'Sports Committee', startOffset: 25, endOffset: 28, venue: 'Sports Complex', max: 500 },
+   555→    { title: 'Python for Data Science Bootcamp', desc: '3-day intensive bootcamp covering Python, Pandas, NumPy, and visualization libraries.', type: 'workshop', organizer: 'Data Science Club', startOffset: 8, endOffset: 10, venue: 'Lab 401', max: 60 },
+   556→    { title: 'Entrepreneurship Summit', desc: 'Panel discussions with successful entrepreneurs, VC networking, and pitch sessions for student startups.', type: 'seminar', organizer: 'E-Cell', startOffset: 18, endOffset: 18, venue: 'Convention Center', max: 200 },
+   557→  ];
+   558→
+   559→  let eventCount = 0;
+   560→  for (const ed of newEventData) {
+   561→    const startDate = new Date(Date.now() + ed.startOffset * 24 * 60 * 60 * 1000);
+   562→    const endDate = ed.endOffset !== ed.startOffset
+   563→      ? new Date(Date.now() + ed.endOffset * 24 * 60 * 60 * 1000)
+   564→      : null;
+   565→
+   566→    await prisma.event.create({
+   567→      data: {
+   568→        title: ed.title,
+   569→        description: ed.desc,
+   570→        type: ed.type,
+   571→        organizer: ed.organizer,
+   572→        startDate,
+   573→        endDate,
+   574→        venue: ed.venue,
+   575→        registrationOpen: true,
+   576→        maxParticipants: ed.max,
+   577→      },
+   578→    });
+   579→    eventCount++;
+   580→  }
+   581→  console.log(`  ✅ Created ${eventCount} additional events`);
+   582→
+   583→  // ─── Create Some Event Participations ─────────────────────────────
+   584→  console.log('🎫 Creating event participations...');
+   585→
+   586→  const allEvents = await prisma.event.findMany();
+   587→  let partCount = 0;
+   588→
+   589→  for (const student of createdStudents) {
+   590→    // Each student participates in 1-3 random events
+   591→    const numEvents = 1 + Math.floor(Math.random() * 3);
+   592→    const shuffled = [...allEvents].sort(() => Math.random() - 0.5);
+   593→    for (let i = 0; i < Math.min(numEvents, shuffled.length); i++) {
+   594→      try {
+   595→        await prisma.eventParticipant.create({
+   596→          data: {
+   597→            eventId: shuffled[i].id,
+   598→            studentId: student.id,
+   599→            registeredAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+   600→          },
+   601→        });
+   602→        partCount++;
+   603→      } catch (e) {
+   604→        // Skip duplicates
+   605→      }
+   606→    }
+   607→  }
+   608→  console.log(`  ✅ Created ${partCount} event participation records`);
+   609→
+   610→  // ─── Final Summary ───────────────────────────────────────────────
+   611→  const totalStudents = await prisma.student.count();
+   612→  const totalFaculty = await prisma.faculty.count();
+   613→  const totalSubjects = await prisma.subject.count();
+   614→  const totalBooks = await prisma.book.count();
+   615→  const totalEvents = await prisma.event.count();
+   616→  const totalPlacements = await prisma.placement.count();
+   617→  const totalFees = await prisma.fee.count();
+   618→  const totalComplaints = await prisma.complaint.count();
+   619→  const totalAttendance = await prisma.attendance.count();
+   620→
+   621→  console.log('\n🎉 Admin seed data created successfully!');
+   622→  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+   623→  console.log(`  📊 Total Students:      ${totalStudents}`);
+   624→  console.log(`  👨‍🏫 Total Faculty:       ${totalFaculty}`);
+   625→  console.log(`  📚 Total Subjects:      ${totalSubjects}`);
+   626→  console.log(`  📖 Total Books:         ${totalBooks}`);
+   627→  console.log(`  🎉 Total Events:        ${totalEvents}`);
+   628→  console.log(`  💼 Total Placements:    ${totalPlacements}`);
+   629→  console.log(`  💰 Total Fee Records:   ${totalFees}`);
+   630→  console.log(`  🔴 Total Complaints:    ${totalComplaints}`);
+   631→  console.log(`  📋 Total Attendance:    ${totalAttendance}`);
+   632→  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+   633→}
+   634→
+   635→main()
+   636→  .catch((e) => {
+   637→    console.error('❌ Seed failed:', e);
+   638→    process.exit(1);
+   639→  })
+   640→  .finally(async () => {
+   641→    await prisma.$disconnect();
+   642→  });
+   643→
