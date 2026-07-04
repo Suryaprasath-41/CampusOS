@@ -349,7 +349,7 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@Samyukthenterprises@gmail.com"
+                      placeholder="admin@JSE.com"
                       required
                       className="relative w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-purple-500/40 focus:bg-white/[0.06] transition-all duration-300"
                     />
@@ -443,7 +443,7 @@ export default function LoginPage() {
                   Secure authentication powered by CampusOS AI v2.0
                 </p>
                 <p className="text-gray-700 text-[10px] mt-1">
-                  © 2024 Jai Samyukth Enterprises. All rights reserved.
+                  © 2025 Jai Samyukth Enterprises. All rights reserved.
                 </p>
               </motion.div>
             </div>

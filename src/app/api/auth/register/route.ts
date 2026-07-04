@@ -24,10 +24,20 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { email, password, name, role, department } = body;
+    let { email, password, name, role, department } = body;
 
     if (!email || !password || !name || !role) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Auto-append @JSE.com if no domain provided
+    if (!email.includes('@')) {
+      email = `${email}@JSE.com`;
+    }
+
+    // Enforce @JSE.com domain
+    if (!email.endsWith('@JSE.com')) {
+      return NextResponse.json({ error: 'All accounts must use @JSE.com email domain' }, { status: 400 });
     }
 
     // Check if user already exists

@@ -28,6 +28,7 @@ import AdminFacultyManager from './AdminFacultyManager';
 import AdminCourseManager from './AdminCourseManager';
 import AdminKnowledgeBase from './AdminKnowledgeBase';
 import AdminAutomationBuilder from './AdminAutomationBuilder';
+import AdminUserManager from './AdminUserManager';
 
 // ─── Tab Configuration ───────────────────────────────────────────────
 const tabs = [
@@ -36,6 +37,7 @@ const tabs = [
   { id: 'faculty', label: 'Faculty', icon: GraduationCap },
   { id: 'courses', label: 'Courses', icon: BookOpen },
   { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
+  { id: 'users', label: 'User Accounts', icon: Shield },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'ai-playground', label: 'AI Playground', icon: Bot },
   { id: 'search', label: 'Search', icon: Search },
@@ -70,8 +72,8 @@ const systemMetrics = [
 const quickActions = [
   { label: 'Add Student', icon: Plus, gradient: 'from-purple-500 to-violet-600', glow: 'rgba(139,92,246,0.2)', tab: 'students' as TabId },
   { label: 'Add Faculty', icon: GraduationCap, gradient: 'from-cyan-500 to-blue-600', glow: 'rgba(6,182,212,0.2)', tab: 'faculty' as TabId },
+  { label: 'Create Account', icon: Shield, gradient: 'from-amber-500 to-orange-600', glow: 'rgba(245,158,11,0.2)', tab: 'users' as TabId },
   { label: 'Send Notification', icon: Send, gradient: 'from-blue-500 to-indigo-600', glow: 'rgba(59,130,246,0.2)', tab: 'notifications' as TabId },
-  { label: 'View Reports', icon: FileBarChart, gradient: 'from-green-500 to-emerald-600', glow: 'rgba(34,197,94,0.2)', tab: 'dashboard' as TabId },
   { label: 'AI Settings', icon: Settings, gradient: 'from-orange-500 to-amber-600', glow: 'rgba(249,115,22,0.2)', tab: 'ai-playground' as TabId },
   { label: 'Export Data', icon: Download, gradient: 'from-pink-500 to-rose-600', glow: 'rgba(236,72,153,0.2)', tab: 'search' as TabId },
 ];
@@ -105,6 +107,16 @@ const adminSectionToTabMap: Record<string, TabId> = {
   faculty: 'faculty',
   courses: 'courses',
   complaints: 'complaints',
+  'admin-users': 'users',
+  'admin-students': 'students',
+  'admin-faculty': 'faculty',
+  'admin-courses': 'courses',
+  'admin-complaints': 'complaints',
+  'admin-notifications': 'notifications',
+  'admin-ai-playground': 'ai-playground',
+  'admin-search': 'search',
+  'admin-knowledge': 'knowledge-base',
+  'admin-automations': 'automations',
   notifications: 'notifications',
   'ai-playground': 'ai-playground',
   search: 'search',
@@ -204,6 +216,7 @@ export default function AdminPortal() {
             {activeTab === 'search' && <AdminSmartSearch />}
             {activeTab === 'knowledge-base' && <AdminKnowledgeBase />}
             {activeTab === 'automations' && <AdminAutomationBuilder />}
+            {activeTab === 'users' && <AdminUserManager />}
           </motion.div>
         </AnimatePresence>
       </div>

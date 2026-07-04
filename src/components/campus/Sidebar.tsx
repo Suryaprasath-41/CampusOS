@@ -54,8 +54,6 @@ const studentNavGroups: NavGroup[] = [
     items: [
       { id: 'workflow', label: 'Workflows', icon: Workflow },
       { id: 'faculty', label: 'Faculty AI', icon: Brain },
-      { id: 'faculty-portal', label: 'Faculty Portal', icon: GraduationCap, badge: 'NEW' },
-      { id: 'admin', label: 'Admin', icon: Shield, badge: 'ADMIN' },
       { id: 'ai-memory', label: 'AI Memory', icon: Database },
       { id: 'settings', label: 'Settings', icon: Settings },
     ],
@@ -110,6 +108,7 @@ const adminNavGroups: NavGroup[] = [
       { id: 'admin-faculty', label: 'Faculty', icon: GraduationCap },
       { id: 'admin-courses', label: 'Courses', icon: BookOpen },
       { id: 'admin-complaints', label: 'Complaints', icon: AlertTriangle },
+      { id: 'admin-users', label: 'User Accounts', icon: Shield, badge: 'NEW' },
     ],
   },
   {
@@ -142,10 +141,11 @@ export default function Sidebar() {
   const handleNavClick = (itemId: string) => {
     if (activeRole === 'admin' && !['dashboard', 'settings'].includes(itemId)) {
       // Map admin nav items to the admin section with specific sub-routing
-      setActiveSection('admin');
+      // Use the item ID so AdminPortal can map it to the right tab
+      setActiveSection(itemId.startsWith('admin-') ? itemId : 'admin');
     } else if (activeRole === 'faculty' && !['dashboard', 'settings', 'profile'].includes(itemId)) {
       // Map faculty nav items to faculty portal
-      setActiveSection('faculty-portal');
+      setActiveSection(itemId.startsWith('faculty-') ? itemId : 'faculty-portal');
     } else {
       setActiveSection(itemId);
     }
@@ -156,6 +156,7 @@ export default function Sidebar() {
     if (activeRole === 'admin') {
       if (itemId === 'dashboard' && activeSection === 'dashboard') return true;
       if (itemId === 'settings' && activeSection === 'settings') return true;
+      if (itemId.startsWith('admin-') && activeSection === itemId) return true;
       if (itemId.startsWith('admin-') && activeSection === 'admin') return true;
       return false;
     }
@@ -163,7 +164,7 @@ export default function Sidebar() {
       if (itemId === 'dashboard' && activeSection === 'dashboard') return true;
       if (itemId === 'settings' && activeSection === 'settings') return true;
       if (itemId === 'profile' && activeSection === 'profile') return true;
-      if (itemId.startsWith('faculty-') && activeSection === 'faculty-portal') return true;
+      if (itemId.startsWith('faculty-') && activeSection.startsWith('faculty-')) return true;
       return false;
     }
     return activeSection === itemId;

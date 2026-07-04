@@ -539,3 +539,61 @@ CampusOS AI v2.0 has all requested features built but faces OOM (Out of Memory) 
 3. Test and verify login flow end-to-end with agent-browser
 4. Test splash screen and voice integration
 5. Add forgot password / change password functionality
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Add login/register with role-based access, admin@JSE.com credentials, splash screen, voice-to-AI, context-aware AI buttons, and light mode
+
+Work Log:
+- Updated prisma/seed.ts: Changed all emails from @campus.edu to @JSE.com domain
+- Created admin account: admin@JSE.com with password Samyukth@2378
+- Created student account: sam.kumar@JSE.com with password Student@2024
+- Created faculty accounts: dr.sharma@JSE.com etc. with password Faculty@2024
+- Updated login page placeholder from admin@Samyukthenterprises@gmail.com to admin@JSE.com
+- Updated Header.tsx: Role Switcher now only visible for admin users (currentUser?.role === 'admin')
+- Removed Faculty Portal and Admin links from student sidebar navigation (role isolation)
+- Updated Sidebar.tsx: handleNavClick now passes specific section IDs (e.g., admin-users) for proper tab sync
+- Updated Sidebar.tsx: isActiveItem properly highlights current admin/faculty nav items
+- Created AdminUserManager.tsx: Full user account creation panel with @JSE.com enforcement
+  - Create user form with auto-generate password
+  - Copy-to-clipboard for passwords
+  - Role selection (Student/Faculty/Admin)
+  - Department selection
+  - Search/filter users
+  - User stats (Total, Students, Faculty, Admins)
+  - Enforces @JSE.com email domain
+- Created /api/auth/users API endpoint (GET, admin-only) for listing users
+- Updated /api/auth/register: Auto-appends @JSE.com if no domain, enforces @JSE.com domain
+- Added 'User Accounts' tab to AdminPortal with AdminUserManager component
+- Updated adminSectionToTabMap with all admin-* section keys
+- Updated page.tsx adminSections and facultySections maps with all section keys
+- Fixed SessionProvider.tsx lint error (removed useEffect with setState)
+- Fixed AdminUserManager.tsx lint error (restructured useEffect)
+- Re-seeded database with new @JSE.com data
+- Verified with agent-browser:
+  - Admin login (admin@JSE.com / Samyukth@2378) ✅
+  - Student login (sam.kumar@JSE.com / Student@2024) ✅
+  - Role Switcher hidden for non-admin users ✅
+  - User Account Management panel with create/search ✅
+  - Created test.student@JSE.com via admin panel ✅
+  - Light mode toggle working ✅
+  - Ask AI button sends contextual message ✅
+  - Voice Assistant works (sends directly to AI) ✅
+  - Zero page errors ✅
+
+Stage Summary:
+- All @JSE.com email accounts working
+- Admin-only Role Switcher (students/faculty locked to their portal)
+- Admin can create new @JSE.com user accounts from Admin Portal
+- Login/register with role-based access control fully functional
+- Splash screen shows "CampusOS, Made by Jai Samyukth Enterprises" on first load
+- Voice-to-AI direct input working
+- Context-aware AI buttons working
+- Light/dark mode toggle working
+- Zero lint errors, zero page errors
+
+Credentials:
+- Admin: admin@JSE.com / Samyukth@2378
+- Student: sam.kumar@JSE.com / Student@2024
+- Faculty: dr.sharma@JSE.com / Faculty@2024

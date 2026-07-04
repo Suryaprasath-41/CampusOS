@@ -66,7 +66,7 @@ function RoleSwitcher() {
 }
 
 export default function Header() {
-  const { dashboardData, setVoiceOpen, setDashboardData, bumpNotifVersion, activeRole, openChatWithContext, currentUser } = useCampusStore();
+  const { dashboardData, setVoiceOpen, setDashboardData, bumpNotifVersion, activeRole, openChatWithContext, currentUser, isAuthenticated } = useCampusStore();
   const [searchFocused, setSearchFocused] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -213,8 +213,8 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Role Switcher */}
-          <RoleSwitcher />
+          {/* Role Switcher - Only visible for admin users */}
+          {currentUser?.role === 'admin' && <RoleSwitcher />}
 
           {/* Search with pulsing gradient border on focus */}
           <div className={`relative transition-all duration-300 hidden sm:block ${searchFocused ? 'w-72' : 'w-48'}`}>

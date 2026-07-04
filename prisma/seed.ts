@@ -25,14 +25,14 @@ async function main() {
   await prisma.faculty.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create Faculty Users
+  // Create Faculty Users - All @JSE.com emails
   const facultyUsers = await Promise.all([
-    prisma.user.create({ data: { email: 'dr.sharma@campus.edu', name: 'Dr. Rajesh Sharma', role: 'faculty', department: 'Computer Science', avatar: '' } }),
-    prisma.user.create({ data: { email: 'dr.patel@campus.edu', name: 'Dr. Anita Patel', role: 'faculty', department: 'Computer Science', avatar: '' } }),
-    prisma.user.create({ data: { email: 'dr.kumar@campus.edu', name: 'Dr. Vikram Kumar', role: 'faculty', department: 'Information Technology', avatar: '' } }),
-    prisma.user.create({ data: { email: 'dr.singh@campus.edu', name: 'Dr. Priya Singh', role: 'faculty', department: 'Electronics', avatar: '' } }),
-    prisma.user.create({ data: { email: 'dr.gupta@campus.edu', name: 'Dr. Amit Gupta', role: 'faculty', department: 'Computer Science', avatar: '' } }),
-    prisma.user.create({ data: { email: 'dr.venkat@campus.edu', name: 'Dr. Venkat Rao', role: 'faculty', department: 'Mathematics', avatar: '' } }),
+    prisma.user.create({ data: { email: 'dr.sharma@JSE.com', name: 'Dr. Rajesh Sharma', role: 'faculty', department: 'Computer Science', avatar: '', password: 'Faculty@2024' } }),
+    prisma.user.create({ data: { email: 'dr.patel@JSE.com', name: 'Dr. Anita Patel', role: 'faculty', department: 'Computer Science', avatar: '', password: 'Faculty@2024' } }),
+    prisma.user.create({ data: { email: 'dr.kumar@JSE.com', name: 'Dr. Vikram Kumar', role: 'faculty', department: 'Information Technology', avatar: '', password: 'Faculty@2024' } }),
+    prisma.user.create({ data: { email: 'dr.singh@JSE.com', name: 'Dr. Priya Singh', role: 'faculty', department: 'Electronics', avatar: '', password: 'Faculty@2024' } }),
+    prisma.user.create({ data: { email: 'dr.gupta@JSE.com', name: 'Dr. Amit Gupta', role: 'faculty', department: 'Computer Science', avatar: '', password: 'Faculty@2024' } }),
+    prisma.user.create({ data: { email: 'dr.venkat@JSE.com', name: 'Dr. Venkat Rao', role: 'faculty', department: 'Mathematics', avatar: '', password: 'Faculty@2024' } }),
   ]);
 
   const faculties = await Promise.all([
@@ -54,15 +54,16 @@ async function main() {
     prisma.subject.create({ data: { code: 'MA601', name: 'Probability & Statistics', department: 'Mathematics', semester: 6, credits: 3, facultyId: faculties[5].id, schedule: JSON.stringify({ days: ['Monday', 'Wednesday'], time: '9:00 AM - 10:00 AM', room: 'LH-101' }) } }),
   ]);
 
-  // Create Student User
+  // Create Student User - @JSE.com email
   const studentUser = await prisma.user.create({
     data: {
-      email: 'sam.kumar@campus.edu',
+      email: 'sam.kumar@JSE.com',
       name: 'Sam Kumar',
       role: 'student',
       department: 'Computer Science',
       phone: '+91 98765 43210',
       avatar: '',
+      password: 'Student@2024',
     }
   });
 
@@ -249,19 +250,21 @@ async function main() {
     prisma.notification.create({ data: { userId: studentUser.id, title: 'Complaint Update', message: 'Your AC complaint has been assigned to maintenance', type: 'info' } }),
   ]);
 
-  // Create Admin User
+  // Create Admin User - admin@JSE.com with Samyukth@2378
   await prisma.user.create({
     data: {
-      email: 'admin@campus.edu',
-      name: 'Admin User',
+      email: 'admin@JSE.com',
+      name: 'JSE Admin',
       role: 'admin',
       department: 'Administration',
+      password: 'Samyukth@2378',
     }
   });
 
   console.log('✅ Seed data created successfully!');
-  console.log(`   Student: Sam Kumar (CS2022001)`);
-  console.log(`   Email: sam.kumar@campus.edu`);
+  console.log(`   Admin: admin@JSE.com / Samyukth@2378`);
+  console.log(`   Student: sam.kumar@JSE.com / Student@2024`);
+  console.log(`   Faculty: dr.sharma@JSE.com / Faculty@2024`);
   console.log(`   CGPA: 8.72`);
   console.log(`   Overall Attendance: ${overallAttendance}%`);
   console.log(`   Total Classes: ${totalClasses}`);
