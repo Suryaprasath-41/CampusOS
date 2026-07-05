@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 interface WidgetCardProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   icon: React.ReactNode;
   subtitle?: string;
   risk?: string;

@@ -87,6 +87,6 @@ Placement Status: ${student.placementStatus}`;
     return NextResponse.json({ response, agentType: type });
   } catch (error: any) {
     console.error('Chat error:', error);
-    return NextResponse.json({ response: 'I encountered an error. Please try again.', agentType: type || 'master' });
+    return NextResponse.json({ response: 'I encountered an error. Please try again.', agentType: 'master' });
   }
 }

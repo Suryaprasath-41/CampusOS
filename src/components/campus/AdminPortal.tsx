@@ -312,7 +312,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
       >
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-cyan-500/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]/80" />
 
         {/* Animated border glow */}
         <motion.div
@@ -324,7 +324,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
           animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
         >
-          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+          <div className="absolute inset-[1px] rounded-2xl bg-[var(--bg-primary)]" />
         </motion.div>
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -342,7 +342,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-300 to-cyan-400 mb-2"
+              className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-600 dark:from-purple-400 dark:via-pink-300 dark:to-cyan-400 mb-2"
             >
               CampusOS Control Center
             </motion.h1>
@@ -1103,7 +1103,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
           animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
         >
-          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+          <div className="absolute inset-[1px] rounded-2xl bg-[var(--bg-primary)]" />
         </motion.div>
 
         <div className="relative z-10 flex items-start gap-4">
@@ -1125,7 +1125,7 @@ function PlaceholderTab({ id, label, description, icon: Icon, gradient, accentCo
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400"
+              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400"
             >
               {label}
             </motion.h2>

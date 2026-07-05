@@ -665,7 +665,7 @@ export default function AdminCourseManager() {
 
       {/* ─── Add Subject Dialog ──────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-lg">
+        <DialogContent className="bg-[var(--bg-primary)]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-[var(--text-primary)] flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -798,7 +798,7 @@ export default function AdminCourseManager() {
 
       {/* ─── Subject Detail Dialog ────────────────────────────────────── */}
       <Dialog open={!!detailSubject} onOpenChange={() => setDetailSubject(null)}>
-        <DialogContent className="bg-[#0d0d20]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-2xl">
+        <DialogContent className="bg-[var(--bg-primary)]/95 backdrop-blur-2xl border border-[var(--border-color)] text-[var(--text-primary)] max-w-2xl">
           {detailSubject && (
             <>
               <DialogHeader>

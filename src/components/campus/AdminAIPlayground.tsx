@@ -275,7 +275,7 @@ export default function AdminAIPlayground() {
         className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] p-6"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-transparent to-purple-500/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]/80" />
         <motion.div
           className="absolute inset-0 rounded-2xl"
           style={{
@@ -285,7 +285,7 @@ export default function AdminAIPlayground() {
           animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
         >
-          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+          <div className="absolute inset-[1px] rounded-2xl bg-[var(--bg-primary)]" />
         </motion.div>
 
         <div className="relative z-10 flex items-center gap-4">
@@ -299,7 +299,7 @@ export default function AdminAIPlayground() {
             <Bot className="w-6 h-6 text-white" />
           </motion.div>
           <div>
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
               AI Playground
             </h2>
             <p className="text-[var(--text-muted)] text-xs mt-0.5">Test prompts, configure agent chains, and monitor AI performance</p>
