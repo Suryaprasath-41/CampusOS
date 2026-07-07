@@ -35,9 +35,12 @@ Create a `.env` file in the project root (one may already exist):
 
 ```env
 DATABASE_URL=file:./db/custom.db
+GEMINI_API_KEY=your-key-here
 CAMPUOS_HMAC_SECRET=campusos-ai-hmac-secret-2025-jse
 NEXTAUTH_SECRET=campusos-v2-secret-key-2024
 ```
+
+**Get your FREE Gemini API key at:** https://aistudio.google.com/apikey
 
 ### Step 4: Initialize the Database
 
@@ -49,7 +52,19 @@ bun run db:push
 bun run db:generate
 ```
 
-### Step 5: Seed the Database (CRITICAL — Creates Admin Account & Demo Data)
+### Step 5: Add Your Gemini API Key
+
+Edit the `.env` file and paste your Gemini API key:
+```
+GEMINI_API_KEY=AIzaSyB...your-key-here
+```
+
+Get a **FREE** key at https://aistudio.google.com/apikey — no credit card needed.
+Free tier: 15 requests/minute, 1,500 requests/day.
+
+> The app works without the API key (all dashboards, charts, data), but **AI chat won't respond** without it.
+
+### Step 6: Seed the Database (CRITICAL — Creates Admin Account & Demo Data)
 
 ```bash
 # Seed the main database (admin, students, faculty, subjects, etc.)
@@ -60,15 +75,17 @@ This creates:
 - **Admin account**: `admin@JSE.com` with password `Samyukth@2378`
 - Demo students, faculty, subjects, attendance records, and more
 
-### Step 6: Start the Development Server
+### Step 7: Start the Development Server
 
 ```bash
 bun run dev
+# OR
+npm run dev
 ```
 
 The app will be running at **http://localhost:3000**
 
-### Step 7: Log In
+### Step 8: Log In
 
 Open your browser and go to `http://localhost:3000`. You'll see the login page.
 
@@ -244,13 +261,16 @@ User Query → Master AI → Routes to:
 
 ## 🔐 Security
 
-- **Password Hashing**: bcrypt with 12 salt rounds
-- **HMAC-Signed Tokens**: Web Crypto API for Edge Runtime compatible token signing
+- **Password Hashing**: bcrypt with 10-12 salt rounds
+- **HMAC-Signed Tokens**: Node.js crypto for token signing (SHA-256)
 - **Route Protection**: Next.js middleware validates tokens on every request
 - **24-Hour Token Expiry**: Tokens automatically expire after 24 hours
+- **Rate Limiting**: 5 login attempts per IP in 15 minutes
 - **Admin-Only Account Creation**: Only admins can create new user accounts
 - **Role-Based Access Control**: Three distinct portals with strict role separation
-- **HTTP-Only Cookies**: Auth tokens stored in secure cookies (not localStorage)
+- **Auto-migration**: Plain-text passwords auto-upgraded to bcrypt on login
+
+> ⚠️ **Before going live**, see `DEPLOYMENT_GUIDE.md` for production security checklist.
 
 ---
 
@@ -265,7 +285,7 @@ User Query → Master AI → Routes to:
 | State Mgmt     | Zustand                              |
 | Database       | SQLite via Prisma ORM               |
 | Auth           | Custom HMAC + NextAuth.js v4        |
-| AI             | z-ai-web-dev-sdk (LLM)             |
+| AI             | Google Gemini 2.0 Flash (FREE)     |
 | Animations     | Framer Motion                        |
 | Charts         | Recharts                             |
 | Icons          | Lucide React                         |

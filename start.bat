@@ -185,13 +185,39 @@ echo  [3/8] Checking environment configuration...
 if not exist ".env" (
     echo         Creating .env file...
     (
+        echo # CampusOS AI v2.0 - Environment Configuration
+        echo.
+        echo # Database (SQLite)
         echo DATABASE_URL=file:./db/custom.db
+        echo.
+        echo # AI - Google Gemini (FREE - get key at https://aistudio.google.com/apikey)
+        echo GEMINI_API_KEY=
+        echo.
+        echo # Auth Secrets
         echo CAMPUOS_HMAC_SECRET=campusos-ai-hmac-secret-2025-jse
         echo NEXTAUTH_SECRET=campusos-v2-secret-key-2024
     ) > .env
     echo         .env created successfully.
+    echo.
+    echo   [IMPORTANT] You need to add your Gemini API key to the .env file!
+    echo              Get a FREE key at: https://aistudio.google.com/apikey
+    echo              Then edit .env and paste it next to GEMINI_API_KEY=
+    echo              (The app works without it, but AI chat won't respond)
 ) else (
     echo         .env file already exists.
+    :: Check if GEMINI_API_KEY is set
+    findstr /C:"GEMINI_API_KEY=" .env >nul 2>nul
+    if %ERRORLEVEL% NEQ 0 (
+        echo.
+        echo   [WARNING] GEMINI_API_KEY not found in .env file!
+        echo            Adding it now...
+        (
+            echo.
+            echo # AI - Google Gemini (FREE - get key at https://aistudio.google.com/apikey)
+            echo GEMINI_API_KEY=
+        ) >> .env
+        echo            Added GEMINI_API_KEY to .env. Please add your key.
+    )
 )
 
 :: ──────────────────────────────────────────────────────────

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CampusOS AI - The AI-Native Campus Operating System",
-  description: "One AI. Every Campus Service. An enterprise-grade Multi-Agent AI platform that unifies every digital service inside an educational institution.",
+  description: "One AI. Every Campus Service. An enterprise-grade Multi-Agent AI platform that unifies every digital service inside an educational institution. Made by Jai Samyukth Enterprises.",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
 };
 

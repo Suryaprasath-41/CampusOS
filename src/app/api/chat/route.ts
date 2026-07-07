@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// ─── Gemini API Setup ────────────────────────────────────────────────
+// Put your API key in .env: GEMINI_API_KEY=your-key-here
+// Get a free key at: https://aistudio.google.com/apikey
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+
+// Lazy-initialized Gemini client (created once, reused)
+let genAI: GoogleGenerativeAI | null = null;
+function getGenAI(): GoogleGenerativeAI {
+  if (!genAI) {
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set. Add it to your .env file. Get a free key at https://aistudio.google.com/apikey');
+    }
+    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  }
+  return genAI;
+}
+
+// ─── Agent Prompts ───────────────────────────────────────────────────
 const AGENT_PROMPTS: Record<string, string> = {
   master: "You are CampusOS AI, the Master Agent of an intelligent campus operating system. You help students with anything related to their college life - attendance, academics, placements, library, hostel, finance, and events. Be concise, helpful, and friendly. Use emojis sparingly. Provide specific data-driven answers when possible. If you don't know something, give general helpful advice.",
   attendance: "You are the Attendance Intelligence Agent of CampusOS AI. You specialize in attendance analysis, predictions, and advice. Tell students their attendance status, predict future attendance, calculate safe leaves, and suggest strategies to maintain minimum attendance. Always mention risk levels. Be data-driven and specific.",
@@ -12,6 +30,7 @@ const AGENT_PROMPTS: Record<string, string> = {
   finance: "You are the Finance Agent of CampusOS AI. You help students with fee payments, scholarships, financial planning, and payment reminders. Be clear about amounts and deadlines.",
 };
 
+// ─── Chat Endpoint ───────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
     const { message, agentType } = await request.json();
@@ -23,7 +42,7 @@ export async function POST(request: Request) {
 
     const user = await db.user.findUnique({ where: { id: student.userId } });
 
-    // Build context
+    // Build context from database
     const totalAtt = await db.attendance.count({ where: { studentId: student.id } });
     const presentAtt = await db.attendance.count({
       where: { studentId: student.id, status: { in: ['present', 'late'] } }
@@ -42,7 +61,7 @@ Hostel Room: ${student.hostelRoom || 'N/A'}
 Pending Fees: ${pendingFees}
 Placement Status: ${student.placementStatus}`;
 
-    // Get recent conversation
+    // Get recent conversation for context
     const recent = await db.conversation.findMany({
       where: { studentId: student.id },
       orderBy: { createdAt: 'desc' },
@@ -53,16 +72,18 @@ Placement Status: ${student.placementStatus}`;
     const systemPrompt = AGENT_PROMPTS[type] || AGENT_PROMPTS.master;
     const fullSystem = systemPrompt + `\n\nStudent Context:\n${context}`;
 
-    // Build messages
-    const messages: { role: 'user' | 'assistant' | 'system'; content: string }[] = [
-      { role: 'assistant', content: fullSystem },
-    ];
+    // Build conversation history for Gemini
+    // Gemini uses "user" and "model" roles
+    const history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [];
 
+    // Add recent conversation as history (skip the very last - that's the current message)
     if (recent.length > 1) {
-      const historyText = recent.slice(0, -1).map(r => `${r.role}: ${r.content}`).join('\n');
-      messages.push({ role: 'user', content: `Previous conversation:\n${historyText}\n\nCurrent message: ${message}` });
-    } else {
-      messages.push({ role: 'user', content: message });
+      for (const msg of recent.slice(0, -1)) {
+        history.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }],
+        });
+      }
     }
 
     // Save user message
@@ -70,16 +91,21 @@ Placement Status: ${student.placementStatus}`;
       data: { studentId: student.id, role: 'user', content: message, agentType: type }
     });
 
-    // Call LLM
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages,
-      thinking: { type: 'disabled' }
+    // Call Gemini API
+    const ai = getGenAI();
+    const model = ai.getGenerativeModel({
+      model: 'gemini-2.0-flash', // Free tier model — fast and capable
+      systemInstruction: fullSystem,
     });
 
-    const response = completion.choices[0]?.message?.content || 'I couldn\'t process that. Please try again.';
+    const chat = model.startChat({
+      history,
+    });
 
-    // Save response
+    const result = await chat.sendMessage(message);
+    const response = result.response.text() || 'I couldn\'t process that. Please try again.';
+
+    // Save AI response
     await db.conversation.create({
       data: { studentId: student.id, role: 'assistant', content: response, agentType: type }
     });
@@ -87,6 +113,17 @@ Placement Status: ${student.placementStatus}`;
     return NextResponse.json({ response, agentType: type });
   } catch (error: any) {
     console.error('Chat error:', error);
-    return NextResponse.json({ response: 'I encountered an error. Please try again.', agentType: type || 'master' });
+
+    // Provide helpful error messages
+    let errorMsg = 'I encountered an error. Please try again.';
+    if (error?.message?.includes('GEMINI_API_KEY')) {
+      errorMsg = 'AI is not configured. Add your GEMINI_API_KEY to the .env file. Get a free key at https://aistudio.google.com/apikey';
+    } else if (error?.status === 429) {
+      errorMsg = 'AI rate limit reached. The free tier allows 15 requests/minute. Please wait a moment and try again.';
+    } else if (error?.status === 403) {
+      errorMsg = 'AI API key is invalid. Please check your GEMINI_API_KEY in the .env file.';
+    }
+
+    return NextResponse.json({ response: errorMsg, agentType: agentType || 'master' });
   }
 }

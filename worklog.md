@@ -1087,3 +1087,28 @@ Stage Summary:
 - Created /home/z/my-project/README.md — comprehensive project documentation
 - Dev server confirmed running on port 3000
 - Login page accessible and loading correctly
+
+---
+Task ID: Gemini-Migration
+Agent: Main Agent
+Task: Replace z-ai-web-dev-sdk with Google Gemini API, fix deployment issues, create deployment guide
+
+Work Log:
+- Replaced z-ai-web-dev-sdk with @google/generative-ai in /api/chat/route.ts
+- Installed @google/generative-ai@0.24.1
+- Chat route now uses Gemini 2.0 Flash (free tier, 15 req/min, 1500 req/day)
+- Added GEMINI_API_KEY to .env with clear comments
+- Fixed layout.tsx favicon: changed from z-cdn.chatglm.cn external URL to local /logo.svg
+- Fixed next.config.ts: removed sandbox IPs from allowedDevOrigins
+- Fixed proxy.ts: removed hardcoded 127.0.0.1:8001, made configurable via PROXY_API_BASE env
+- Fixed dashboard route: removed _pythonBackend reference
+- Updated README.md: added Gemini API key step, updated AI tech stack, updated security section
+- Updated start.bat: added GEMINI_API_KEY to .env creation, auto-detects missing key
+- Created DEPLOYMENT_GUIDE.md: complete guide with deployment options, security checklist, FAQ
+- Verified dev server still running and lint passes clean
+
+Stage Summary:
+- AI is now Google Gemini (free tier) instead of z-ai-web-dev-sdk
+- User needs to add GEMINI_API_KEY in .env — everything else works
+- All external sandbox references removed (favicon, config, proxy)
+- Three docs available: README.md, DEPLOYMENT_GUIDE.md, PROJECT_DESCRIPTION.md
