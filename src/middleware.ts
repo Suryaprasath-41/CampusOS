@@ -35,13 +35,13 @@ async function verifyToken(token: string): Promise<{ userId: string; email: stri
 
     const key = await crypto.subtle.importKey(
       'raw',
-      keyData,
+      keyData as unknown as BufferSource,
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['sign']
     );
 
-    const signatureBuffer = await crypto.subtle.sign('HMAC', key, msgData);
+    const signatureBuffer = await crypto.subtle.sign('HMAC', key, msgData as unknown as BufferSource);
     const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');

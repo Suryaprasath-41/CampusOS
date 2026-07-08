@@ -246,7 +246,7 @@ const suggestedPrompts = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-[#1a1a2e]/95 backdrop-blur-xl border border-[var(--border-color)] rounded-xl px-3 py-2 shadow-xl">
+    <div className="bg-[var(--bg-primary)]/95 backdrop-blur-xl border border-[var(--border-color)] rounded-xl px-3 py-2 shadow-xl">
       <p className="text-xs text-[var(--text-secondary)] mb-1">{label}</p>
       {payload.map((entry: any, i: number) => (
         <p key={i} className="text-xs font-medium" style={{ color: entry.color }}>

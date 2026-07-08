@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  campusos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: campusos:latest
+    container_name: campusos-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=super-secret-campusos-auth-key-change-in-production
+      # By default, uses local SQLite volume. For Supabase, uncomment and set your PostgreSQL URL:
+      # - DATABASE_URL=postgresql://postgres.[YOUR-PROJECT]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true
+      - DATABASE_URL=file:./db/custom.db
+    volumes:
+      # Mount local sqlite database directory to persist data across container restarts
+      - campusos_db:/app/db
+
+volumes:
+  campusos_db:
+    driver: local

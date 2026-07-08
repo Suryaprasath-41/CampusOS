@@ -1,0 +1,17 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log*
+README.md
+DOCUMENTATION.md
+worklog.md
+.next
+.git
+.gitignore
+.env
+*.log
+tool-results
+mini-services
+examples
+agent-ctx
+download

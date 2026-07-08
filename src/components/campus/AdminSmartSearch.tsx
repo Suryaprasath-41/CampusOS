@@ -417,7 +417,7 @@ export default function AdminSmartSearch() {
         className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] p-6"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]/80" />
         <motion.div
           className="absolute inset-0 rounded-2xl"
           style={{
@@ -427,7 +427,7 @@ export default function AdminSmartSearch() {
           animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
         >
-          <div className="absolute inset-[1px] rounded-2xl bg-[#050510]" />
+          <div className="absolute inset-[1px] rounded-2xl bg-[var(--bg-primary)]" />
         </motion.div>
 
         <div className="relative z-10 flex items-center gap-4">
@@ -441,7 +441,7 @@ export default function AdminSmartSearch() {
             <Search className="w-6 h-6 text-white" />
           </motion.div>
           <div>
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
               Smart Search
             </h2>
             <p className="text-[var(--text-muted)] text-xs mt-0.5">Search across all campus data with AI-powered intelligent matching</p>
@@ -475,7 +475,7 @@ export default function AdminSmartSearch() {
               animate={{ backgroundPosition: ['0% 0%', '300% 0%'] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
             >
-              <div className="absolute inset-[1.5px] rounded-2xl bg-[#050510]" />
+              <div className="absolute inset-[1.5px] rounded-2xl bg-[var(--bg-primary)]" />
             </motion.div>
           )}
 
